@@ -116,8 +116,8 @@ static void settle(App *app)
         appUpdate(app, now);
         draw(app, now);  // Drawing asks for covers.
         bool page = app->view != VIEW_READER ||
-                    (app->ready && appPageImage(app, app->page) &&
-                     (!appTwoPages(app) || app->page + 1 >= app->pages || appPageImage(app, app->page + 1)));
+                    (app->ready && appPageCurrent(app, app->page) &&
+                     (!appTwoPages(app) || app->page + 1 >= app->pages || appPageCurrent(app, app->page + 1)));
         bool covers = true;
         for (int b = 0; b < app->order_count && b < 18 && app->view == VIEW_LIBRARY; b++) {
             const ShelfBook *s = &app->shelf.items[app->order[b]];
@@ -259,6 +259,10 @@ int main(int argc, char **argv)
     appOpenBook(&app, indexOfBook(&app, "strip.cbz"), 13);
     settle(&app);
     render(&app, dir, "comic-two-pages");
+    appHandleButtons(&app, HidNpadButton_Up, 30);  // The spread zoomed, as one.
+    appHandleButtons(&app, HidNpadButton_Up, 31);
+    settle(&app);
+    render(&app, dir, "comic-two-pages-zoom");
     appCloseBook(&app);
     app.prefs.two_pages = false;
     // A picture in a dark page keeps its colors.
@@ -275,6 +279,11 @@ int main(int argc, char **argv)
     appHandleButtons(&app, HidNpadButton_StickLRight, 22);
     appHandleButtons(&app, HidNpadButton_StickLRight, 23);
     settle(&app);
+    {  // Resting, the page was rendered again at the zoom: sharp, not the fitted one scaled.
+        float iw, ih, made;
+        if (!appPageImageZoom(&app, app.page, &iw, &ih, &made) || made < app.zoom - 0.01f)
+            printf("ZOOM: the page wasn't rendered again at %.2f (it's at %.2f)\n", app.zoom, made);
+    }
     render(&app, dir, "pdf-zoom");
     app.bars = true;
     render(&app, dir, "pdf-zoom-bars");

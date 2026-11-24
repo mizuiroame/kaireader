@@ -365,6 +365,11 @@ static const PageSlot *slotOf(const App *app, int page, bool any_layout)
     return any_layout && !app->reflowable ? older : NULL;
 }
 
+bool appPageCurrent(const App *app, int page)
+{
+    return slotOf(app, page, false) != NULL;
+}
+
 const DocImage *appPageImage(const App *app, int page)
 {
     const PageSlot *s = slotOf(app, page, true);
@@ -393,6 +398,20 @@ void appRenderAgain(App *app)
     app->generation = readingRelayout(&layout, place);  // Ready stays: a fixed book's pages are the same.
 }
 
+bool appFitRect(const App *app, int page, int *x, int *y, int *w, int *h)
+{
+    float iw, ih, made;
+    if (app->reflowable || !appPageImageZoom(app, page, &iw, &ih, &made))
+        return false;
+    float per = GFX_SCALE * gfxDetail() * made;
+    *w = (int)(iw / per + 0.5f);
+    *h = (int)(ih / per + 0.5f);
+    int middle = gfxLayoutWidth() / 2, side = appTwoPages(app) ? page & 1 : 0;
+    *x = !appTwoPages(app) ? (gfxLayoutWidth() - *w) / 2 : side ? middle + 6 : middle - 6 - *w;
+    *y = (gfxLayoutHeight() - *h) / 2;
+    return true;
+}
+
 void appPageRect(const App *app, int page, int *x, int *y, int *w, int *h)
 {
     const DocImage *img = appPageImage(app, page);
@@ -401,16 +420,16 @@ void appPageRect(const App *app, int page, int *x, int *y, int *w, int *h)
         appColumn(app, side, x, y, w, h);
         return;
     }
-    // A fixed page, rendered to fit the screen (or its half), maybe zoomed: its size in layout
-    // units. Two pages meet in the middle, as in a book.
-    float iw = 0, ih = 0, made = 1;
-    appPageImageZoom(app, page, &iw, &ih, &made);
-    float per = GFX_SCALE * gfxDetail() * made, zoom = appTwoPages(app) ? 1.0f : app->zoom;
-    *w = (int)(iw / per * zoom + 0.5f);
-    *h = (int)(ih / per * zoom + 0.5f);
-    int middle = gfxLayoutWidth() / 2;
-    *x = !appTwoPages(app) ? (int)((gfxLayoutWidth() - *w) / 2.0f + app->pan_x) : side ? middle + 6 : middle - 6 - *w;
-    *y = (int)((gfxLayoutHeight() - *h) / 2.0f + (appTwoPages(app) ? 0 : app->pan_y));
+    // A fixed page: where it fits (two meet in the middle, as in a book), then zoomed about the
+    // screen's middle and moved by the pan, both of a spread together.
+    int fx, fy, fw, fh;
+    appFitRect(app, page, &fx, &fy, &fw, &fh);
+    float mx = gfxLayoutWidth() / 2.0f, my = gfxLayoutHeight() / 2.0f, z = app->zoom;
+    *x = (int)(mx + (fx - mx) * z + app->pan_x);
+    *y = (int)(my + (fy - my) * z + app->pan_y);
+    *w = (int)(fw * z + 0.5f);
+    *h = (int)(fh * z + 0.5f);
+    (void)side;
 }
 
 int appChapterOf(const App *app, int page)
@@ -496,9 +515,9 @@ static void followBook(App *app, uint64_t now_ns)
     const int one[] = {app->page, app->page + 1, app->page - 1, app->page + 2};
     const int two[] = {app->page, app->page + 1, app->page + 2, app->page + 3, app->page - 2, app->page - 1};
     const int *around = appTwoPages(app) ? two : one;
-    int count = appTwoPages(app) ? 6 : appZoomed(app) ? 1 : 4;
+    int count = appZoomed(app) ? (appTwoPages(app) ? 2 : 1) : appTwoPages(app) ? 6 : 4;
     for (int i = 0; i < count && n < READING_WANT_MAX; i++)
-        if (around[i] >= 0 && around[i] < app->pages && !appPageImage(app, around[i]))
+        if (around[i] >= 0 && around[i] < app->pages && !slotOf(app, around[i], false))  // Not one scaled from before.
             want[n++] = around[i];
     readingWant(app->generation, want, n);
     readingSetCurrent(app->generation, app->page);

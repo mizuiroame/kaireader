@@ -176,11 +176,15 @@ void appZoomTick(App *app, uint64_t now_ns);  // Each frame: sharp once it rests
 bool appZoomTouches(App *app, int count, float x0, float y0, float x1, float y1, uint64_t now_ns);
 // The page rendered again at the zoom, keeping the pages shown until the sharp ones come.
 void appRenderAgain(App *app);
+// Where a fixed page fits on screen at zoom 1 (layout units); false if it isn't here.
+bool appFitRect(const App *app, int page, int *x, int *y, int *w, int *h);
 // A page's image, of this layout or (a fixed page) one before, its size in pixels and the zoom it was made at.
 bool appPageImageZoom(const App *app, int page, float *w, float *h, float *zoom);
 // Touch coordinates as the panel reports them, turned with the screen (as appHandleTouch does).
 void appTurnPoint(int *x, int *y);
 
+// True when page's image is of the layout of the moment (not one from before, scaled).
+bool appPageCurrent(const App *app, int page);
 // The page image of a page, if it's here.
 const DocImage *appPageImage(const App *app, int page);
 // The room a page gets on screen (layout units), and the layout for the reading thread.
