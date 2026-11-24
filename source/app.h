@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "bookmarks.h"
 #include "covers.h"
 #include "kinetic.h"
 #include "notice.h"
@@ -41,11 +42,12 @@ typedef enum {
     PANEL_NONE,
     PANEL_MENU,      // + : a few things to do (and Settings).
     PANEL_SETTINGS,  // Settings, in pages.
-    PANEL_CONTENTS,  // The book's table of contents.
+    PANEL_CONTENTS,  // The book's table of contents, or its bookmarks (contents_tab).
 } Panel;
 
 typedef enum {
     MENU_CONTENTS,
+    MENU_BOOKMARK,    // Bookmark the page shown, or remove its bookmark.
     MENU_LIBRARY,     // Back to the library.
     MENU_SETTINGS,
     MENU_RESCAN,
@@ -90,6 +92,15 @@ typedef struct {
     int settings_cursor;
     int contents_cursor;
     int contents_first;  // The first row shown.
+    int contents_tab;    // 0: Contents; 1: Bookmarks.
+
+    // Bookmarks: all books' (bookmarks.txt), and the open book's in reading order.
+    Bookmarks marks;
+    int book_marks[READING_MARKS_MAX];  // Indexes into marks.items.
+    int book_mark_count;
+    ReadingMark mark_found[READING_MARKS_MAX];  // Their pages and first words, from the reading thread;
+    int mark_found_count;                       // -1 until they're found for this layout.
+    unsigned mark_generation;
 
     // The library.
     int cursor;       // In order.
@@ -128,6 +139,19 @@ void appNotify(App *app, NoticeKind kind, const char *text, uint64_t now_ns);
 void appRescan(App *app, uint64_t now_ns);
 void appOpenBook(App *app, int order_index, uint64_t now_ns);
 void appCloseBook(App *app);
+
+// The page shown first for page (the left one of two, with two pages side by side).
+int appFirstShown(const App *app, int page);
+
+// app_marks.c: bookmarks.
+void appMarksLoad(App *app);
+void appMarksForBook(App *app);  // The open book's, sent to the reading thread.
+void appMarksUpdate(App *app);   // Each frame: their pages, once found.
+bool appPageMarked(const App *app, int page);
+bool appShownMarked(const App *app);  // The page shown (either of two) has a bookmark.
+void appToggleMark(App *app, uint64_t now_ns);
+void appMarksGo(App *app, int i);
+void appMarksRemoveAt(App *app, int i, uint64_t now_ns);
 
 // The page image of a page, if it's here.
 const DocImage *appPageImage(const App *app, int page);

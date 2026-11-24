@@ -93,6 +93,21 @@ static void render(App *app, const char *dir, const char *name)
         fprintf(stderr, "cannot write %s\n", path);
 }
 
+// Frames until the open book's bookmarks have their pages (or 20 s), and its current page is told.
+static void waitMarks(App *app)
+{
+    uint64_t now = 3000000000ull;
+    for (int i = 0; i < 4000; i++, now += 16000000ull) {
+        appUpdate(app, now);
+        ReadingStatus st;
+        readingGetStatus(&st);
+        if (app->mark_found_count >= 0 && st.current_page == app->page)
+            return;
+        struct timespec ts = {0, 5000000};
+        nanosleep(&ts, NULL);
+    }
+}
+
 // Frames until the book is open and its page is here, and the covers shown are made (or 20 s).
 static void settle(App *app)
 {
@@ -210,6 +225,23 @@ int main(int argc, char **argv)
     render(&app, dir, "epub-dark");
     appHandleButtons(&app, HidNpadButton_X, 6);
     render(&app, dir, "contents");
+    app.panel = PANEL_NONE;
+
+    // Bookmarks: two pages marked with the left stick, the ribbon on one, and the Bookmarks tab.
+    waitMarks(&app);
+    appHandleButtons(&app, HidNpadButton_StickL, 7);
+    app.page += 3;
+    settle(&app);
+    waitMarks(&app);
+    appHandleButtons(&app, HidNpadButton_StickL, 8);
+    waitMarks(&app);
+    render(&app, dir, "epub-bookmarked");
+    app.bars = true;
+    render(&app, dir, "epub-bookmarked-bars");
+    app.bars = false;
+    appHandleButtons(&app, HidNpadButton_X, 9);
+    appHandleButtons(&app, HidNpadButton_R, 10);
+    render(&app, dir, "bookmarks");
     app.panel = PANEL_NONE;
 
     // Two pages side by side, as Settings > Reading > Pages does it.

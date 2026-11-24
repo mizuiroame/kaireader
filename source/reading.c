@@ -44,6 +44,9 @@ static unsigned g_current_generation;
 static int g_current_page = -1;
 static bool g_current_new;
 static CoverAsk g_cover_asks[COVER_ASKS];  // Newest last.
+static DocPlace g_mark_places[READING_MARKS_MAX];
+static int g_mark_count;
+static unsigned g_marks_asked;  // Bumped by each readingSetMarks.
 static int g_cover_ask_count;
 
 // Given back (under g_lock).
@@ -53,6 +56,10 @@ static ReadingPage g_pages[PAGE_QUEUE];
 static int g_page_count;
 static ReadingCover *g_covers[COVER_QUEUE];
 static int g_cover_count;
+static ReadingMark g_marks[READING_MARKS_MAX];
+static int g_marks_found;          // How many in g_marks,
+static unsigned g_marks_generation;  // for this generation,
+static unsigned g_marks_done;        // and this readingSetMarks.
 
 // The thread's own.
 static Doc *g_doc;
@@ -230,6 +237,29 @@ static void makeCover(const CoverAsk *ask)
     }
 }
 
+// The bookmarks' pages and first words, for generation (g_lock held on entry and exit).
+static void findMarks(unsigned generation)
+{
+    DocPlace places[READING_MARKS_MAX];
+    int count = g_mark_count;
+    unsigned asked = g_marks_asked;
+    memcpy(places, g_mark_places, (size_t)count * sizeof(places[0]));
+    pthread_mutex_unlock(&g_lock);
+    static ReadingMark found[READING_MARKS_MAX];
+    for (int i = 0; i < count; i++) {
+        found[i].page = docPageOfPlace(g_doc, places[i]);
+        if (!docPageText(g_doc, found[i].page, found[i].text, sizeof(found[i].text)))
+            found[i].text[0] = '\0';
+    }
+    pthread_mutex_lock(&g_lock);
+    if (generation == g_status.generation) {
+        memcpy(g_marks, found, (size_t)count * sizeof(found[0]));
+        g_marks_found = count;
+        g_marks_generation = generation;
+        g_marks_done = asked;
+    }
+}
+
 static void *worker(void *arg)
 {
     (void)arg;
@@ -263,6 +293,10 @@ static void *worker(void *arg)
                 g_status.current_place = place;
                 g_status.current_percent = percentOf(page, g_status.pages);
             }
+            continue;
+        }
+        if (open && (g_marks_generation != generation || g_marks_done != g_marks_asked)) {
+            findMarks(generation);  // After the page shown: a page turn mustn't wait for them.
             continue;
         }
         int page = -1;
@@ -377,6 +411,28 @@ void readingWant(unsigned generation, const int *pages, int count)
     if (g_want_count)
         pthread_cond_signal(&g_wake);
     pthread_mutex_unlock(&g_lock);
+}
+
+void readingSetMarks(const DocPlace *places, int count)
+{
+    pthread_mutex_lock(&g_lock);
+    g_mark_count = count < 0 ? 0 : count > READING_MARKS_MAX ? READING_MARKS_MAX : count;
+    memcpy(g_mark_places, places, (size_t)g_mark_count * sizeof(places[0]));
+    g_marks_asked++;
+    pthread_cond_signal(&g_wake);
+    pthread_mutex_unlock(&g_lock);
+}
+
+int readingMarks(unsigned generation, ReadingMark *out, int max)
+{
+    pthread_mutex_lock(&g_lock);
+    int n = -1;
+    if (g_marks_generation == generation && g_marks_done == g_marks_asked) {
+        n = g_marks_found < max ? g_marks_found : max;
+        memcpy(out, g_marks, (size_t)n * sizeof(out[0]));
+    }
+    pthread_mutex_unlock(&g_lock);
+    return n;
 }
 
 void readingSetCurrent(unsigned generation, int page)

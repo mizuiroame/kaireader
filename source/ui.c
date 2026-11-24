@@ -15,6 +15,7 @@
 #include "ui_brand.h"
 #include "ui_buttons.h"
 #include "ui_common.h"
+#include "ui_marks.h"
 #include "ui_hit.h"
 #include "ui_notice.h"
 #include "util.h"
@@ -327,12 +328,13 @@ static void drawBars(const App *app)
     uiHitAdd(0, 0, MARGIN + 40, BARS_TOP_H, HIT_BACK, 0);
     char name[SHELF_TEXT_MAX];
     shelfDisplayName(b, name, sizeof(name));
-    int title_w = w - 2 * MARGIN - TURN_BUTTON_FROM_RIGHT - 60;  // Clear of the turn button.
+    int title_w = w - 2 * MARGIN - TURN_BUTTON_FROM_RIGHT - MARK_BUTTON_W - 80;  // Clear of the buttons.
     fontDrawClipped(FONT_BOLD, 22, MARGIN + 40, 10, title_w, name, COLOR_TEXT);
     if (b->author[0])
         fontDrawClipped(FONT_REGULAR, 15, MARGIN + 40, 38, title_w, b->author, COLOR_DIM);
     uiDrawStatus(&app->sys, app->prefs.clock_24h, w - MARGIN, 18, COLOR_TEXT, COLOR_DIM);
     drawTurnButton(w - MARGIN - TURN_BUTTON_FROM_RIGHT, 8);
+    uiDrawMarkButton(app, w - MARGIN - TURN_BUTTON_FROM_RIGHT - MARK_BUTTON_W - 12, 8);
 
     bool upright = gfxTurn() != GFX_TURN_NONE;
     int top = h - BARS_BOTTOM_H - (upright ? BARS_HELP_H : 0);
@@ -360,7 +362,7 @@ static void drawBars(const App *app)
     int ch = appChapterOf(app, app->page);
     if (ch >= 0)
         fontDrawClipped(FONT_REGULAR, 16, left, top + 50, width / 2, app->chapters[ch].title, COLOR_DIM);
-    const char *help = T("[Y] Colors  [^v] Text size  [RS] Turn  [-] Hide  [B] Library");
+    const char *help = T("[Y] Colors  [^v] Text size  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library");
     if (upright)  // No room beside the chapter: a line of its own, under it.
         uiDrawHelp(MARGIN, top + BARS_BOTTOM_H + 12.0f, w - 2 * MARGIN, help);
     else
@@ -412,6 +414,7 @@ static void drawReader(App *app, uint64_t now_ns)
                 fontDrawClipped(FONT_REGULAR, 15, cx, y, cw - ww - 40, app->chapters[ch].title, faint);
         }
     }
+    uiDrawPageRibbons(app);
     if (app->bars)
         drawBars(app);
 }
@@ -425,11 +428,13 @@ static void dim(void)
     uiHitAdd(0, 0, w, h, HIT_OVERLAY_OUT, 0);
 }
 
-static const char *menuLabel(MenuItem item)
+static const char *menuLabel(const App *app, MenuItem item)
 {
     switch (item) {
     case MENU_CONTENTS:
-        return T("Contents");
+        return T("Contents and bookmarks");
+    case MENU_BOOKMARK:
+        return appShownMarked(app) ? T("Remove this page's bookmark") : T("Bookmark this page");
     case MENU_LIBRARY:
         return T("Back to the library");
     case MENU_SETTINGS:
@@ -458,7 +463,7 @@ static void drawMenu(const App *app)
         bool on = i == app->menu_cursor;
         if (on)
             gfxFillRoundRect(x + 12, ry, w - 24, MENU_ROW_H - 4, 12, COLOR_SURFACE_HI);
-        fontDrawMiddle(FONT_BOLD, 19, x + 28, ry + (MENU_ROW_H - 4) / 2.0f, menuLabel(rows[i]),
+        fontDrawMiddle(FONT_BOLD, 19, x + 28, ry + (MENU_ROW_H - 4) / 2.0f, menuLabel(app, rows[i]),
                        on ? COLOR_ACCENT : COLOR_TEXT);
         uiHitAdd(x + 12, ry, w - 24, MENU_ROW_H - 4, HIT_MENU_ITEM, i);
     }
@@ -562,12 +567,26 @@ static void drawContents(const App *app)
 {
     dim();
     int max_rows = appContentsRows();
-    int rows = app->chapter_count < max_rows ? app->chapter_count : max_rows;
+    int count = app->contents_tab ? app->book_mark_count : app->chapter_count;
+    int rows = count < max_rows ? count : max_rows;
+    if (rows < 2)
+        rows = 2;  // Room for the empty tab's words.
     int w = minInt(CONTENTS_W_MAX, gfxLayoutWidth() - 40);
     int h = 70 + rows * CONTENTS_ROW_H + 50, x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
     gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
     uiHitAdd(x, y, w, h, HIT_CHAPTER, -1);
-    fontDraw(FONT_BOLD, 24, x + 28, y + 22, T("Contents"), COLOR_TEXT);
+    uiDrawContentsTabs(app, x + 28, y + 20);
+    if (app->contents_tab) {
+        uiDrawMarksList(app, x + 12, y + 70, w - 24, rows);
+        if (count > rows) {
+            int track = rows * CONTENTS_ROW_H, top = y + 70;
+            int bar = track * rows / count;
+            int at = top + (track - bar) * app->contents_first / (count - rows);
+            gfxFillRoundRect(x + w - 8, at, 4, bar, 2, COLOR_FAINT);
+        }
+        uiDrawHelp(x + 28, y + h - 28.0f, w - 56, T("[A] Go  [Y] Remove  [L][R] Tabs  [B] Close"));
+        return;
+    }
     int current = appChapterOf(app, app->page);
     for (int r = 0; r < rows; r++) {
         int i = app->contents_first + r;
@@ -598,7 +617,9 @@ static void drawContents(const App *app)
         int at = top + (track - bar) * app->contents_first / (app->chapter_count - rows);
         gfxFillRoundRect(x + w - 8, at, 4, bar, 2, COLOR_FAINT);
     }
-    uiDrawHelp(x + 28, y + h - 28.0f, w - 56, T("[A] Go  [<>] Page  [B] Close"));
+    if (app->chapter_count == 0)
+        fontDrawClipped(FONT_REGULAR, 17, x + 28, y + 84, w - 56, T("This book has no table of contents."), COLOR_DIM);
+    uiDrawHelp(x + 28, y + h - 28.0f, w - 56, T("[A] Go  [<>] Page  [L][R] Tabs  [B] Close"));
 }
 
 void uiDraw(App *app, uint64_t now_ns)

@@ -26,3 +26,4 @@ void testShelf(void);
 void testReading(void);
 void testPrefs(void);
 void testSettings(void);
+void testBookmarks(void);

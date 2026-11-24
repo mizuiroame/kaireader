@@ -75,6 +75,23 @@ void testReading(void)
     }
     CHECK(told && st.current_place.chapter == 2 && st.current_percent > 50);
 
+    // Bookmarks: each one's page and first words, once the thread has found them.
+    DocPlace marks[2] = {{2, 0.0}, st.current_place};
+    readingSetMarks(marks, 2);
+    ReadingMark found[4];
+    int n = -1;
+    for (int i = 0; i < 2000 && n < 0; i++) {
+        n = readingMarks(g, found, 4);
+        if (n < 0)
+            nap();
+    }
+    CHECK(n == 2);
+    if (n == 2) {
+        CHECK(found[0].page == ch[2].page && found[1].page == want[1]);
+        CHECK(found[0].text[0] && found[1].text[0] && strcmp(found[0].text, found[1].text));
+    }
+    CHECK(readingMarks(g + 99, found, 4) == -1);  // Not for another generation.
+
     // A bigger text: a new generation, the same chapter.
     layout.em = 28;
     unsigned g2 = readingRelayout(&layout, st.current_place);

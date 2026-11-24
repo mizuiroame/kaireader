@@ -24,6 +24,8 @@ typedef enum {
     HIT_SLIDER,       // The reader's page slider: a tap or drag goes there.
     HIT_CONTENTS,     // The reader's contents button.
     HIT_TURN,         // The reader's turn button: upright or lying down.
+    HIT_MARK_TOGGLE,  // The reader's bookmark button: the page shown, bookmarked or not.
+    HIT_TAB,          // arg: a tab of the contents panel (0 Contents, 1 Bookmarks).
     HIT_CHAPTER,      // arg: an entry of the contents. A tap goes there.
     HIT_RESCAN,       // Looks for books again.
 } HitKind;

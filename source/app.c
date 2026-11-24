@@ -185,6 +185,7 @@ void appInit(App *app, const char *folder)
     pathIn(app, "shelf.txt", path, sizeof(path));
     shelfLoad(&app->shelf, path);
     appRescan(app, 0);
+    appMarksLoad(app);
     app->book = -1;
     app->turn_from = -1;
 }
@@ -241,6 +242,7 @@ void appFree(App *app)
     app->lines = NULL;
     coversFree(&app->covers);
     shelfFree(&app->shelf);
+    bookmarksFree(&app->marks);
 }
 
 // --- The reader's page ---
@@ -270,6 +272,11 @@ static int firstShown(const App *app, int page)
     return appTwoPages(app) ? page & ~1 : page;
 }
 
+int appFirstShown(const App *app, int page)
+{
+    return firstShown(app, page);
+}
+
 ReadingLayout appLayout(const App *app)
 {
     int x, y, w, h;
@@ -295,6 +302,7 @@ void appOpenBook(App *app, int order_index, uint64_t now_ns)
     ReadingLayout layout = appLayout(app);
     const ShelfBook *b = &app->shelf.items[app->book];
     app->generation = readingOpen(b->path, &layout, b->place);
+    appMarksForBook(app);
     app->ready = false;
     app->view = VIEW_READER;
     app->panel = PANEL_NONE;
@@ -443,6 +451,7 @@ static void followBook(App *app, uint64_t now_ns)
         keepPage(app, &p);
     if (!app->ready)
         return;
+    appMarksUpdate(app);
     int want[READING_WANT_MAX], n = 0;
     // The pages shown first, then the ones after, then before.
     const int one[] = {app->page, app->page + 1, app->page - 1, app->page + 2};
@@ -602,6 +611,7 @@ int appMenuRows(const App *app, MenuItem *out)
     int n = 0;
     if (app->view == VIEW_READER) {
         out[n++] = MENU_CONTENTS;
+        out[n++] = MENU_BOOKMARK;
         out[n++] = MENU_LIBRARY;
     }
     out[n++] = MENU_SETTINGS;
@@ -611,24 +621,44 @@ int appMenuRows(const App *app, MenuItem *out)
     return n;
 }
 
+// The rows of the tab shown: the contents' entries or the bookmarks.
+static int listCount(const App *app)
+{
+    return app->contents_tab ? app->book_mark_count : app->chapter_count;
+}
+
+// Shows a tab of the contents panel, its cursor on the place read (or the first row).
+static void showTab(App *app, int tab)
+{
+    int rows = appContentsRows();
+    app->contents_tab = tab;
+    int at = -1;
+    if (tab == 0) {
+        at = appChapterOf(app, app->page);
+    } else {  // The last bookmark at or before the page shown.
+        for (int i = 0; i < app->mark_found_count && i < app->book_mark_count; i++)
+            if (app->mark_found[i].page <= app->page)
+                at = i;
+    }
+    app->contents_cursor = at < 0 ? 0 : at;
+    app->contents_first = app->contents_cursor - rows / 2;
+    if (app->contents_first > listCount(app) - rows)
+        app->contents_first = listCount(app) - rows;
+    if (app->contents_first < 0)
+        app->contents_first = 0;
+}
+
 static void openContents(App *app, uint64_t now_ns)
 {
     if (app->view != VIEW_READER || !app->ready)
         return;
-    if (app->chapter_count == 0) {
+    if (app->chapter_count == 0 && app->book_mark_count == 0) {
         app->panel = PANEL_NONE;
-        appNotify(app, NOTICE_INFO, T("This book has no table of contents."), now_ns);
+        appNotify(app, NOTICE_INFO, T("This book has no table of contents and no bookmarks yet."), now_ns);
         return;
     }
-    int rows = appContentsRows();
     app->panel = PANEL_CONTENTS;
-    int at = appChapterOf(app, app->page);
-    app->contents_cursor = at < 0 ? 0 : at;
-    app->contents_first = app->contents_cursor - rows / 2;
-    if (app->contents_first > app->chapter_count - rows)
-        app->contents_first = app->chapter_count - rows;
-    if (app->contents_first < 0)
-        app->contents_first = 0;
+    showTab(app, app->chapter_count == 0 ? 1 : 0);
 }
 
 static void openSettings(App *app)
@@ -644,6 +674,9 @@ static void menuPick(App *app, MenuItem item, uint64_t now_ns)
     switch (item) {
     case MENU_CONTENTS:
         openContents(app, now_ns);
+        break;
+    case MENU_BOOKMARK:
+        appToggleMark(app, now_ns);
         break;
     case MENU_LIBRARY:
         appCloseBook(app);
@@ -746,6 +779,10 @@ static void settingsButtons(App *app, uint64_t pressed, uint64_t now_ns)
 
 static void contentsGo(App *app, int entry)
 {
+    if (app->contents_tab) {
+        appMarksGo(app, entry);
+        return;
+    }
     if (entry < 0 || entry >= app->chapter_count)
         return;
     int page = app->chapters[entry].page;
@@ -761,8 +798,10 @@ static void contentsMove(App *app, int to)
     int rows = appContentsRows();
     if (to < 0)
         to = 0;
-    if (to >= app->chapter_count)
-        to = app->chapter_count - 1;
+    if (to >= listCount(app))
+        to = listCount(app) - 1;
+    if (to < 0)
+        to = 0;
     app->contents_cursor = to;
     if (to < app->contents_first)
         app->contents_first = to;
@@ -770,12 +809,17 @@ static void contentsMove(App *app, int to)
         app->contents_first = to - rows + 1;
 }
 
-static void contentsButtons(App *app, uint64_t pressed)
+static void contentsButtons(App *app, uint64_t pressed, uint64_t now_ns)
 {
     int rows = appContentsRows();
     if (pressed & (HidNpadButton_B | HidNpadButton_X))
         app->panel = PANEL_NONE;
-    else if (pressed & BUTTONS_UP)
+    else if (pressed & (HidNpadButton_L | HidNpadButton_ZL | HidNpadButton_R | HidNpadButton_ZR))
+        showTab(app, (pressed & (HidNpadButton_R | HidNpadButton_ZR)) ? 1 : 0);
+    else if ((pressed & HidNpadButton_Y) && app->contents_tab == 1) {
+        appMarksRemoveAt(app, app->contents_cursor, now_ns);
+        contentsMove(app, app->contents_cursor);
+    } else if (pressed & BUTTONS_UP)
         contentsMove(app, app->contents_cursor - 1);
     else if (pressed & BUTTONS_DOWN)
         contentsMove(app, app->contents_cursor + 1);
@@ -867,6 +911,8 @@ static void readerButtons(App *app, uint64_t pressed, uint64_t now_ns)
         quickStep(app, SETTING_COLORS, 1, now_ns);
     } else if (pressed & HidNpadButton_Minus) {
         app->bars = !app->bars;
+    } else if (pressed & HidNpadButton_StickL) {  // Pressed in: bookmark the page, or not.
+        appToggleMark(app, now_ns);
     } else if (pressed & BUTTONS_UP) {
         quickStep(app, SETTING_TEXT_SIZE, 1, now_ns);
     } else if (pressed & BUTTONS_DOWN) {
@@ -915,7 +961,7 @@ void appHandleButtons(App *app, uint64_t pressed, uint64_t now_ns)
         return;
     }
     if (app->panel == PANEL_CONTENTS) {
-        contentsButtons(app, pressed);
+        contentsButtons(app, pressed, now_ns);
         return;
     }
     if (pressed & HidNpadButton_Plus) {
@@ -1008,6 +1054,12 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
     case HIT_TURN:
         quickTurn(app, now_ns);
         break;
+    case HIT_MARK_TOGGLE:
+        appToggleMark(app, now_ns);
+        break;
+    case HIT_TAB:
+        showTab(app, hit->arg);
+        break;
     case HIT_SLIDER:
         sliderTo(app, x);
         break;
@@ -1063,7 +1115,7 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
             int rows = (e.start_y - e.y) / CONTENTS_ROW_H;
             int moved = rows - app->drag_rows;
             app->drag_rows = rows;
-            int max = app->chapter_count - appContentsRows();
+            int max = listCount(app) - appContentsRows();
             max = max < 0 ? 0 : max;
             int first = app->contents_first + moved;
             app->contents_first = first < 0 ? 0 : first > max ? max : first;

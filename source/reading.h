@@ -14,6 +14,8 @@
 
 #define READING_WANT_MAX 6
 #define READING_CHAPTERS_MAX 1024
+#define READING_MARKS_MAX 64     // A book's bookmarks the thread finds pages for.
+#define READING_MARK_TEXT 120    // The first words of a bookmark's page.
 
 typedef struct {
     float box_w, box_h;      // The room for a reflowable page, in points (one point is a layout unit).
@@ -52,6 +54,12 @@ typedef struct {
     DocImage image;  // The caller frees it (docImageFree) after it's taken.
 } ReadingPage;
 
+// A bookmark in the layout of the moment: its page, and the words that start it.
+typedef struct {
+    int page;
+    char text[READING_MARK_TEXT];
+} ReadingMark;
+
 typedef struct {
     char path[SHELF_PATH_MAX];
     bool ok;
@@ -76,6 +84,11 @@ void readingClose(void);
 void readingWant(unsigned generation, const int *pages, int count);
 // The page shown now: the thread works out its place and how far in it is.
 void readingSetCurrent(unsigned generation, int page);
+// The open book's bookmarks (their places, in reading order), replacing the ones before.
+void readingSetMarks(const DocPlace *places, int count);
+// For generation: each bookmark's page and first words, in the order given; how many.
+// -1 while they're still being found (a new layout, or new bookmarks).
+int readingMarks(unsigned generation, ReadingMark *out, int max);
 // A page rendered; false if none is waiting.
 bool readingTakePage(ReadingPage *out);
 
