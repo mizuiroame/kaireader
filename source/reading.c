@@ -92,8 +92,15 @@ static void runCommand(Command cmd, const char *path, const ReadingLayout *layou
         pthread_mutex_unlock(&g_lock);
         return;
     }
+    // Other colors: the book is opened again (its text colors come with its style, at opening).
+    if (cmd == CMD_RELAYOUT && g_doc && docReflowable(g_doc) &&
+        (layout->colors.ink != g_layout.colors.ink || layout->colors.paper != g_layout.colors.paper)) {
+        docClose(g_doc);
+        g_doc = NULL;
+        cmd = CMD_OPEN;
+    }
     if (cmd == CMD_OPEN)
-        g_doc = docOpen(path, error, sizeof(error));
+        g_doc = docOpen(path, &layout->colors, error, sizeof(error));
     if (g_doc) {
         g_layout = *layout;
         if (!docLayout(g_doc, layout->box_w, layout->box_h, layout->em) && !error[0])
@@ -161,7 +168,7 @@ static void dropOldPages(unsigned generation)
 static void renderPage(unsigned generation, int page)
 {
     ReadingPage out = {generation, page, {0}};
-    if (!docRender(g_doc, page, fitScale(g_doc, page, &g_layout), &g_layout.colors, &out.image))
+    if (!docRender(g_doc, page, fitScale(g_doc, page, &g_layout), &out.image))
         out.image = (DocImage){0};
     pthread_mutex_lock(&g_lock);
     if (generation == g_status.generation && g_page_count < PAGE_QUEUE) {
@@ -179,7 +186,7 @@ static void makeCover(const CoverAsk *ask)
         return;
     snprintf(c->path, sizeof(c->path), "%s", ask->path);
     char error[DOC_ERROR_MAX];
-    Doc *d = docOpen(ask->path, error, sizeof(error));
+    Doc *d = docOpen(ask->path, NULL, error, sizeof(error));
     if (d) {
         docTitle(d, c->title, sizeof(c->title));
         docAuthor(d, c->author, sizeof(c->author));
@@ -197,7 +204,7 @@ static void makeCover(const CoverAsk *ask)
             docLayout(d, COVER_PAGE_W, COVER_PAGE_H, COVER_EM);
         if (!c->ok && docPageCount(d) > 0 && docPageSize(d, 0, &w, &h)) {
             float s = ask->w / w < ask->h / h ? ask->w / w : ask->h / h;
-            c->ok = docRender(d, 0, s, NULL, &c->image);
+            c->ok = docRender(d, 0, s, &c->image);
         }
         docClose(d);
     }

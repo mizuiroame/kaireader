@@ -25,6 +25,7 @@ typedef enum {
     SETTING_OPEN_ABOUT,
     SETTING_TEXT_SIZE,
     SETTING_COLORS,
+    SETTING_PAGES,         // One page, or two side by side.
     SETTING_SORT,
     SETTING_RESCAN,        // Looks for books again (an action, no value).
     SETTING_SCREEN,

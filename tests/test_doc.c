@@ -11,7 +11,7 @@
 static Doc *openOk(const char *path)
 {
     char error[DOC_ERROR_MAX];
-    Doc *d = docOpen(path, error, sizeof(error));
+    Doc *d = docOpen(path, NULL, error, sizeof(error));
     if (!d)
         printf("  %s: %s\n", path, error);
     CHECK(d != NULL);
@@ -77,7 +77,14 @@ static void testEpub(void)
     // Rendering: the size asked, colors for a reflowable page.
     DocImage img;
     DocColors dark = {0xE0E0E0, 0x101010};
-    CHECK(docRender(d, 1, 1.5f, &dark, &img));
+    docClose(d);
+    char error[DOC_ERROR_MAX];
+    d = docOpen(FIX "quiet.epub", &dark, error, sizeof(error));
+    CHECK(d != NULL);
+    if (!d)
+        return;
+    CHECK(docLayout(d, 400, 600, 24));
+    CHECK(docRender(d, 1, 1.5f, &img));
     CHECK(img.width == 600 && img.height == 900 && img.pixels);
     if (img.pixels) {
         uint32_t corner = img.pixels[0];
@@ -89,12 +96,41 @@ static void testEpub(void)
     }
     docImageFree(&img);
     CHECK(img.pixels == NULL);
-    CHECK(!docRender(d, 999, 1, NULL, &img) && !img.pixels);
-    CHECK(!docRender(d, 0, 0, NULL, &img));
+    CHECK(!docRender(d, 999, 1, &img) && !img.pixels);
+    CHECK(!docRender(d, 0, 0, &img));
     // Never bigger than DOC_RENDER_MAX on a side.
-    CHECK(docRender(d, 0, 100, NULL, &img) && img.height <= DOC_RENDER_MAX && img.width <= DOC_RENDER_MAX);
+    CHECK(docRender(d, 0, 100, &img) && img.height <= DOC_RENDER_MAX && img.width <= DOC_RENDER_MAX);
     docImageFree(&img);
     CHECK(!docLayout(d, 10, 600, 12) && !docLayout(d, 400, 600, 0));
+    docClose(d);
+}
+
+// Colors change the text and the paper, never a picture: a red one stays red.
+static void testPictureColors(void)
+{
+    DocColors dark = {0xD0D0D0, 0x121212};
+    char error[DOC_ERROR_MAX];
+    Doc *d = docOpen(FIX "picture.epub", &dark, error, sizeof(error));
+    CHECK(d != NULL);
+    if (!d)
+        return;
+    CHECK(docLayout(d, 400, 600, 14));
+    DocImage img;
+    CHECK(docRender(d, 0, 1, &img));
+    int red = 0, light_text = 0, black = 0;
+    for (int i = 0; img.pixels && i < img.width * img.height; i++) {
+        uint32_t p = img.pixels[i];
+        int r = p & 0xFF, g = (p >> 8) & 0xFF, b = (p >> 16) & 0xFF;
+        red += r > 200 && g < 50 && b < 50;
+        light_text += r > 0xB0 && g > 0xB0 && b > 0xB0;
+        black += r < 8 && g < 8 && b < 8;
+    }
+    CHECK(red > 3000);        // 120 x 60 pixels, at 96 per inch: about 90 x 45 points, red as it is.
+    CHECK(light_text > 100);  // The book's black text is in the ink.
+    CHECK(black == 0);        // Nothing of the book's own black, nor of the old dark tint, is left.
+    if (img.pixels)
+        CHECK((img.pixels[0] & 0xFFFFFF) == 0x121212);  // The paper.
+    docImageFree(&img);
     docClose(d);
 }
 
@@ -122,8 +158,7 @@ static void testFixed(void)
         char text[DOC_TEXT_MAX];
         CHECK(docTitle(d, text, sizeof(text)) && !strcmp(text, "Made-up Ledger"));
         DocImage img;
-        DocColors dark = {0xFFFFFF, 0x000000};
-        CHECK(docRender(d, 0, 0.5f, &dark, &img) && img.width == 306 && img.height == 396);
+        CHECK(docRender(d, 0, 0.5f, &img) && img.width == 306 && img.height == 396);
         if (img.pixels)
             CHECK(img.pixels[0] == 0xFFFFFFFFu);  // A fixed page keeps its white paper.
         docImageFree(&img);
@@ -134,7 +169,7 @@ static void testFixed(void)
     if (d) {
         CHECK(!docReflowable(d) && docPageCount(d) == 3);
         DocImage img;
-        CHECK(docRender(d, 1, 1, NULL, &img));
+        CHECK(docRender(d, 1, 1, &img));
         if (img.pixels) {
             uint32_t mid = img.pixels[(img.height / 2) * img.width + img.width / 2];
             CHECK((mid & 0xFF) < 0x60 && ((mid >> 8) & 0xFF) > 0x80);  // The green page.
@@ -163,13 +198,13 @@ static void testOthers(void)
         docClose(d);
     }
     char error[DOC_ERROR_MAX];
-    CHECK(docOpen(FIX "missing.epub", error, sizeof(error)) == NULL && error[0]);
-    CHECK(docOpen(FIX "empty.pdf", error, sizeof(error)) == NULL && error[0]);
-    d = docOpen(FIX "broken.epub", error, sizeof(error));
+    CHECK(docOpen(FIX "missing.epub", NULL, error, sizeof(error)) == NULL && error[0]);
+    CHECK(docOpen(FIX "empty.pdf", NULL, error, sizeof(error)) == NULL && error[0]);
+    d = docOpen(FIX "broken.epub", NULL, error, sizeof(error));
     if (d) {  // MuPDF may open it as an empty book: it must not crash, and has nothing to show.
         docLayout(d, 400, 600, 14);
         DocImage img;
-        CHECK(docPageCount(d) == 0 || docRender(d, 0, 1, NULL, &img) || 1);
+        CHECK(docPageCount(d) == 0 || docRender(d, 0, 1, &img) || 1);
         docClose(d);
     } else {
         CHECK(error[0]);
@@ -212,6 +247,7 @@ void testDoc(void)
     testNames();
     testEpub();
     testOldEpub();
+    testPictureColors();
     testFixed();
     testOthers();
 }

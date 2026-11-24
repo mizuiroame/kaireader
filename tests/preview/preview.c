@@ -100,7 +100,9 @@ static void settle(App *app)
     for (int i = 0; i < 4000; i++, now += 16000000ull) {
         appUpdate(app, now);
         draw(app, now);  // Drawing asks for covers.
-        bool page = app->view != VIEW_READER || (app->ready && appPageImage(app, app->page));
+        bool page = app->view != VIEW_READER ||
+                    (app->ready && appPageImage(app, app->page) &&
+                     (!appTwoPages(app) || app->page + 1 >= app->pages || appPageImage(app, app->page + 1)));
         bool covers = true;
         for (int b = 0; b < app->order_count && b < 18 && app->view == VIEW_LIBRARY; b++) {
             const ShelfBook *s = &app->shelf.items[app->order[b]];
@@ -210,6 +212,27 @@ int main(int argc, char **argv)
     render(&app, dir, "contents");
     app.panel = PANEL_NONE;
 
+    // Two pages side by side, as Settings > Reading > Pages does it.
+    app.panel = PANEL_SETTINGS;
+    app.settings_page = SETTINGS_PAGE_READING;
+    app.settings_cursor = 2;
+    appHandleButtons(&app, HidNpadButton_A, 12);
+    app.panel = PANEL_NONE;
+    settle(&app);
+    render(&app, dir, "epub-two-pages");
+    app.bars = true;
+    render(&app, dir, "epub-two-pages-bars");
+    app.bars = false;
+    appCloseBook(&app);
+    appOpenBook(&app, indexOfBook(&app, "strip.cbz"), 13);
+    settle(&app);
+    render(&app, dir, "comic-two-pages");
+    appCloseBook(&app);
+    app.prefs.two_pages = false;
+    // A picture in a dark page keeps its colors.
+    appOpenBook(&app, indexOfBook(&app, "picture.epub"), 14);
+    settle(&app);
+    render(&app, dir, "picture-dark");
     appCloseBook(&app);
     appOpenBook(&app, indexOfBook(&app, "plain.pdf"), 7);
     settle(&app);

@@ -17,7 +17,7 @@
 #include "touch.h"
 
 #define APP_FOLDER_MAX 512
-#define PAGE_SLOTS 5
+#define PAGE_SLOTS 8  // Two pages shown, the two after, the two before, and room.
 
 // The library's grid, in layout units.
 #define LIB_COVER_W 160
@@ -132,8 +132,10 @@ const DocImage *appPageImage(const App *app, int page);
 // The room a page gets on screen (layout units), and the layout for the reading thread.
 void appPageRect(const App *app, int page, int *x, int *y, int *w, int *h);
 ReadingLayout appLayout(const App *app);
-// The column a flowing book is laid out in: its size and where it is.
-void appColumn(int *x, int *y, int *w, int *h);
+// True when two pages show side by side (the setting, with the console lying down).
+bool appTwoPages(const App *app);
+// The column a flowing book's page is laid out in (side 1: the right page of two): where and its size.
+void appColumn(const App *app, int side, int *x, int *y, int *w, int *h);
 // The menu's rows now (the reader has more): into out, how many.
 int appMenuRows(const App *app, MenuItem *out);
 // The chapter the page is in (-1 if none), for the bars.

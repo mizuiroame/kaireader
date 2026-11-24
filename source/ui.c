@@ -26,6 +26,7 @@
 #define CONTENTS_W_MAX 780
 #define BARS_TOP_H 64
 #define BARS_BOTTOM_H 84
+#define BARS_HELP_H 40  // Upright: the button help on a line of its own.
 
 static const Color PLACEHOLDER_COLORS[] = {
     GFX_RGB(0x3D, 0x5A, 0xA8), GFX_RGB(0x2E, 0x7D, 0x6B), GFX_RGB(0x9C, 0x3D, 0x5A),
@@ -288,6 +289,14 @@ static void drawPage(const App *app, int page, int offset)
         gfxDrawImageScaledFb(fb(x + offset), fb(y), fb(w), fb(h), img->width, img->height, img->pixels);
 }
 
+// The page shown at first, and the next one beside it when two show.
+static void drawShown(const App *app, int first, int offset)
+{
+    drawPage(app, first, offset);
+    if (appTwoPages(app) && first + 1 < app->pages)
+        drawPage(app, first + 1, offset);
+}
+
 static void drawBars(const App *app)
 {
     int w = gfxLayoutWidth(), h = gfxLayoutHeight();
@@ -306,8 +315,9 @@ static void drawBars(const App *app)
         fontDrawClipped(FONT_REGULAR, 15, MARGIN + 40, 38, title_w, b->author, COLOR_DIM);
     uiDrawStatus(&app->sys, app->prefs.clock_24h, w - MARGIN, 18, COLOR_TEXT, COLOR_DIM);
 
-    int top = h - BARS_BOTTOM_H;
-    gfxBlendRect(0, top, w, BARS_BOTTOM_H, COLOR_BG, 240);
+    bool upright = gfxTurn() != GFX_TURN_NONE;
+    int top = h - BARS_BOTTOM_H - (upright ? BARS_HELP_H : 0);
+    gfxBlendRect(0, top, w, h - top, COLOR_BG, 240);
     int bw = 120;
     gfxFillRoundRect(MARGIN, top + 12, bw, 36, 18, COLOR_SURFACE_HI);
     fontDrawCentered(FONT_BOLD, 16, MARGIN + bw / 2.0f, top + 30.0f, T("Contents"), COLOR_TEXT);
@@ -321,15 +331,21 @@ static void drawBars(const App *app)
     gfxFillCircle(knob, sy, 10, COLOR_ACCENT);
     uiHitAdd(left - 20, top + 4, width + 40, 52, HIT_SLIDER, 0);
     char where[64];
-    snprintf(where, sizeof(where), T("%d of %d"), app->page + 1, app->pages);
+    if (appTwoPages(app) && app->page + 1 < app->pages)
+        snprintf(where, sizeof(where), "%d\xE2\x80\x93%d / %d", app->page + 1, app->page + 2, app->pages);
+    else
+        snprintf(where, sizeof(where), T("%d of %d"), app->page + 1, app->pages);
     int ww = fontTextWidth(FONT_BOLD, 17, where);
     fontDraw(FONT_BOLD, 17, w - MARGIN - ww, top + 18, where, COLOR_TEXT);
 
     int ch = appChapterOf(app, app->page);
     if (ch >= 0)
         fontDrawClipped(FONT_REGULAR, 16, left, top + 50, width / 2, app->chapters[ch].title, COLOR_DIM);
-    if (!gfxTurn())  // Upright, the screen has no room for it beside the chapter.
-        uiDrawHelp(w / 2, top + 62.0f, w / 2 - MARGIN, T("[Y] Colors  [^v] Text size  [-] Hide  [B] Library"));
+    const char *help = T("[Y] Colors  [^v] Text size  [-] Hide  [B] Library");
+    if (upright)  // No room beside the chapter: a line of its own, under it.
+        uiDrawHelp(MARGIN, top + BARS_BOTTOM_H + 12.0f, w - 2 * MARGIN, help);
+    else
+        uiDrawHelp(w / 2, top + 62.0f, w / 2 - MARGIN, help);
 }
 
 static void drawReader(App *app, uint64_t now_ns)
@@ -353,25 +369,29 @@ static void drawReader(App *app, uint64_t now_ns)
         t = t > 1 ? 1 : t;
         float eased = 1 - (1 - t) * (1 - t) * (1 - t);
         int shift = (int)(eased * w);
-        drawPage(app, app->turn_from, -app->turn_dir * shift);
-        drawPage(app, app->page, app->turn_dir * (w - shift));
+        drawShown(app, app->turn_from, -app->turn_dir * shift);
+        drawShown(app, app->page, app->turn_dir * (w - shift));
     } else if (appPageImage(app, app->page)) {
-        drawPage(app, app->page, 0);
+        drawShown(app, app->page, 0);
     } else {
         uiDrawSpinner(w / 2.0f, h / 2.0f, 18, now_ns, gfxMix(ink, paper, 120));
     }
     if (flowing && !app->bars) {
         // Under the page, faint: the chapter and where in the book.
         Color faint = gfxMix(ink, paper, 150);
-        int cx, cy, cw, chh;
-        appColumn(&cx, &cy, &cw, &chh);
-        char where[32];
-        snprintf(where, sizeof(where), "%d / %d", app->page + 1, app->pages);
-        int y = cy + chh + 8, ww = fontTextWidth(FONT_REGULAR, 15, where);
-        fontDraw(FONT_REGULAR, 15, cx + cw - ww, y, where, faint);
+        // With two pages, each its number under it, and the chapter under the left one.
+        bool two = appTwoPages(app);
         int ch = appChapterOf(app, app->page);
-        if (ch >= 0)
-            fontDrawClipped(FONT_REGULAR, 15, cx, y, cw - ww - 40, app->chapters[ch].title, faint);
+        for (int side = 0; side < (two ? 2 : 1) && app->page + side < app->pages; side++) {
+            int cx, cy, cw, chh;
+            appColumn(app, side, &cx, &cy, &cw, &chh);
+            char where[32];
+            snprintf(where, sizeof(where), two ? "%d" : "%d / %d", app->page + side + 1, app->pages);
+            int y = cy + chh + 8, ww = fontTextWidth(FONT_REGULAR, 15, where);
+            fontDraw(FONT_REGULAR, 15, cx + cw - ww, y, where, faint);
+            if (side == 0 && ch >= 0)
+                fontDrawClipped(FONT_REGULAR, 15, cx, y, cw - ww - 40, app->chapters[ch].title, faint);
+        }
     }
     if (app->bars)
         drawBars(app);

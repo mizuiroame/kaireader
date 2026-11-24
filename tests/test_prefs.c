@@ -19,11 +19,12 @@ void testPrefs(void)
     p.clock_24h = false;
     p.sort = SHELF_SORT_GENRE;
     p.turn = 2;
+    p.two_pages = true;
     CHECK(prefsSave(&p, TMP_ROOT "/settings.txt"));
     Prefs q;
     prefsDefaults(&q);
     CHECK(prefsLoad(&q, TMP_ROOT "/settings.txt"));
-    CHECK(q.text_size == 7 && q.theme == THEME_BLACK && !q.clock_24h && q.sort == SHELF_SORT_GENRE && q.turn == 2);
+    CHECK(q.text_size == 7 && q.theme == THEME_BLACK && !q.clock_24h && q.sort == SHELF_SORT_GENRE && q.turn == 2 && q.two_pages);
 
     FILE *f = fopen(TMP_ROOT "/bad-settings.txt", "w");
     if (f) {

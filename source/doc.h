@@ -54,8 +54,10 @@ typedef enum {
 void docSetFallbackFonts(const DocFont fonts[DOC_FONT_COUNT]);
 
 // Opens the file at path; NULL with a reason in error if it can't. The
-// formats are the ones docKnownName accepts.
-Doc *docOpen(const char *path, char *error, size_t error_size);
+// formats are the ones docKnownName accepts. A reflowable book's text is
+// given colors->ink (NULL: as the book has it), over colors->paper when
+// rendered; its pictures keep theirs. Other colors need it opened again.
+Doc *docOpen(const char *path, const DocColors *colors, char *error, size_t error_size);
 void docClose(Doc *d);
 
 // True for the names of files KaiReader can open (by extension).
@@ -69,9 +71,10 @@ bool docLayout(Doc *d, float w, float h, float em);
 int docPageCount(Doc *d);
 // A page's size in points; false if there's no such page.
 bool docPageSize(Doc *d, int page, float *w, float *h);
-// Renders a page at scale pixels per point. Reflowable pages get colors;
-// fixed ones are drawn as they are. Frees with docImageFree. False if it failed.
-bool docRender(Doc *d, int page, float scale, const DocColors *colors, DocImage *out);
+// Renders a page at scale pixels per point: a reflowable one over the paper
+// it was opened with; a fixed one (PDF, comics) as it is. Frees with
+// docImageFree. False if it failed.
+bool docRender(Doc *d, int page, float scale, DocImage *out);
 void docImageFree(DocImage *image);
 
 // What an EPUB's package says beyond the title: its cover picture (EPUB 3's

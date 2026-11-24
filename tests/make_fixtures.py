@@ -10,6 +10,7 @@ tale.fb2      FictionBook 2
 notes.txt     plain text
 broken.epub   a ZIP with nothing of an EPUB in it
 empty.pdf     zero bytes
+picture.epub  a page with a red picture, its text black by its own style
 library*.epub with --library: eight more, with drawn covers, several authors and genres (previews)
 """
 
@@ -107,6 +108,33 @@ def library_epub(path: str, number: int) -> None:
                    '<item id="ch1" href="ch1.xhtml" media-type="application/xhtml+xml"/>'
                    '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>'
                    '</manifest><spine><itemref idref="ch1"/></spine></package>')
+
+
+def picture_epub(path: str) -> None:
+    """A page of text with a red picture in it, and its own text color (black)."""
+    with zipfile.ZipFile(path, "w") as z:
+        z.writestr(zipfile.ZipInfo("mimetype"), "application/epub+zip", compress_type=zipfile.ZIP_STORED)
+        z.writestr("META-INF/container.xml",
+                   '<?xml version="1.0"?><container version="1.0" '
+                   'xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles>'
+                   '<rootfile full-path="content.opf" media-type="application/oebps-package+xml"/>'
+                   "</rootfiles></container>")
+        z.writestr("red.png", png(120, 60, (220, 30, 30)))
+        z.writestr("style.css", "p { color: #000000; } body { background-color: #ffffff; }")
+        z.writestr("ch1.xhtml", '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n'
+                   '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Picture</title>'
+                   '<link rel="stylesheet" type="text/css" href="style.css"/></head><body>'
+                   f'<p>{paragraph(9)}</p><p><img src="red.png" alt="red"/></p><p>{paragraph(10)}</p>'
+                   '</body></html>')
+        z.writestr("content.opf",
+                   '<?xml version="1.0" encoding="utf-8"?><package xmlns="http://www.idpf.org/2007/opf" '
+                   'version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/">'
+                   '<dc:title>A Red Picture</dc:title><dc:language>en</dc:language>'
+                   '<dc:identifier id="uid">urn:uuid:00000000-0000-4000-8000-000000000009</dc:identifier>'
+                   '</metadata><manifest><item id="ch1" href="ch1.xhtml" media-type="application/xhtml+xml"/>'
+                   '<item id="red" href="red.png" media-type="image/png"/>'
+                   '<item id="css" href="style.css" media-type="text/css"/></manifest>'
+                   '<spine><itemref idref="ch1"/></spine></package>')
 
 
 def chapter_xhtml(title: str, seed: int, paragraphs: int) -> str:
@@ -230,6 +258,7 @@ def main() -> None:
     with zipfile.ZipFile(os.path.join(folder, "broken.epub"), "w") as z:
         z.writestr("hello.txt", "not a book")
     open(os.path.join(folder, "empty.pdf"), "wb").close()
+    picture_epub(os.path.join(folder, "picture.epub"))
     if "--library" in sys.argv:  # More books, with drawn covers, for the previews' library.
         for i in range(len(LIBRARY)):
             library_epub(os.path.join(folder, f"library{i + 1}.epub"), i)

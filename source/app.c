@@ -22,7 +22,9 @@
 #define SWIPE_MIN 80          // Layout pixels across for a swipe to turn the page.
 #define SAVE_EVERY_NS (30ull * 1000000000ull)
 #define COLUMN_W_WIDE 800     // A flowing book's column, the console lying down,
-#define COLUMN_SIDE_UPRIGHT 40  // and its margins upright.
+#define COLUMN_SIDE_UPRIGHT 40  // its margins upright,
+#define COLUMN_SIDE_TWO 40      // and with two pages: their margins and the gap between them.
+#define TWO_PAGES_GAP 64
 #define COLUMN_TOP 22
 
 static void pathIn(const App *app, const char *name, char *out, size_t size)
@@ -227,23 +229,39 @@ void appFree(App *app)
 
 // --- The reader's page ---
 
-void appColumn(int *x, int *y, int *w, int *h)
+bool appTwoPages(const App *app)
+{
+    return app->prefs.two_pages && gfxTurn() == GFX_TURN_NONE;
+}
+
+void appColumn(const App *app, int side, int *x, int *y, int *w, int *h)
 {
     int sw = gfxLayoutWidth(), sh = gfxLayoutHeight();
-    *w = gfxTurn() ? sw - 2 * COLUMN_SIDE_UPRIGHT : COLUMN_W_WIDE;
     *h = sh - COLUMN_TOP - 34;  // The page number goes under it.
-    *x = (sw - *w) / 2;
     *y = COLUMN_TOP;
+    if (appTwoPages(app)) {
+        *w = (sw - 2 * COLUMN_SIDE_TWO - TWO_PAGES_GAP) / 2;
+        *x = COLUMN_SIDE_TWO + (side ? *w + TWO_PAGES_GAP : 0);
+        return;
+    }
+    *w = gfxTurn() ? sw - 2 * COLUMN_SIDE_UPRIGHT : COLUMN_W_WIDE;
+    *x = (sw - *w) / 2;
+}
+
+// The page shown first (the left one of two): with two pages, an even one.
+static int firstShown(const App *app, int page)
+{
+    return appTwoPages(app) ? page & ~1 : page;
 }
 
 ReadingLayout appLayout(const App *app)
 {
     int x, y, w, h;
-    appColumn(&x, &y, &w, &h);
+    appColumn(app, 0, &x, &y, &w, &h);
     ReadingLayout l;
     l.box_w = (float)w;
     l.box_h = (float)h;
-    l.fixed_w = (float)gfxLayoutWidth();
+    l.fixed_w = (float)(appTwoPages(app) ? gfxLayoutWidth() / 2 - 12 : gfxLayoutWidth());
     l.fixed_h = (float)gfxLayoutHeight();
     l.em = prefsEm(app->prefs.text_size);
     l.pixel_scale = GFX_SCALE * gfxDetail();
@@ -318,15 +336,18 @@ const DocImage *appPageImage(const App *app, int page)
 void appPageRect(const App *app, int page, int *x, int *y, int *w, int *h)
 {
     const DocImage *img = appPageImage(app, page);
+    int side = appTwoPages(app) ? page & 1 : 0;
     if (app->reflowable || !img) {
-        appColumn(x, y, w, h);
+        appColumn(app, side, x, y, w, h);
         return;
     }
-    // A fixed page, rendered to fit the screen: its size in layout units.
+    // A fixed page, rendered to fit the screen (or its half): its size in layout units. Two
+    // pages meet in the middle, as in a book.
     float per = GFX_SCALE * gfxDetail();
     *w = (int)(img->width / per + 0.5f);
     *h = (int)(img->height / per + 0.5f);
-    *x = (gfxLayoutWidth() - *w) / 2;
+    int middle = gfxLayoutWidth() / 2;
+    *x = !appTwoPages(app) ? (gfxLayoutWidth() - *w) / 2 : side ? middle + 6 : middle - 6 - *w;
     *y = (gfxLayoutHeight() - *h) / 2;
 }
 
@@ -387,7 +408,7 @@ static void followBook(App *app, uint64_t now_ns)
             app->ready = true;
             app->reflowable = st.reflowable;
             app->pages = st.pages;
-            app->page = st.start_page;
+            app->page = firstShown(app, st.start_page);
             free(app->chapters);
             app->chapters = NULL;
             app->chapter_count = 0;
@@ -407,8 +428,12 @@ static void followBook(App *app, uint64_t now_ns)
     if (!app->ready)
         return;
     int want[READING_WANT_MAX], n = 0;
-    const int around[] = {app->page, app->page + 1, app->page - 1, app->page + 2};
-    for (int i = 0; i < 4 && n < READING_WANT_MAX; i++)
+    // The pages shown first, then the ones after, then before.
+    const int one[] = {app->page, app->page + 1, app->page - 1, app->page + 2};
+    const int two[] = {app->page, app->page + 1, app->page + 2, app->page + 3, app->page - 2, app->page - 1};
+    const int *around = appTwoPages(app) ? two : one;
+    int count = appTwoPages(app) ? 6 : 4;
+    for (int i = 0; i < count && n < READING_WANT_MAX; i++)
         if (around[i] >= 0 && around[i] < app->pages && !appPageImage(app, around[i]))
             want[n++] = around[i];
     readingWant(app->generation, want, n);
@@ -667,7 +692,7 @@ static void contentsGo(App *app, int entry)
     int page = app->chapters[entry].page;
     app->panel = PANEL_NONE;
     if (page >= 0 && page < app->pages) {
-        app->page = page;
+        app->page = firstShown(app, page);
         app->turn_from = -1;
     }
 }
@@ -753,7 +778,7 @@ static void turnPage(App *app, int dir, uint64_t now_ns)
 {
     if (!app->ready)
         return;
-    int to = app->page + dir;
+    int to = app->page + dir * (appTwoPages(app) ? 2 : 1);
     if (to < 0 || to >= app->pages)
         return;
     app->turn_from = appPageImage(app, app->page) && appPageImage(app, to) ? app->page : -1;
@@ -764,15 +789,10 @@ static void turnPage(App *app, int dir, uint64_t now_ns)
 
 static void readerButtons(App *app, uint64_t pressed, uint64_t now_ns)
 {
-    // Upright, every direction turns the page (down and right forward); lying
-    // down, up and down change the text size.
-    bool upright = gfxTurn() != GFX_TURN_NONE;
+    // Left and right turn the page, up and down change the text size: lying down
+    // and upright alike (upright, they're turned with the console).
     uint64_t next = BUTTONS_RIGHT | HidNpadButton_R | HidNpadButton_ZR | HidNpadButton_A;
     uint64_t prev = BUTTONS_LEFT | HidNpadButton_L | HidNpadButton_ZL;
-    if (upright) {
-        next |= BUTTONS_DOWN;
-        prev |= BUTTONS_UP;
-    }
     if (pressed & HidNpadButton_B) {
         if (app->bars)
             app->bars = false;
@@ -858,7 +878,7 @@ static void sliderTo(App *app, int x)
     if (app->pages <= 1 || width <= 0)
         return;
     int page = (int)((double)(x - left) / width * (app->pages - 1) + 0.5);
-    page = page < 0 ? 0 : page >= app->pages ? app->pages - 1 : page;
+    page = firstShown(app, page < 0 ? 0 : page >= app->pages ? app->pages - 1 : page);
     if (page != app->page) {
         app->page = page;
         app->turn_from = -1;

@@ -12,7 +12,7 @@
 #include "doc.h"
 #include "shelf.h"
 
-#define READING_WANT_MAX 4
+#define READING_WANT_MAX 6
 #define READING_CHAPTERS_MAX 1024
 
 typedef struct {

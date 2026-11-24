@@ -16,12 +16,16 @@
 
 // Pages are laid out with no margin of their own: KaiReader leaves the room around the page.
 static const char USER_CSS[] = "@page { margin: 0 } body { margin: 0; padding: 0 }";
+// With colors: every element's text in the ink, over no background of its own (the paper
+// shows through). Pictures aren't text: they keep their colors.
+static const char COLOR_CSS[] = " * { color: #%06x !important; background-color: transparent !important }";
 
 struct Doc {
     fz_context *ctx;
     fz_document *doc;
     bool reflowable;
     int pages;  // -1 until counted for the current layout.
+    uint32_t paper;  // 0xRRGGBB behind a reflowable page.
 };
 
 static const char *const KNOWN[] = {
@@ -112,7 +116,7 @@ static void quiet(void *user, const char *message)
     (void)message;
 }
 
-Doc *docOpen(const char *path, char *error, size_t error_size)
+Doc *docOpen(const char *path, const DocColors *colors, char *error, size_t error_size)
 {
     if (error_size)
         error[0] = 0;
@@ -129,6 +133,11 @@ Doc *docOpen(const char *path, char *error, size_t error_size)
     }
     fz_set_warning_callback(d->ctx, quiet, NULL);
     fz_set_error_callback(d->ctx, quiet, NULL);
+    d->paper = colors ? colors->paper & 0xFFFFFF : 0xFFFFFF;
+    char css[sizeof(USER_CSS) + sizeof(COLOR_CSS) + 8];
+    snprintf(css, sizeof(css), "%s", USER_CSS);
+    if (colors)
+        snprintf(css + strlen(css), sizeof(css) - strlen(css), COLOR_CSS, (unsigned)(colors->ink & 0xFFFFFF));
     bool ok = true;
     fz_var(ok);
     fz_var(d);
@@ -136,7 +145,7 @@ Doc *docOpen(const char *path, char *error, size_t error_size)
     {
         fz_register_document_handlers(d->ctx);
         fz_install_load_system_font_funcs(d->ctx, NULL, loadCjk, loadFallback);
-        fz_set_user_css(d->ctx, USER_CSS);
+        fz_set_user_css(d->ctx, css);
         fz_set_use_document_css(d->ctx, 1);
         d->doc = fz_open_document(d->ctx, path);
         if (fz_needs_password(d->ctx, d->doc))
@@ -256,7 +265,42 @@ static bool toImage(const fz_pixmap *pix, DocImage *out)
     return true;
 }
 
-bool docRender(Doc *d, int page, float scale, const DocColors *colors, DocImage *out)
+// A reflowable page drawn over the paper's color.
+static fz_pixmap *renderOnPaper(Doc *d, int page, float scale)
+{
+    fz_pixmap *pix = NULL;
+    fz_page *p = NULL;
+    fz_device *dev = NULL;
+    fz_var(pix);
+    fz_var(p);
+    fz_var(dev);
+    fz_try(d->ctx)
+    {
+        p = fz_load_page(d->ctx, d->doc, page);
+        fz_matrix ctm = fz_scale(scale, scale);
+        fz_irect box = fz_round_rect(fz_transform_rect(fz_bound_page(d->ctx, p), ctm));
+        pix = fz_new_pixmap_with_bbox(d->ctx, fz_device_rgb(d->ctx), box, NULL, 0);
+        float paper[3] = {((d->paper >> 16) & 0xFF) / 255.0f, ((d->paper >> 8) & 0xFF) / 255.0f,
+                          (d->paper & 0xFF) / 255.0f};
+        fz_fill_pixmap_with_color(d->ctx, pix, fz_device_rgb(d->ctx), paper, fz_default_color_params);
+        dev = fz_new_draw_device(d->ctx, fz_identity, pix);
+        fz_run_page(d->ctx, p, dev, ctm, NULL);
+        fz_close_device(d->ctx, dev);
+    }
+    fz_always(d->ctx)
+    {
+        fz_drop_device(d->ctx, dev);
+        fz_drop_page(d->ctx, p);
+    }
+    fz_catch(d->ctx)
+    {
+        fz_drop_pixmap(d->ctx, pix);
+        fz_rethrow(d->ctx);
+    }
+    return pix;
+}
+
+bool docRender(Doc *d, int page, float scale, DocImage *out)
 {
     memset(out, 0, sizeof(*out));
     float pw, ph;
@@ -272,9 +316,10 @@ bool docRender(Doc *d, int page, float scale, const DocColors *colors, DocImage 
     fz_var(scale);
     fz_try(d->ctx)
     {
-        pix = fz_new_pixmap_from_page_number(d->ctx, d->doc, page, fz_scale(scale, scale), fz_device_rgb(d->ctx), 0);
-        if (d->reflowable && colors && (colors->ink != 0x000000 || colors->paper != 0xFFFFFF))
-            fz_tint_pixmap(d->ctx, pix, (int)colors->ink, (int)colors->paper);
+        if (d->reflowable)
+            pix = renderOnPaper(d, page, scale);
+        else
+            pix = fz_new_pixmap_from_page_number(d->ctx, d->doc, page, fz_scale(scale, scale), fz_device_rgb(d->ctx), 0);
         ok = toImage(pix, out);
     }
     fz_always(d->ctx)

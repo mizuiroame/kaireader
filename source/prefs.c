@@ -45,6 +45,7 @@ void prefsDefaults(Prefs *p)
     p->clock_24h = true;
     p->sort = SHELF_SORT_RECENT;
     p->turn = GFX_TURN_NONE;
+    p->two_pages = false;
 }
 
 static char *trim(char *s)
@@ -91,6 +92,8 @@ bool prefsLoad(Prefs *p, const char *file)
             p->sort = v;
         else if (!strcmp(key, "turn") && number(value, 0, GFX_TURN_LEFT, &v))
             p->turn = v;
+        else if (!strcmp(key, "two_pages") && number(value, 0, 1, &v))
+            p->two_pages = v != 0;
     }
     bool ok = !ferror(f);
     fclose(f);
@@ -105,8 +108,9 @@ bool prefsSave(const Prefs *p, const char *file)
     FILE *f = fopen(tmp, "w");
     if (!f)
         return false;
-    fprintf(f, "# KaiReader settings\ntext_size = %d\ntheme = %d\nclock_24h = %d\nsort = %d\nturn = %d\n",
-            p->text_size, p->theme, p->clock_24h ? 1 : 0, p->sort, p->turn);
+    fprintf(f, "# KaiReader settings\ntext_size = %d\ntheme = %d\nclock_24h = %d\nsort = %d\nturn = %d\n"
+               "two_pages = %d\n",
+            p->text_size, p->theme, p->clock_24h ? 1 : 0, p->sort, p->turn, p->two_pages ? 1 : 0);
     bool ok = !ferror(f);
     ok = fclose(f) == 0 && ok;
     if (!ok) {

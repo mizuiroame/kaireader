@@ -24,6 +24,7 @@ typedef struct {
     bool clock_24h;
     int sort;       // ShelfSort: how the library is ordered.
     int turn;       // gfx.h's GFX_TURN_*: the console held as it is, or upright like a book.
+    bool two_pages; // Two pages side by side, like an open book (with the console lying down).
 } Prefs;
 
 void prefsDefaults(Prefs *p);

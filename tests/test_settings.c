@@ -42,6 +42,9 @@ void testSettings(void)
     CHECK(!strcmp(value, "Upright, right side down"));
     settingsStep(&p, SETTING_SCREEN, 1);
     CHECK(settingsStep(&p, SETTING_SCREEN, 1) && p.turn == GFX_TURN_NONE);
+    CHECK(settingsStep(&p, SETTING_PAGES, 1) == SETTINGS_CHANGED_LAYOUT && p.two_pages);
+    settingsValue(&p, SETTING_PAGES, value, sizeof(value), &name);
+    CHECK(!strcmp(value, "Two side by side") && name);
     CHECK(settingsStep(&p, SETTING_CLOCK, 1) == SETTINGS_CHANGED_NOTHING && !p.clock_24h);
     settingsValue(&p, SETTING_CLOCK, value, sizeof(value), &name);
     CHECK(!strcmp(value, "12-hour"));

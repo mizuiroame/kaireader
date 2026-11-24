@@ -20,6 +20,7 @@ static const char *const LABELS[SETTING_COUNT] = {
     N_("About KaiReader"),
     N_("Text size"),
     N_("Colors"),
+    N_("Pages"),
     N_("Sort books by"),
     N_("Look for books again"),
     N_("Screen"),
@@ -33,6 +34,7 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("The version, and the licenses of the parts KaiReader is made of."),
     N_("For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading."),
     N_("Light, sepia, dark or black paper, for books that flow. Y changes it while reading."),
+    N_("Two pages side by side, like an open book, with the console lying down. Upright, always one."),
     N_("Recently read, by title, by author or by genre (from the book's subject). Y changes it in the library."),
     N_("Looks in sdmc:/books again for books added or removed."),
     N_("Upright: hold the console like a book, its right or left side down. The buttons and the touch screen turn with it."),
@@ -52,6 +54,7 @@ int settingsRows(SettingsPage page, SettingRow *out)
     case SETTINGS_PAGE_READING:
         out[n++] = SETTING_TEXT_SIZE;
         out[n++] = SETTING_COLORS;
+        out[n++] = SETTING_PAGES;
         break;
     case SETTINGS_PAGE_LIBRARY:
         out[n++] = SETTING_SORT;
@@ -100,8 +103,8 @@ SettingsPage settingsOpens(SettingRow row)
 
 bool settingsHasValue(SettingRow row)
 {
-    return row == SETTING_TEXT_SIZE || row == SETTING_COLORS || row == SETTING_SORT || row == SETTING_SCREEN ||
-           row == SETTING_CLOCK;
+    return row == SETTING_TEXT_SIZE || row == SETTING_COLORS || row == SETTING_PAGES || row == SETTING_SORT ||
+           row == SETTING_SCREEN || row == SETTING_CLOCK;
 }
 
 void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool *translate_name)
@@ -114,6 +117,9 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
         break;
     case SETTING_COLORS:
         snprintf(out, size, "%s", prefsThemeName(p->theme));
+        break;
+    case SETTING_PAGES:
+        snprintf(out, size, "%s", p->two_pages ? N_("Two side by side") : N_("One"));
         break;
     case SETTING_SORT:
         snprintf(out, size, "%s", prefsSortName(p->sort));
@@ -150,6 +156,9 @@ int settingsStep(Prefs *p, SettingRow row, int dir)
     }
     case SETTING_COLORS:
         p->theme = around(p->theme, dir ? dir : 1, THEME_COUNT);
+        return SETTINGS_CHANGED_LAYOUT;
+    case SETTING_PAGES:
+        p->two_pages = !p->two_pages;
         return SETTINGS_CHANGED_LAYOUT;
     case SETTING_SORT:
         p->sort = around(p->sort, dir ? dir : 1, SHELF_SORT_COUNT);

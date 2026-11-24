@@ -14,9 +14,9 @@ the SD card, as on an e-reader: **EPUB**, **PDF**, comics (**CBZ**), **FB2**,
 |---------|----------------------|------------------|
 | ![A page](docs/screenshots/epub-light.png) | ![Upright](docs/screenshots/upright-epub.png) | ![By author](docs/screenshots/library-author.png) |
 
-| Sepia, bigger text | Contents | Settings |
-|--------------------|----------|----------|
-| ![Sepia](docs/screenshots/epub-sepia-big.png) | ![Contents](docs/screenshots/contents.png) | ![Settings](docs/screenshots/settings-display.png) |
+| Two pages, like an open book | Sepia, bigger text | Settings |
+|------------------------------|--------------------|----------|
+| ![Two pages](docs/screenshots/epub-two-pages.png) | ![Sepia](docs/screenshots/epub-sepia-big.png) | ![Settings](docs/screenshots/settings-display.png) |
 
 The screenshots show made-up books.
 
@@ -35,7 +35,10 @@ The screenshots show made-up books.
   subject), with the author or genre above each group.
 - **Reading**: books that flow (EPUB, FB2, MOBI, TXT) are laid out for the
   screen, with **ten text sizes** and four **colors** (light, sepia, dark and
-  black). PDFs and comics show their own pages, fitted to the screen.
+  black: the text and the paper change, pictures keep their colors). PDFs and
+  comics show their own pages, fitted to the screen.
+- **Two pages side by side**, like an open book (Settings > Reading > Pages),
+  with the console lying down.
 - **Upright, like a book**: hold the console with its right or left side down
   (Settings > Display > Screen); the whole app turns, and the buttons and the
   touch screen with it.
@@ -73,6 +76,13 @@ server, for example).
 1. Copy `KaiReader.nro` to `sdmc:/switch/kaireader/`.
 2. Put your books in `sdmc:/books/` (folders inside it are fine).
 3. Open KaiReader from hbmenu.
+
+**Names with accents.** The console hides files and folders whose names have
+accents, ñ, curly quotes or Japanese, Chinese or Korean in them: they are on
+the card, but no app can list them. Copy your books with
+[KaiDrop](https://github.com/mizuiroame/kaidrop), which gives them plain names
+on the console and leaves your files on the PC as they are, or rename them
+first. KaiReader shows each book's real title, from inside the book.
 
 KaiReader keeps its files next to the NRO: `shelf.txt` (where you left each
 book), `settings.txt` and `covers/`.
