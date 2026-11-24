@@ -115,5 +115,7 @@ int readingChapters(DocChapter *out, int max);
 // a few are kept). A cover comes back failed if the book can't be opened.
 void readingWantCover(const char *path, int w, int h);
 bool readingTakeCover(ReadingCover *out);
+// True while covers are asked for or being made.
+bool readingCoversPending(void);
 // Drops the covers asked and not yet made (the library closed).
 void readingForgetCovers(void);

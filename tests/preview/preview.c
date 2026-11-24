@@ -182,6 +182,9 @@ static void networkShots(App *app, const char *dir)
     appSwitchSource(app, 52);  // The network folder's library: looked through, covers read over the "network".
     settle(app);
     render(app, dir, "network");
+    app->covers_busy_ns = 1234567890ull;
+    render(app, dir, "network-covers-loading");
+    app->covers_busy_ns = 0;
     app->panel = PANEL_MENU;
     app->menu_cursor = 0;
     render(app, dir, "network-menu");
@@ -234,6 +237,9 @@ int main(int argc, char **argv)
     setSort(&app, SHELF_SORT_TITLE);
     setSort(&app, SHELF_SORT_RECENT);
     render(&app, dir, "library");
+    app.covers_busy_ns = 1234567890ull;
+    render(&app, dir, "library-covers-loading");
+    app.covers_busy_ns = 0;
     networkShots(&app, dir);
     // Favorites (a star on the cover) and the list view.
     for (int i = 0; i < 2; i++) {
@@ -393,6 +399,9 @@ int main(int argc, char **argv)
     app.panel = PANEL_NONE;
     settle(&app);
     render(&app, dir, "upright-library");
+    app.covers_busy_ns = 1234567890ull;  // Covers being read: the spinner at the top right.
+    render(&app, dir, "upright-library-covers");
+    app.covers_busy_ns = 0;
     setSort(&app, SHELF_SORT_AUTHOR);
     render(&app, dir, "upright-library-author");
     setSort(&app, SHELF_SORT_RECENT);

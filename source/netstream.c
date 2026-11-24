@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include "davnet.h"
 #include "doc.h"
@@ -15,6 +16,8 @@
 
 #define NET_BLOCK (64 * 1024)
 #define NET_BLOCKS 24  // 1.5 MB kept: the zip's end, an OPF, a cover.
+#define NET_BIG_BLOCK (512 * 1024)  // RAR and 7z are read in order: fewer, bigger reads.
+#define NET_BIG_BLOCKS 6
 #define URL_MAX 2048
 #define AUTH_MAX 512
 #define RANGE_STALL_S 10
@@ -33,6 +36,7 @@ typedef struct {
     int64_t size;  // -1 until an HTTP answer says it.
     int64_t pos;   // Where the next read starts.
     unsigned tick;
+    int block_size, block_count;
     Block blocks[NET_BLOCKS];
 } NetStream;
 
@@ -77,7 +81,7 @@ static int64_t readAt(NetStream *s, int64_t start, uint8_t *to, size_t want)
 static Block *blockAt(NetStream *s, int64_t start)
 {
     Block *oldest = &s->blocks[0];
-    for (int i = 0; i < NET_BLOCKS; i++) {
+    for (int i = 0; i < s->block_count; i++) {
         Block *b = &s->blocks[i];
         if (b->start == start && b->data) {
             b->used = ++s->tick;
@@ -86,9 +90,9 @@ static Block *blockAt(NetStream *s, int64_t start)
         if (b->start < 0 || b->used < oldest->used)
             oldest = b;
     }
-    if (!oldest->data && !(oldest->data = malloc(NET_BLOCK)))
+    if (!oldest->data && !(oldest->data = malloc((size_t)s->block_size)))
         return NULL;
-    int64_t n = readAt(s, start, oldest->data, NET_BLOCK);
+    int64_t n = readAt(s, start, oldest->data, (size_t)s->block_size);
     if (n < 0) {
         oldest->start = -1;
         return NULL;
@@ -105,7 +109,7 @@ static int next(fz_context *ctx, fz_stream *stm, size_t max)
     NetStream *s = stm->state;
     if (s->size >= 0 && s->pos >= s->size)
         return EOF;
-    int64_t start = s->pos - s->pos % NET_BLOCK;
+    int64_t start = s->pos - s->pos % s->block_size;
     Block *b = blockAt(s, start);
     if (!b)
         fz_throw(ctx, FZ_ERROR_SYSTEM, "The book couldn't be read from the network folder.");
@@ -155,6 +159,10 @@ static fz_stream *netStreamOpen(fz_context *ctx, const char *location)
     NetStream *s = calloc(1, sizeof(*s));
     if (!s)
         fz_throw(ctx, FZ_ERROR_SYSTEM, "Out of memory.");
+    const char *dot = strrchr(location, '.');
+    bool in_order = dot && (!strcasecmp(dot, ".cbr") || !strcasecmp(dot, ".cb7") || !strcasecmp(dot, ".cbt"));
+    s->block_size = in_order ? NET_BIG_BLOCK : NET_BLOCK;
+    s->block_count = in_order ? NET_BIG_BLOCKS : NET_BLOCKS;
     for (int i = 0; i < NET_BLOCKS; i++)
         s->blocks[i].start = -1;
     s->size = -1;

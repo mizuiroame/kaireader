@@ -20,10 +20,11 @@
 #define COPY_H 230
 #define BAR_H 8
 
-void uiDrawSourcePill(const App *app)
+int uiDrawSourcePill(const App *app)
 {
+    int title_end = MARGIN + 34 + fontTextWidth(FONT_BOLD, 26, "KaiReader");
     if (!davConfigured())
-        return;
+        return title_end;
     bool network = app->lib_tab == 1;
     const char *label = network ? T("Network folder") : T("SD card");
     bool key = app->panel == PANEL_NONE;  // X switches it while no panel is open.
@@ -39,6 +40,22 @@ void uiDrawSourcePill(const App *app)
                      network ? COLOR_NETWORK : COLOR_ACCENT);
     fontDrawMiddle(FONT_BOLD, 16, dot_x + SOURCE_DOT + 8, cy, label, COLOR_TEXT);
     uiHitAdd(x - 4, 4, w + 8, HEADER_H - 8, HIT_SOURCE, 0);
+    return x + w;
+}
+
+void uiDrawCoversPill(int left, int right, uint64_t now_ns, bool network)
+{
+    const char *label = T("Loading covers");
+    int w = 12 + 18 + 8 + fontTextWidth(FONT_REGULAR, 16, label) + 14, x = right - w;
+    if (x < left + PILL_GAP) {  // No room for the words: the spinner alone.
+        w = 42;
+        x = right - w;
+        label = "";
+    }
+    float cy = PILL_Y + PILL_H / 2.0f;
+    gfxFillRoundRect(x, PILL_Y, w, PILL_H, PILL_H / 2, COLOR_SURFACE_HI);
+    uiDrawSpinner(x + 21.0f, cy, 8.0f, now_ns, network ? COLOR_NETWORK : COLOR_ACCENT);
+    fontDrawMiddle(FONT_REGULAR, 16, x + 38, cy, label, COLOR_DIM);
 }
 
 void uiDrawNetScan(int x, float cy, uint64_t now_ns)

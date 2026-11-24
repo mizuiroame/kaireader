@@ -51,6 +51,7 @@ static DocPlace g_mark_places[READING_MARKS_MAX];
 static int g_mark_count;
 static unsigned g_marks_asked;  // Bumped by each readingSetMarks.
 static int g_cover_ask_count;
+static bool g_cover_making;  // A cover being made now.
 
 // Given back (under g_lock).
 static ReadingStatus g_status;
@@ -372,9 +373,11 @@ static void *worker(void *arg)
         }
         if (g_cover_ask_count > 0 && g_cover_count < COVER_QUEUE) {
             CoverAsk ask = g_cover_asks[--g_cover_ask_count];
+            g_cover_making = true;
             pthread_mutex_unlock(&g_lock);
             makeCover(&ask);
             pthread_mutex_lock(&g_lock);
+            g_cover_making = false;
             continue;
         }
         pthread_cond_wait(&g_wake, &g_lock);
@@ -583,6 +586,14 @@ bool readingTakeCover(ReadingCover *out)
     }
     pthread_mutex_unlock(&g_lock);
     return got;
+}
+
+bool readingCoversPending(void)
+{
+    pthread_mutex_lock(&g_lock);
+    bool pending = g_cover_ask_count > 0 || g_cover_making;
+    pthread_mutex_unlock(&g_lock);
+    return pending;
 }
 
 void readingForgetCovers(void)

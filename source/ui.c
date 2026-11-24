@@ -25,6 +25,7 @@
 #define PANEL_RADIUS 22
 #define MENU_W 480
 #define MENU_ROW_H 54
+#define COVERS_SPIN_HOLD_NS 600000000ull  // The covers' spinner stays this long after the last.
 #define MENU_LINE_H 17  // Between the menu's groups: a thin line.
 #define SETTINGS_W_MAX 760
 #define SETTINGS_ROW_H 50
@@ -292,8 +293,10 @@ static void drawLibrary(App *app, uint64_t now_ns)
     int w = gfxLayoutWidth(), h = gfxLayoutHeight();
     gfxClear(COLOR_BG);
     uiDrawHeader("KaiReader");
-    uiDrawSourcePill(app);
-    uiDrawStatus(&app->sys, app->prefs.clock_24h, w - MARGIN, 18, COLOR_TEXT, COLOR_DIM);
+    int pill_end = uiDrawSourcePill(app);
+    int status_x = uiDrawStatus(&app->sys, app->prefs.clock_24h, w - MARGIN, 18, COLOR_TEXT, COLOR_DIM);
+    if (now_ns - app->covers_busy_ns < COVERS_SPIN_HOLD_NS)  // Covers being read: a spinner left of the clock.
+        uiDrawCoversPill(pill_end, status_x - 18, now_ns, app->lib_tab == 1);
 
     char sub[64];
     snprintf(sub, sizeof(sub), app->order_count == 1 ? T("1 book") : T("%d books"), app->order_count);

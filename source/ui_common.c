@@ -26,7 +26,7 @@ static void drawBattery(int x, int y, int percent, bool charging, Color text, Co
     }
 }
 
-void uiDrawStatus(const SysInfo *sys, bool clock_24h, int right, int y, Color text, Color dim)
+int uiDrawStatus(const SysInfo *sys, bool clock_24h, int right, int y, Color text, Color dim)
 {
     int x = right;
     if (sys->has_battery) {
@@ -44,6 +44,7 @@ void uiDrawStatus(const SysInfo *sys, bool clock_24h, int right, int y, Color te
         x -= fontTextWidth(FONT_BOLD, 18, clock);
         fontDraw(FONT_BOLD, 18, x, y, clock, text);
     }
+    return x;
 }
 
 void uiDrawHeader(const char *title)

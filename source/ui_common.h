@@ -31,7 +31,8 @@ static inline Color uiColorOf(uint32_t rgb)
 }
 
 // The clock and the battery, right-aligned to right at y (the header's line).
-void uiDrawStatus(const SysInfo *sys, bool clock_24h, int right, int y, Color text, Color dim);
+// Where they begin, at the left.
+int uiDrawStatus(const SysInfo *sys, bool clock_24h, int right, int y, Color text, Color dim);
 
 // The X (quits) and the title (opens the menu) at the top left.
 void uiDrawHeader(const char *title);

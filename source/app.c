@@ -705,6 +705,8 @@ void appUpdate(App *app, uint64_t now_ns)
     appZoomTick(app, now_ns);
     static uint64_t last_save;
     takeCovers(app);
+    if (readingCoversPending())
+        app->covers_busy_ns = now_ns;
     appNetworkUpdate(app, now_ns);
     appNetUpdate(app, now_ns);
     if (app->view == VIEW_READER)

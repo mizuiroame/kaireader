@@ -149,6 +149,7 @@ typedef struct {
     int parts_asked_count;
     unsigned parts_generation;
     uint64_t view_moved_ns;  // The zoomed view last moved (zoom or pan).
+    uint64_t covers_busy_ns; // Covers were last being made then (the spinner stays a moment after).
     bool bars;                // The bars over the page (title, slider) are shown.
     int turn_from;            // A page turn's animation: the page before, or -1.
     int turn_dir;             // +1 forward, -1 back.
