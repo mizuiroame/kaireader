@@ -27,3 +27,6 @@ void testReading(void);
 void testPrefs(void);
 void testSettings(void);
 void testBookmarks(void);
+void testDav(void);
+void testFolderList(void);
+void testNetList(void);

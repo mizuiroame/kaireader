@@ -189,6 +189,23 @@ void appInit(App *app, const char *folder)
     appZoomReset(app);
     app->book = -1;
     app->turn_from = -1;
+    appNetworkStart(app);
+}
+
+void appOpenPath(App *app, const char *path, uint64_t now_ns)
+{
+    if (!shelfAdd(&app->shelf, path)) {
+        appNotify(app, NOTICE_ERROR, T("The library is full."), now_ns);
+        return;
+    }
+    sortShelf(app);
+    for (int i = 0; i < app->order_count; i++)
+        if (!strcmp(app->shelf.items[app->order[i]].path, path)) {
+            app->cursor = i;
+            keepCursorVisible(app);
+            appOpenBook(app, i, now_ns);
+            return;
+        }
 }
 
 // The screen's turn as Settings say: a fixed one, or Automatic (the motion
@@ -300,6 +317,8 @@ void appFree(App *app)
     app->lines = NULL;
     coversFree(&app->covers);
     shelfFree(&app->shelf);
+    appNetworkExit();
+    appNetForget(app);
     bookmarksFree(&app->marks);
 }
 
@@ -649,6 +668,8 @@ void appUpdate(App *app, uint64_t now_ns)
     appZoomTick(app, now_ns);
     static uint64_t last_save;
     takeCovers(app);
+    appNetworkUpdate(app, now_ns);
+    appNetUpdate(app, now_ns);
     if (app->view == VIEW_READER)
         followBook(app, now_ns);
     if (app->turn_from >= 0 && now_ns - app->turn_start_ns >= READ_TURN_NS)
@@ -846,6 +867,12 @@ static void settingsPick(App *app, int index, int dir, uint64_t now_ns)
         return;
     app->settings_cursor = index;
     SettingRow row = rows[index];
+    if (settingsIsNetwork(row)) {  // The account's rows: the keyboard, or a switch saved with the account.
+        bool toggle = row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED;
+        if (!dir || toggle)
+            appNetworkActivate(app, row, now_ns);
+        return;
+    }
     SettingsPage opens = settingsOpens(row);
     if (opens != SETTINGS_PAGE_MAIN) {
         if (dir >= 0) {
@@ -982,6 +1009,14 @@ static void libraryMove(App *app, int dx, int dy)
 
 static void libraryButtons(App *app, uint64_t pressed, uint64_t now_ns)
 {
+    if (pressed & (HidNpadButton_ZL | HidNpadButton_ZR)) {  // The tabs: the card's books, the network folder.
+        appLibTab(app, (pressed & HidNpadButton_ZR) ? 1 : 0, now_ns);
+        return;
+    }
+    if (app->lib_tab == 1) {
+        appNetButtons(app, pressed, now_ns);
+        return;
+    }
     if (pressed & HidNpadButton_Y) {
         quickStep(app, SETTING_SORT, 1, now_ns);
         keepCursorVisible(app);
@@ -1153,6 +1188,22 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
     case HIT_RESCAN:
         appRescan(app, now_ns);
         break;
+    case HIT_LIB_TAB:
+        appLibTab(app, hit->arg, now_ns);
+        break;
+    case HIT_NET_ROW:
+        appNetPick(app, hit->arg, now_ns);
+        break;
+    case HIT_NET_SETUP:  // No folder yet: its Settings page.
+        openSettings(app);
+        app->settings_page = SETTINGS_PAGE_NETWORK;
+        break;
+    case HIT_RESCAN_NET:
+        appNetLookAgain(app, now_ns);
+        break;
+    case HIT_NET_CANCEL:
+        appNetButtons(app, HidNpadButton_B, now_ns);
+        break;
     case HIT_SORT:
         quickStep(app, SETTING_SORT, 1, now_ns);
         break;
@@ -1248,7 +1299,14 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
         break;
     case TOUCH_DRAG: {
         const HitRegion *start = uiHitFind(e.start_x, e.start_y);
-        if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE) {
+        if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE && app->lib_tab == 1) {
+            app->net_drag -= e.dy;  // The network list follows the finger a row at a time.
+            int rows = app->net_drag / NET_ROW_H;
+            if (rows) {
+                appNetScroll(app, rows);
+                app->net_drag -= rows * NET_ROW_H;
+            }
+        } else if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE) {
             app->scroll -= e.dy;
             kineticDrag(&app->kinetic, -e.dy, now_ns);
             app->scroll = app->scroll < 0 ? 0 : app->scroll > maxScroll(app) ? maxScroll(app) : app->scroll;
@@ -1270,7 +1328,9 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
         break;
     }
     case TOUCH_DRAG_END:
-        if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE) {
+        if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE && app->lib_tab == 1) {
+            app->net_drag = 0;
+        } else if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE) {
             kineticRelease(&app->kinetic, now_ns);
         } else if (app->view == VIEW_READER && app->panel == PANEL_NONE) {
             const HitRegion *start = uiHitFind(e.start_x, e.start_y);

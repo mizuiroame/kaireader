@@ -11,6 +11,7 @@ static const char *const PAGE_TITLES[SETTINGS_PAGE_COUNT] = {
     N_("Library"),
     N_("Display"),
     N_("About KaiReader"),
+    N_("Network folder"),
 };
 
 static const char *const LABELS[SETTING_COUNT] = {
@@ -25,6 +26,13 @@ static const char *const LABELS[SETTING_COUNT] = {
     N_("Look for books again"),
     N_("Screen"),
     N_("Clock"),
+    N_("Network folder"),
+    N_("Address"),
+    N_("User and password"),
+    N_("Remember the password"),
+    N_("Allow without signing (old NAS)"),
+    N_("Test the connection"),
+    N_("Forget this folder"),
 };
 
 static const char *const HELP[SETTING_COUNT] = {
@@ -39,7 +47,36 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("Looks in sdmc:/books again for books added or removed."),
     N_("Vertical: hold the console like a book. Automatic: it turns as you turn the console (handheld). The right stick pressed in switches horizontal and vertical. The buttons and the touch screen turn with it."),
     N_("21:47 or 9:47 PM."),
+    N_("A shared folder (SMB), WebDAV, FTP or SFTP folder on your network: its books show in the Network tab (ZL/ZR in the library)."),
+    N_("\\\\PC\\Books (a Windows shared folder), 192.168.0.10:8098 (WebDAV or a web folder), ftp://nas or sftp://nas."),
+    N_("Empty for a folder open to everyone."),
+    N_("Off: the password isn't kept on the card, and it's asked for when the folder is used."),
+    N_("Only for an old NAS or a folder open to guests that doesn't sign: someone on your network could change what's read."),
+    N_("Asks the folder for its top: whether it answers, and how many folders and books it has."),
+    N_("Its address, user and password are taken off the card. The books already copied stay."),
 };
+
+static char g_net_address[256], g_net_user[128];
+static bool g_net_remember = true, g_net_unsigned, g_net_smb;
+
+void settingsSetNetwork(const char *address, const char *user, bool remember, bool allow_unsigned, bool smb)
+{
+    snprintf(g_net_address, sizeof(g_net_address), "%s", address);
+    snprintf(g_net_user, sizeof(g_net_user), "%s", user);
+    g_net_remember = remember;
+    g_net_unsigned = allow_unsigned;
+    g_net_smb = smb;
+}
+
+bool settingsIsNetwork(SettingRow row)
+{
+    return row >= SETTING_NET_ADDRESS && row <= SETTING_NET_FORGET;
+}
+
+bool settingsPickedValue(SettingRow row)
+{
+    return row == SETTING_OPEN_NETWORK || row == SETTING_NET_ADDRESS || row == SETTING_NET_ACCOUNT;
+}
 
 int settingsRows(SettingsPage page, SettingRow *out)
 {
@@ -48,6 +85,7 @@ int settingsRows(SettingsPage page, SettingRow *out)
     case SETTINGS_PAGE_MAIN:
         out[n++] = SETTING_OPEN_READING;
         out[n++] = SETTING_OPEN_LIBRARY;
+        out[n++] = SETTING_OPEN_NETWORK;
         out[n++] = SETTING_OPEN_DISPLAY;
         out[n++] = SETTING_OPEN_ABOUT;
         break;
@@ -63,6 +101,14 @@ int settingsRows(SettingsPage page, SettingRow *out)
     case SETTINGS_PAGE_DISPLAY:
         out[n++] = SETTING_SCREEN;
         out[n++] = SETTING_CLOCK;
+        break;
+    case SETTINGS_PAGE_NETWORK:
+        out[n++] = SETTING_NET_ADDRESS;
+        out[n++] = SETTING_NET_ACCOUNT;
+        out[n++] = SETTING_NET_REMEMBER;
+        out[n++] = SETTING_NET_UNSIGNED;
+        out[n++] = SETTING_NET_TEST;
+        out[n++] = SETTING_NET_FORGET;
         break;
     default:
         break;
@@ -96,6 +142,8 @@ SettingsPage settingsOpens(SettingRow row)
         return SETTINGS_PAGE_DISPLAY;
     case SETTING_OPEN_ABOUT:
         return SETTINGS_PAGE_ABOUT;
+    case SETTING_OPEN_NETWORK:
+        return SETTINGS_PAGE_NETWORK;
     default:
         return SETTINGS_PAGE_MAIN;
     }
@@ -104,7 +152,8 @@ SettingsPage settingsOpens(SettingRow row)
 bool settingsHasValue(SettingRow row)
 {
     return row == SETTING_TEXT_SIZE || row == SETTING_COLORS || row == SETTING_PAGES || row == SETTING_SORT ||
-           row == SETTING_SCREEN || row == SETTING_CLOCK;
+           row == SETTING_SCREEN || row == SETTING_CLOCK || row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED ||
+           settingsPickedValue(row);
 }
 
 void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool *translate_name)
@@ -129,6 +178,21 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
         break;
     case SETTING_CLOCK:
         snprintf(out, size, "%s", p->clock_24h ? N_("24-hour") : N_("12-hour"));
+        break;
+    case SETTING_OPEN_NETWORK:
+    case SETTING_NET_ADDRESS:
+        *translate_name = g_net_address[0] == 0;
+        snprintf(out, size, "%s", g_net_address[0] ? g_net_address : N_("Not set"));
+        break;
+    case SETTING_NET_ACCOUNT:
+        *translate_name = g_net_user[0] == 0;
+        snprintf(out, size, "%s", g_net_user[0] ? g_net_user : N_("None"));
+        break;
+    case SETTING_NET_REMEMBER:
+        snprintf(out, size, "%s", g_net_remember ? N_("On") : N_("Off: asked when the folder is used"));
+        break;
+    case SETTING_NET_UNSIGNED:
+        snprintf(out, size, "%s", !g_net_smb ? N_("Only for shared folders (SMB)") : g_net_unsigned ? N_("On: not signed") : N_("Off"));
         break;
     default:
         *translate_name = false;

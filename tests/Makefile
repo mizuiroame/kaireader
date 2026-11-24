@@ -8,8 +8,8 @@ CFLAGS  := -DKAIREADER_VERSION=\"test\" -std=gnu11 -g -O1 -Wall -Wextra -fwrapv 
 LDFLAGS := $(SAN) -pthread -lmupdf -lmupdf-third -larchive -lm
 OBJDIR  := build
 
-TESTED  := util.c approot.c kinetic.c lang.c notice.c doc.c shelf.c reading.c prefs.c settings.c bookmarks.c
-TESTS   := test_main.c test_approot.c test_kinetic.c test_lang.c test_notice.c test_doc.c test_shelf.c test_reading.c test_prefs.c test_settings.c test_bookmarks.c
+TESTED  := util.c approot.c kinetic.c lang.c notice.c doc.c shelf.c reading.c prefs.c settings.c bookmarks.c dav.c md4.c folderlist.c netlist.c
+TESTS   := test_main.c test_approot.c test_kinetic.c test_lang.c test_notice.c test_doc.c test_shelf.c test_reading.c test_prefs.c test_settings.c test_bookmarks.c test_dav.c test_folderlist.c test_netlist.c
 
 # GCC 12's ASan can hang on kernels with high mmap entropy, so ASLR is off.
 # In Docker this needs --security-opt seccomp=unconfined.

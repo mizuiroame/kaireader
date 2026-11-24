@@ -51,7 +51,7 @@ static void draw(App *app, uint64_t now)
 
 static bool isBackground(const HitRegion *r)
 {
-    return r->kind == HIT_LIBRARY || r->kind == HIT_PAGE || r->kind == HIT_OVERLAY_OUT ||
+    return r->kind == HIT_LIBRARY || r->kind == HIT_NET_LIST || r->kind == HIT_PAGE || r->kind == HIT_OVERLAY_OUT ||
            ((r->kind == HIT_MENU_ITEM || r->kind == HIT_CHAPTER || r->kind == HIT_SETTING) && r->arg < 0);
 }
 
@@ -169,6 +169,32 @@ static void settingsShots(App *app, const char *dir, const char *prefix)
     app->panel = PANEL_NONE;
 }
 
+extern bool g_preview_net_configured;
+
+// The Network tab: no folder yet; then a made-up one, its list, a copy, and its Settings page.
+static void networkShots(App *app, const char *dir)
+{
+    appLibTab(app, 1, 50);
+    render(app, dir, "network-none");
+    appLibTab(app, 0, 51);
+    g_preview_net_configured = true;
+    appNetworkFeedSettings();
+    appLibTab(app, 1, 52);
+    appUpdate(app, 53);
+    appNetMove(app, 4);
+    render(app, dir, "network");
+    appNetPick(app, app->net_cursor, 54);
+    render(app, dir, "network-copy");
+    appNetButtons(app, HidNpadButton_B, 55);
+    appUpdate(app, 56);
+    app->panel = PANEL_SETTINGS;
+    app->settings_page = SETTINGS_PAGE_NETWORK;
+    app->settings_cursor = 0;
+    render(app, dir, "settings-network");
+    app->panel = PANEL_NONE;
+    appLibTab(app, 0, 57);
+}
+
 int main(int argc, char **argv)
 {
     const char *dir = argc > 1 ? argv[1] : ".";
@@ -192,6 +218,7 @@ int main(int argc, char **argv)
     setSort(&app, SHELF_SORT_TITLE);
     setSort(&app, SHELF_SORT_RECENT);
     render(&app, dir, "library");
+    networkShots(&app, dir);
     setSort(&app, SHELF_SORT_AUTHOR);
     render(&app, dir, "library-author");
     setSort(&app, SHELF_SORT_GENRE);

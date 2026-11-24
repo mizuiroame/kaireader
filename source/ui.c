@@ -16,6 +16,7 @@
 #include "ui_buttons.h"
 #include "ui_common.h"
 #include "ui_marks.h"
+#include "ui_net.h"
 #include "ui_hit.h"
 #include "ui_notice.h"
 #include "util.h"
@@ -232,6 +233,7 @@ static void drawLibrary(App *app)
     int w = gfxLayoutWidth(), h = gfxLayoutHeight();
     gfxClear(COLOR_BG);
     uiDrawHeader("KaiReader");
+    uiDrawLibTabs(app);
     uiDrawStatus(&app->sys, app->prefs.clock_24h, w - MARGIN, 18, COLOR_TEXT, COLOR_DIM);
 
     char sub[64];
@@ -533,7 +535,18 @@ static void drawSettings(const App *app)
         float mid = ry + (SETTINGS_ROW_H - 4) / 2.0f;
         fontDrawMiddle(on ? FONT_BOLD : FONT_REGULAR, 19, x + 32, mid, T(settingsLabel(rows[i])), COLOR_TEXT);
         int right = x + w - 34;
-        if (settingsHasValue(rows[i])) {
+        if (settingsPickedValue(rows[i])) {  // A value picked with A (the keyboard): no arrows.
+            char value[160];
+            bool name;
+            settingsValue(&app->prefs, rows[i], value, sizeof(value), &name);
+            const char *shown = name ? T(value) : value;
+            int vw = fontTextWidth(FONT_BOLD, 18, shown), max_vw = w / 2 - 40;
+            vw = vw > max_vw ? max_vw : vw;
+            gfxSetClip(right - vw, ry, vw, SETTINGS_ROW_H);
+            fontDrawMiddle(FONT_BOLD, 18, right - vw, mid, shown, COLOR_ACCENT);
+            gfxResetClip();
+            uiHitAdd(x + 14, ry, w - 28, SETTINGS_ROW_H - 4, HIT_SETTING, i);
+        } else if (settingsHasValue(rows[i])) {
             char value[64];
             bool name;
             settingsValue(&app->prefs, rows[i], value, sizeof(value), &name);
@@ -629,7 +642,9 @@ static void drawContents(const App *app)
 void uiDraw(App *app, uint64_t now_ns)
 {
     uiHitReset();
-    if (app->view == VIEW_LIBRARY)
+    if (app->view == VIEW_LIBRARY && app->lib_tab == 1)
+        uiDrawNetwork(app, now_ns);
+    else if (app->view == VIEW_LIBRARY)
         drawLibrary(app);
     else
         drawReader(app, now_ns);

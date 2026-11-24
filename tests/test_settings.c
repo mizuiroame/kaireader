@@ -8,8 +8,30 @@
 void testSettings(void)
 {
     SettingRow rows[SETTINGS_ROWS_MAX];
-    CHECK(settingsRows(SETTINGS_PAGE_MAIN, rows) == 4 && rows[0] == SETTING_OPEN_READING);
-    CHECK(settingsOpens(rows[3]) == SETTINGS_PAGE_ABOUT && settingsOpens(SETTING_CLOCK) == SETTINGS_PAGE_MAIN);
+    CHECK(settingsRows(SETTINGS_PAGE_MAIN, rows) == 5 && rows[0] == SETTING_OPEN_READING);
+    CHECK(settingsOpens(rows[2]) == SETTINGS_PAGE_NETWORK && settingsOpens(rows[4]) == SETTINGS_PAGE_ABOUT);
+    CHECK(settingsOpens(SETTING_CLOCK) == SETTINGS_PAGE_MAIN);
+    // The network folder's page: its rows are the app's, the address shown as set.
+    CHECK(settingsRows(SETTINGS_PAGE_NETWORK, rows) == 6 && rows[0] == SETTING_NET_ADDRESS && rows[5] == SETTING_NET_FORGET);
+    CHECK(settingsIsNetwork(SETTING_NET_TEST) && !settingsIsNetwork(SETTING_OPEN_NETWORK) && !settingsIsNetwork(SETTING_CLOCK));
+    CHECK(settingsPickedValue(SETTING_NET_ADDRESS) && !settingsPickedValue(SETTING_NET_REMEMBER));
+    {
+        char v[64];
+        bool named;
+        Prefs none;
+        prefsDefaults(&none);
+        settingsSetNetwork("", "", true, false, false);
+        settingsValue(&none, SETTING_NET_ADDRESS, v, sizeof(v), &named);
+        CHECK(named && strcmp(v, "Not set") == 0);
+        settingsSetNetwork("smb://NAS/Books", "reader", false, true, true);
+        settingsValue(&none, SETTING_NET_ADDRESS, v, sizeof(v), &named);
+        CHECK(!named && strcmp(v, "smb://NAS/Books") == 0);
+        settingsValue(&none, SETTING_NET_REMEMBER, v, sizeof(v), &named);
+        CHECK(named && strncmp(v, "Off", 3) == 0);
+        settingsValue(&none, SETTING_NET_UNSIGNED, v, sizeof(v), &named);
+        CHECK(strcmp(v, "On: not signed") == 0);
+        settingsSetNetwork("", "", true, false, false);
+    }
     CHECK(settingsRows(SETTINGS_PAGE_ABOUT, rows) == 0);
     for (int page = 0; page < SETTINGS_PAGE_COUNT; page++) {
         int n = settingsRows((SettingsPage)page, rows);
