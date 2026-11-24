@@ -1,5 +1,7 @@
 # KaiReader
 
+<p align="center"><img src="docs/cover.png" alt="KaiReader" width="100%"></p>
+
 A **book reader** for **Switch 2** running
 [kaiHEN](https://github.com/ouncebrew/kaihen), a sibling of
 [KaiPlayer](https://github.com/mizuiroame/kaiplayer),
