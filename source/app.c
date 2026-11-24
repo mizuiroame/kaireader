@@ -10,6 +10,7 @@
 #include "buttons.h"
 #include "gfx.h"
 #include "lang.h"
+#include "motion.h"
 #include "ui_common.h"
 #include "ui_hit.h"
 
@@ -79,6 +80,8 @@ static int maxScroll(const App *app)
 
 // The grid's lines: a group's name where the group changes (by author or
 // genre), then its books in rows of as many as fit across.
+static void useTurnSetting(App *app);
+
 static void layoutLibrary(App *app)
 {
     int columns = (gfxLayoutWidth() - 2 * LIB_SIDE) / LIB_CELL_W;
@@ -178,12 +181,25 @@ void appInit(App *app, const char *folder)
     prefsDefaults(&app->prefs);
     pathIn(app, "settings.txt", path, sizeof(path));
     prefsLoad(&app->prefs, path);
-    gfxSetTurn(app->prefs.turn);
+    useTurnSetting(app);
     pathIn(app, "shelf.txt", path, sizeof(path));
     shelfLoad(&app->shelf, path);
     appRescan(app, 0);
     app->book = -1;
     app->turn_from = -1;
+}
+
+// The screen's turn as Settings say: a fixed one, or Automatic (the motion
+// sensor started, the screen as it is until the console leans).
+static void useTurnSetting(App *app)
+{
+    if (app->prefs.turn == PREFS_TURN_AUTO) {
+        motionInit();
+        app->turn_want = gfxTurn();
+    } else {
+        motionExit();
+        gfxSetTurn(app->prefs.turn);
+    }
 }
 
 static void freeSlot(PageSlot *s)
@@ -465,8 +481,37 @@ static void takeCovers(App *app)
         sortShelf(app);
 }
 
+#define AUTO_TURN_NS 400000000ull  // How long the console must lean a new way before the screen turns.
+
+// Screen: Automatic: the screen follows the console, once it has leaned a
+// new way a moment (handheld only; detached Joy-Con are held any way).
+static void autoTurn(App *app, uint64_t now_ns)
+{
+    float x, y, z;
+    int source;
+    if (app->prefs.turn != PREFS_TURN_AUTO || !motionGravity(&x, &y, &z, &source) || source != 0)
+        return;
+    int want = prefsTurnFromGravity(x, y, z, gfxTurn());
+    if (want == gfxTurn()) {
+        app->turn_want = want;
+        return;
+    }
+    if (want != app->turn_want) {
+        app->turn_want = want;
+        app->turn_want_ns = now_ns;
+        return;
+    }
+    if (now_ns - app->turn_want_ns < AUTO_TURN_NS)
+        return;
+    gfxSetTurn(want);
+    layoutLibrary(app);
+    keepCursorVisible(app);
+    relayout(app);
+}
+
 void appUpdate(App *app, uint64_t now_ns)
 {
+    autoTurn(app, now_ns);
     static uint64_t last_save;
     takeCovers(app);
     if (app->view == VIEW_READER)
@@ -497,7 +542,7 @@ static void applyChange(App *app, int changed, uint64_t now_ns)
 {
     savePrefs(app);
     if (changed & SETTINGS_CHANGED_SCREEN) {
-        gfxSetTurn(app->prefs.turn);
+        useTurnSetting(app);
         layoutLibrary(app);
         keepCursorVisible(app);
     }
@@ -522,7 +567,7 @@ static void stepSetting(App *app, SettingRow row, int dir, uint64_t now_ns)
 // upright (on the side used last) or lying down, and how to come back.
 static void quickTurn(App *app, uint64_t now_ns)
 {
-    bool upright = prefsToggleTurn(&app->prefs) != GFX_TURN_NONE;
+    bool upright = prefsToggleTurn(&app->prefs, gfxTurn()) != GFX_TURN_NONE;
     applyChange(app, SETTINGS_CHANGED_SCREEN | SETTINGS_CHANGED_LAYOUT, now_ns);
     appNotify(app, NOTICE_INFO,
               upright ? T("Upright. Press the right stick (or the turn button) to lay it down again.")

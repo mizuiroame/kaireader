@@ -37,7 +37,7 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("Two pages side by side, like an open book, with the console lying down. Upright, always one."),
     N_("Recently read, by title, by author or by genre (from the book's subject). Y changes it in the library."),
     N_("Looks in sdmc:/books again for books added or removed."),
-    N_("Upright: hold the console like a book, its right or left side down. The buttons and the touch screen turn with it."),
+    N_("Upright: hold the console like a book, its right or left side down. The buttons and the touch screen turn with it. Automatic: it turns as you turn the console (handheld)."),
     N_("21:47 or 9:47 PM."),
 };
 
@@ -164,7 +164,7 @@ int settingsStep(Prefs *p, SettingRow row, int dir)
         p->sort = around(p->sort, dir ? dir : 1, SHELF_SORT_COUNT);
         return SETTINGS_CHANGED_ORDER;
     case SETTING_SCREEN:
-        p->turn = around(p->turn, dir ? dir : 1, GFX_TURN_LEFT + 1);
+        p->turn = around(p->turn, dir ? dir : 1, PREFS_TURN_AUTO + 1);
         return SETTINGS_CHANGED_SCREEN | SETTINGS_CHANGED_LAYOUT;
     case SETTING_CLOCK:
         p->clock_24h = !p->clock_24h;

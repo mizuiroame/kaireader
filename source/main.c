@@ -17,6 +17,7 @@
 #include "input.h"
 #include "reading.h"
 #include "sysinfo.h"
+#include "motion.h"
 #include "ui.h"
 
 #define SCREEN_W 1280
@@ -47,6 +48,9 @@ static void readTouch(App *app, uint64_t now)
     appHandleTouch(app, touching, x, y, now);
 }
 
+static char g_folder[APPROOT_PATH_MAX];
+
+
 static void runLoop(App *app)
 {
     PadState pad;
@@ -66,9 +70,8 @@ static void runLoop(App *app)
         uiDraw(app, now);
         gfxEnd();
     }
+    motionExit();
 }
-
-static char g_folder[APPROOT_PATH_MAX];
 
 // The console's Japanese, Chinese and Korean fonts, for books that don't bring
 // their own. They stay mapped while the font service is open (fontInit to fontExit).

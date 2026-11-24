@@ -8,6 +8,7 @@
 #include "shelf.h"
 
 #define PREFS_TEXT_SIZES 10
+#define PREFS_TURN_AUTO 3  // Prefs.turn: turning with the console (handheld), after GFX_TURN_LEFT.
 #define PREFS_TEXT_DEFAULT 4
 
 typedef enum {
@@ -23,7 +24,7 @@ typedef struct {
     int theme;      // ReadTheme.
     bool clock_24h;
     int sort;       // ShelfSort: how the library is ordered.
-    int turn;       // gfx.h's GFX_TURN_*: the console held as it is, or upright like a book.
+    int turn;       // gfx.h's GFX_TURN_*: the console held as it is, or upright like a book; or PREFS_TURN_AUTO.
     int upright;    // GFX_TURN_RIGHT or _LEFT: the side the quick button stands it on (the last one used).
     bool two_pages; // Two pages side by side, like an open book (with the console lying down).
 } Prefs;
@@ -39,5 +40,10 @@ const char *prefsThemeName(int theme);  // English: shown with T().
 const char *prefsSortName(int sort);
 const char *prefsTurnName(int turn);
 // The quick button's turn: lying down if upright, else upright on the side used last.
-int prefsToggleTurn(Prefs *p);
+// From Automatic, it starts from current (how the screen is now) and leaves Automatic.
+int prefsToggleTurn(Prefs *p, int current);
+// Automatic: the turn gravity asks for (x, y, z in g, as the console's motion
+// sensor gives them in handheld: lying down y is about -1, right side down x
+// about +1). A clear lean only; anything in between, or lying flat, keeps current.
+int prefsTurnFromGravity(float x, float y, float z, int current);
 DocColors prefsColors(int theme);

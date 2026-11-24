@@ -24,10 +24,11 @@ static const char *const SORT_NAMES[SHELF_SORT_COUNT] = {
     N_("Genre"),
 };
 
-static const char *const TURN_NAMES[3] = {
+static const char *const TURN_NAMES[4] = {
     N_("Lying down"),
     N_("Upright, right side down"),
     N_("Upright, left side down"),
+    N_("Automatic (handheld)"),
 };
 
 // Ink and paper, 0xRRGGBB: soft contrast, never pure black on pure white.
@@ -91,7 +92,7 @@ bool prefsLoad(Prefs *p, const char *file)
             p->clock_24h = v != 0;
         else if (!strcmp(key, "sort") && number(value, 0, SHELF_SORT_COUNT - 1, &v))
             p->sort = v;
-        else if (!strcmp(key, "turn") && number(value, 0, GFX_TURN_LEFT, &v))
+        else if (!strcmp(key, "turn") && number(value, 0, PREFS_TURN_AUTO, &v))
             p->turn = v;
         else if (!strcmp(key, "upright") && number(value, GFX_TURN_RIGHT, GFX_TURN_LEFT, &v))
             p->upright = v;
@@ -144,8 +145,24 @@ const char *prefsSortName(int sort)
     return sort >= 0 && sort < SHELF_SORT_COUNT ? SORT_NAMES[sort] : SORT_NAMES[0];
 }
 
-int prefsToggleTurn(Prefs *p)
+#define LEAN 0.75f    // How much of gravity along a side, at least, to call it that side down,
+#define MARGIN 0.35f  // and how much more than along the other side.
+
+int prefsTurnFromGravity(float x, float y, float z, int current)
 {
+    (void)z;  // Lying flat on a table (z about -1): no side is down.
+    float ax = x < 0 ? -x : x, ay = y < 0 ? -y : y;
+    if (ax >= LEAN && ax > ay + MARGIN)
+        return x > 0 ? GFX_TURN_RIGHT : GFX_TURN_LEFT;
+    if (y <= -0.6f && ay > ax + MARGIN)
+        return GFX_TURN_NONE;
+    return current;
+}
+
+int prefsToggleTurn(Prefs *p, int current)
+{
+    if (p->turn == PREFS_TURN_AUTO)
+        p->turn = current;
     if (p->turn != GFX_TURN_NONE) {
         p->upright = p->turn;  // Remembered for standing it up again.
         p->turn = GFX_TURN_NONE;
@@ -157,7 +174,7 @@ int prefsToggleTurn(Prefs *p)
 
 const char *prefsTurnName(int turn)
 {
-    return turn >= 0 && turn <= GFX_TURN_LEFT ? TURN_NAMES[turn] : TURN_NAMES[0];
+    return turn >= 0 && turn <= PREFS_TURN_AUTO ? TURN_NAMES[turn] : TURN_NAMES[0];
 }
 
 DocColors prefsColors(int theme)

@@ -107,6 +107,8 @@ typedef struct {
     int turn_from;            // A page turn's animation: the page before, or -1.
     int turn_dir;             // +1 forward, -1 back.
     uint64_t turn_start_ns;
+    int turn_want;            // Screen: Automatic: the turn gravity asks for, and since when.
+    uint64_t turn_want_ns;
     DocChapter *chapters;
     int chapter_count;
     int drag_rows;            // A drag in the contents: rows moved so far.
