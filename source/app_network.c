@@ -95,7 +95,7 @@ static void typeAddress(App *app, uint64_t now)
         }
         memcpy(a.address, address, sizeof(a.address));
         save(app, &a, now);
-        appNotify(app, NOTICE_DONE, T("Network folder set: test the connection, or open it in the Network tab."), now);
+        appNotify(app, NOTICE_DONE, T("Network folder set: test the connection, then press X in the library to see its books."), now);
     }
     memset(&a, 0, sizeof(a));
 }
@@ -236,6 +236,7 @@ static void forget(App *app, uint64_t now)
 {
     DavAccount none = {0};
     save(app, &none, now);
+    app->lib_tab = 0;
     appNotify(app, NOTICE_DONE, T("The network folder is forgotten."), now);
 }
 

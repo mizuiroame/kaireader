@@ -53,8 +53,10 @@ typedef enum {
     MENU_CONTENTS,
     MENU_BOOKMARK,    // Bookmark the page shown, or remove its bookmark.
     MENU_LIBRARY,     // Back to the library.
+    MENU_SOURCE,      // The library: the SD card's books, or the network folder's.
+    MENU_NET_SETUP,   // No network folder yet: its Settings page.
     MENU_SETTINGS,
-    MENU_RESCAN,
+    MENU_RESCAN,      // The card's books looked for again, or the network folder read again.
     MENU_EXIT,
     MENU_COUNT,
 } MenuItem;
@@ -191,6 +193,8 @@ bool appNetworkEnsurePassword(App *app, uint64_t now_ns);
 
 // The library's Network tab (app_netlib.c).
 void appLibTab(App *app, int tab, uint64_t now_ns);
+// X in the library: the other source, or (none yet) Settings with how to add a network folder.
+void appSwitchSource(App *app, uint64_t now_ns);
 void appNetForget(App *app);  // Another folder: nothing of the old one shown.
 void appNetLookAgain(App *app, uint64_t now_ns);
 void appNetPick(App *app, int index, uint64_t now_ns);  // A folder opened, or a book copied and opened.

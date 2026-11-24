@@ -17,6 +17,7 @@
 #define COLOR_DIM GFX_RGB(0xA4, 0xA4, 0xB0)
 #define COLOR_FAINT GFX_RGB(0x5E, 0x5E, 0x6A)
 #define COLOR_ERROR GFX_RGB(0xFF, 0x8A, 0x5C)
+#define COLOR_NETWORK GFX_RGB(0x2E, 0xC4, 0xB6)  // The network folder's, as in KaiPlayer and KaiVideo.
 #define COLOR_CHARGING GFX_RGB(0x5B, 0xD6, 0x7A)
 
 #define MARGIN 32

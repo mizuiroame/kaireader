@@ -8,13 +8,15 @@
 #include "font.h"
 #include "gfx.h"
 #include "lang.h"
+#include "netlist.h"
 #include "ui_buttons.h"
 #include "ui_common.h"
 #include "ui_hit.h"
 
-#define TAB_GAP 28
-#define HINT_GAP 14
-#define TAB_TEXT_MIDDLE 28.5f  // Middle of the tab names' capitals (as KaiPlayer's).
+#define PILL_Y 14  // The header's pills, as KaiPlayer's.
+#define PILL_H 30
+#define PILL_GAP 16
+#define SOURCE_DOT 10
 #define FOLDER_W 30
 #define FOLDER_H 22
 #define BADGE_W 54
@@ -22,26 +24,25 @@
 #define COPY_H 230
 #define BAR_H 8
 
-static const char *const TAB_NAMES[2] = {N_("Library"), N_("Network")};
-
-void uiDrawLibTabs(const App *app)
+void uiDrawSourcePill(const App *app)
 {
-    int widths[2], total = 0;
-    for (int i = 0; i < 2; i++) {
-        widths[i] = fontTextWidth(app->lib_tab == i ? FONT_BOLD : FONT_REGULAR, 20, T(TAB_NAMES[i]));
-        total += widths[i] + (i > 0 ? TAB_GAP : 0);
-    }
-    int x = (gfxLayoutWidth() - total) / 2;
-    uiDrawButton(x - HINT_GAP - uiButtonWidth("ZL"), TAB_TEXT_MIDDLE, "ZL", COLOR_SURFACE_HI, COLOR_DIM);
-    for (int i = 0; i < 2; i++) {
-        bool active = app->lib_tab == i;
-        fontDraw(active ? FONT_BOLD : FONT_REGULAR, 20, x, 18, T(TAB_NAMES[i]), active ? COLOR_TEXT : COLOR_DIM);
-        uiHitAdd(x - TAB_GAP / 2, 4, widths[i] + TAB_GAP, HEADER_H - 8, HIT_LIB_TAB, i);
-        if (active)
-            gfxFillRoundRect(x, 48, widths[i], 3, 1, COLOR_ACCENT);
-        x += widths[i] + TAB_GAP;
-    }
-    uiDrawButton(x - TAB_GAP + HINT_GAP, TAB_TEXT_MIDDLE, "ZR", COLOR_SURFACE_HI, COLOR_DIM);
+    if (!davConfigured())
+        return;
+    bool network = app->lib_tab == 1;
+    const char *label = network ? T("Network folder") : T("SD card");
+    bool key = app->panel == PANEL_NONE;  // X switches it while no panel is open.
+    int key_w = key ? uiButtonWidth("X") + 8 : 0;
+    int x = MARGIN + 34 + fontTextWidth(FONT_BOLD, 26, "KaiReader") + PILL_GAP;
+    int w = 12 + key_w + SOURCE_DOT + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;
+    float cy = PILL_Y + PILL_H / 2.0f;
+    gfxFillRoundRect(x, PILL_Y, w, PILL_H, PILL_H / 2, COLOR_SURFACE_HI);
+    if (key)
+        uiDrawButton(x + 8, cy, "X", COLOR_SURFACE, COLOR_TEXT);
+    int dot_x = x + 12 + key_w;
+    gfxFillRoundRect(dot_x, (int)cy - SOURCE_DOT / 2, SOURCE_DOT, SOURCE_DOT, SOURCE_DOT / 2,
+                     network ? COLOR_NETWORK : COLOR_ACCENT);
+    fontDrawMiddle(FONT_BOLD, 16, dot_x + SOURCE_DOT + 8, cy, label, COLOR_TEXT);
+    uiHitAdd(x - 4, 4, w + 8, HEADER_H - 8, HIT_SOURCE, 0);
 }
 
 // "1.2 MB", "340 KB".
@@ -83,7 +84,7 @@ static void drawRow(const App *app, int i, int y, int w)
         gfxFillRect(MARGIN - 12, y + 14, 3, NET_ROW_H - 32, COLOR_ACCENT);
     }
     if (e->is_dir)
-        drawFolderIcon(MARGIN + 8, mid + 2, on ? COLOR_ACCENT : COLOR_DIM);
+        drawFolderIcon(MARGIN + 8, mid + 2, on ? COLOR_NETWORK : COLOR_DIM);
     else
         drawBadge(MARGIN + 8, mid, e->name);
     char size[32];
@@ -121,18 +122,21 @@ static void drawMessage(const char *const *lines, int count, const char *button,
 static void drawPlace(const App *app, uint64_t now_ns)
 {
     int w = gfxLayoutWidth();
-    int tw = fontDraw(FONT_BOLD, 22, MARGIN, 74, T("Network folder"), COLOR_TEXT);
+    char folder[DAV_NAME_MAX];  // The folder's name, or the top's.
+    const char *last = netLastName(app->net_location);
+    snprintf(folder, sizeof(folder), "%s", last[0] ? last : T("Network folder"));
+    int tw = fontDraw(FONT_BOLD, 22, MARGIN, 74, folder, COLOR_TEXT);
     DavAccount a;
     davGetAccount(&a);
     char shown[DAV_ADDRESS_MAX], place[DAV_ADDRESS_MAX * 2];
     davShownAddress(a.address, shown, sizeof(shown));
     memset(&a, 0, sizeof(a));
     const char *rest = app->net_location[0] ? app->net_location + strlen(DAV_PREFIX) : "";
-    snprintf(place, sizeof(place), "%s%s%s", shown, rest[0] ? " / " : "", rest);
+    snprintf(place, sizeof(place), "%s%s%s", shown, rest[0] ? "/" : "", rest);
     int right = w - MARGIN - (app->net_loading ? 40 : 0);
     fontDrawClipped(FONT_REGULAR, 18, MARGIN + tw + 14, 77, right - (MARGIN + tw + 14), place, COLOR_DIM);
     if (app->net_loading)
-        uiDrawSpinner(w - MARGIN - 12.0f, 88.0f, 11.0f, now_ns, COLOR_ACCENT);
+        uiDrawSpinner(w - MARGIN - 12.0f, 88.0f, 11.0f, now_ns, COLOR_NETWORK);
 }
 
 static void drawCopy(const App *app)
@@ -150,7 +154,7 @@ static void drawCopy(const App *app)
     int bx = x + 28, by = y + 118, bw = pw - 56;
     gfxFillRoundRect(bx, by, bw, BAR_H, BAR_H / 2, COLOR_SURFACE_HI);
     if (share >= 0)
-        gfxFillRoundRect(bx, by, (int)(bw * (share > 1 ? 1 : share)), BAR_H, BAR_H / 2, COLOR_ACCENT);
+        gfxFillRoundRect(bx, by, (int)(bw * (share > 1 ? 1 : share)), BAR_H, BAR_H / 2, COLOR_NETWORK);
     char a[32], b[32], line[96];
     sizeText(done, a, sizeof(a));
     sizeText(total, b, sizeof(b));
@@ -171,7 +175,7 @@ void uiDrawNetwork(App *app, uint64_t now_ns)
     int w = gfxLayoutWidth(), h = gfxLayoutHeight();
     gfxClear(COLOR_BG);
     uiDrawHeader("KaiReader");
-    uiDrawLibTabs(app);
+    uiDrawSourcePill(app);
     uiDrawStatus(&app->sys, app->prefs.clock_24h, w - MARGIN, 18, COLOR_TEXT, COLOR_DIM);
     if (!davConfigured()) {
         const char *lines[] = {
@@ -181,7 +185,7 @@ void uiDrawNetwork(App *app, uint64_t now_ns)
         };
         drawMessage(lines, 3, T("Set it up"), HIT_NET_SETUP);
         gfxFillRect(0, h - FOOTER_H, w, FOOTER_H, COLOR_BG);
-        uiDrawHelp(MARGIN, h - FOOTER_H + 28.0f, w - 2 * MARGIN, T("[ZL] Library  [+] Menu"));
+        uiDrawHelp(MARGIN, h - FOOTER_H + 28.0f, w - 2 * MARGIN, T("[+] Menu"));
         return;
     }
     drawPlace(app, now_ns);
@@ -204,7 +208,7 @@ void uiDrawNetwork(App *app, uint64_t now_ns)
         drawMessage(lines, 2, NULL, HIT_NET_LIST);
     }
     gfxFillRect(0, h - FOOTER_H, w, FOOTER_H, COLOR_BG);
-    uiDrawHelp(MARGIN, h - FOOTER_H + 28.0f, w - 2 * MARGIN, T("[A] Open  [B] Back  [Y] Look again  [+] Menu"));
+    uiDrawHelp(MARGIN, h - FOOTER_H + 28.0f, w - 2 * MARGIN, T("[A] Open  [B] Back  [Y] Read again  [X] SD card  [+] Menu"));
     if (app->net_copying[0])
         drawCopy(app);
 }

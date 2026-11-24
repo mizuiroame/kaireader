@@ -8,6 +8,7 @@
 
 #include "approot.h"
 #include "buttons.h"
+#include "davnet.h"
 #include "gfx.h"
 #include "lang.h"
 #include "motion.h"
@@ -759,9 +760,11 @@ int appMenuRows(const App *app, MenuItem *out)
         out[n++] = MENU_BOOKMARK;
         out[n++] = MENU_LIBRARY;
     }
-    out[n++] = MENU_SETTINGS;
-    if (app->view == VIEW_LIBRARY)
+    if (app->view == VIEW_LIBRARY) {
+        out[n++] = davConfigured() ? MENU_SOURCE : MENU_NET_SETUP;
         out[n++] = MENU_RESCAN;
+    }
+    out[n++] = MENU_SETTINGS;
     out[n++] = MENU_EXIT;
     return n;
 }
@@ -813,6 +816,28 @@ static void openSettings(App *app)
     app->settings_cursor = 0;
 }
 
+// Settings at the network folder's page, as Back from it lands on its row of the main page.
+static void openNetworkSettings(App *app)
+{
+    openSettings(app);
+    app->settings_page = SETTINGS_PAGE_NETWORK;
+}
+
+void appSwitchSource(App *app, uint64_t now_ns)
+{
+    if (davConfigured()) {
+        appLibTab(app, app->lib_tab ? 0 : 1, now_ns);
+        return;
+    }
+    openSettings(app);
+    SettingRow rows[SETTINGS_ROWS_MAX];
+    int n = settingsRows(SETTINGS_PAGE_MAIN, rows);
+    for (int i = 0; i < n; i++)
+        if (rows[i] == SETTING_OPEN_NETWORK)
+            app->settings_cursor = i;
+    appNotify(app, NOTICE_INFO, T("No other source yet: add a network folder in Settings."), now_ns);
+}
+
 static void menuPick(App *app, MenuItem item, uint64_t now_ns)
 {
     app->panel = PANEL_NONE;
@@ -829,8 +854,17 @@ static void menuPick(App *app, MenuItem item, uint64_t now_ns)
     case MENU_SETTINGS:
         openSettings(app);
         break;
+    case MENU_SOURCE:
+        appSwitchSource(app, now_ns);
+        break;
+    case MENU_NET_SETUP:
+        openNetworkSettings(app);
+        break;
     case MENU_RESCAN:
-        appRescan(app, now_ns);
+        if (app->lib_tab == 1)
+            appNetLookAgain(app, now_ns);
+        else
+            appRescan(app, now_ns);
         break;
     case MENU_EXIT:
         app->quit = true;
@@ -1009,8 +1043,8 @@ static void libraryMove(App *app, int dx, int dy)
 
 static void libraryButtons(App *app, uint64_t pressed, uint64_t now_ns)
 {
-    if (pressed & (HidNpadButton_ZL | HidNpadButton_ZR)) {  // The tabs: the card's books, the network folder.
-        appLibTab(app, (pressed & HidNpadButton_ZR) ? 1 : 0, now_ns);
+    if (pressed & HidNpadButton_X) {  // The source: the SD card's books, or the network folder's.
+        appSwitchSource(app, now_ns);
         return;
     }
     if (app->lib_tab == 1) {
@@ -1188,15 +1222,14 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
     case HIT_RESCAN:
         appRescan(app, now_ns);
         break;
-    case HIT_LIB_TAB:
-        appLibTab(app, hit->arg, now_ns);
+    case HIT_SOURCE:
+        appSwitchSource(app, now_ns);
         break;
     case HIT_NET_ROW:
         appNetPick(app, hit->arg, now_ns);
         break;
     case HIT_NET_SETUP:  // No folder yet: its Settings page.
-        openSettings(app);
-        app->settings_page = SETTINGS_PAGE_NETWORK;
+        openNetworkSettings(app);
         break;
     case HIT_RESCAN_NET:
         appNetLookAgain(app, now_ns);

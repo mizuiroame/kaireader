@@ -47,7 +47,7 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("Looks in sdmc:/books again for books added or removed."),
     N_("Vertical: hold the console like a book. Automatic: it turns as you turn the console (handheld). The right stick pressed in switches horizontal and vertical. The buttons and the touch screen turn with it."),
     N_("21:47 or 9:47 PM."),
-    N_("A shared folder (SMB), WebDAV, FTP or SFTP folder on your network: its books show in the Network tab (ZL/ZR in the library)."),
+    N_("A shared folder (SMB), WebDAV, FTP or SFTP folder on your network: X in the library switches between its books and the SD card's."),
     N_("\\\\PC\\Books (a Windows shared folder), 192.168.0.10:8098 (WebDAV or a web folder), ftp://nas or sftp://nas."),
     N_("Empty for a folder open to everyone."),
     N_("Off: the password isn't kept on the card, and it's asked for when the folder is used."),

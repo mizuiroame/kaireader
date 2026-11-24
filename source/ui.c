@@ -16,6 +16,7 @@
 #include "ui_buttons.h"
 #include "ui_common.h"
 #include "ui_marks.h"
+#include "davnet.h"
 #include "ui_net.h"
 #include "ui_hit.h"
 #include "ui_notice.h"
@@ -233,7 +234,7 @@ static void drawLibrary(App *app)
     int w = gfxLayoutWidth(), h = gfxLayoutHeight();
     gfxClear(COLOR_BG);
     uiDrawHeader("KaiReader");
-    uiDrawLibTabs(app);
+    uiDrawSourcePill(app);
     uiDrawStatus(&app->sys, app->prefs.clock_24h, w - MARGIN, 18, COLOR_TEXT, COLOR_DIM);
 
     char sub[64];
@@ -283,7 +284,10 @@ static void drawLibrary(App *app)
         uiHitClip(0, h);
         gfxResetClip();
     }
-    drawFooter(app->order_count ? T("[A] Read  [Y] Sort  [+] Menu") : T("[+] Menu"));
+    if (davConfigured())  // X goes to the other source.
+        drawFooter(app->order_count ? T("[A] Read  [Y] Sort  [X] Network folder  [+] Menu") : T("[X] Network folder  [+] Menu"));
+    else
+        drawFooter(app->order_count ? T("[A] Read  [Y] Sort  [+] Menu") : T("[+] Menu"));
 }
 
 // --- The reader ---
@@ -443,10 +447,14 @@ static const char *menuLabel(const App *app, MenuItem item)
         return appShownMarked(app) ? T("Remove this page's bookmark") : T("Bookmark this page");
     case MENU_LIBRARY:
         return T("Back to the library");
+    case MENU_SOURCE:
+        return app->lib_tab == 1 ? T("Go to the SD card library") : T("Go to the network folder");
+    case MENU_NET_SETUP:
+        return T("Add a network folder");
     case MENU_SETTINGS:
         return T("Settings");
     case MENU_RESCAN:
-        return T("Look for books again");
+        return app->lib_tab == 1 ? T("Read the network folder again") : T("Look for books again");
     case MENU_EXIT:
         return T("Exit KaiReader");
     default:
@@ -463,7 +471,8 @@ static void drawMenu(const App *app)
     int x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
     gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
     uiHitAdd(x, y, w, h, HIT_MENU_ITEM, -1);
-    fontDraw(FONT_BOLD, 24, x + 28, y + 22, "KaiReader", COLOR_ACCENT);
+    int name_w = fontDraw(FONT_BOLD, 24, x + 28, y + 22, "KaiReader", COLOR_ACCENT);
+    fontDraw(FONT_REGULAR, 17, x + 28 + name_w + 10, y + 28, KAIREADER_VERSION, COLOR_DIM);
     for (int i = 0; i < n; i++) {
         int ry = y + 70 + i * MENU_ROW_H;
         bool on = i == app->menu_cursor;
@@ -642,7 +651,7 @@ static void drawContents(const App *app)
 void uiDraw(App *app, uint64_t now_ns)
 {
     uiHitReset();
-    if (app->view == VIEW_LIBRARY && app->lib_tab == 1)
+    if (app->view == VIEW_LIBRARY && app->lib_tab == 1 && davConfigured())
         uiDrawNetwork(app, now_ns);
     else if (app->view == VIEW_LIBRARY)
         drawLibrary(app);

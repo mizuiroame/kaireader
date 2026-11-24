@@ -28,7 +28,7 @@ typedef enum {
     HIT_TAB,          // arg: a tab of the contents panel (0 Contents, 1 Bookmarks).
     HIT_CHAPTER,      // arg: an entry of the contents. A tap goes there.
     HIT_RESCAN,       // Looks for books again.
-    HIT_LIB_TAB,      // arg: a tab of the library (0 the card's books, 1 the network folder).
+    HIT_SOURCE,       // The library's source pill: a tap switches it (as X).
     HIT_NET_ROW,      // arg: a row of the network folder. A tap opens it.
     HIT_NET_LIST,     // The network folder's list, for drags.
     HIT_NET_SETUP,    // The Network tab without a folder: opens its Settings page.

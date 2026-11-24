@@ -174,8 +174,9 @@ extern bool g_preview_net_configured;
 // The Network tab: no folder yet; then a made-up one, its list, a copy, and its Settings page.
 static void networkShots(App *app, const char *dir)
 {
-    appLibTab(app, 1, 50);
+    appSwitchSource(app, 50);  // No folder yet: Settings, with a word.
     render(app, dir, "network-none");
+    app->panel = PANEL_NONE;
     appLibTab(app, 0, 51);
     g_preview_net_configured = true;
     appNetworkFeedSettings();
@@ -183,6 +184,10 @@ static void networkShots(App *app, const char *dir)
     appUpdate(app, 53);
     appNetMove(app, 4);
     render(app, dir, "network");
+    app->panel = PANEL_MENU;
+    app->menu_cursor = 0;
+    render(app, dir, "network-menu");
+    app->panel = PANEL_NONE;
     appNetPick(app, app->net_cursor, 54);
     render(app, dir, "network-copy");
     appNetButtons(app, HidNpadButton_B, 55);
@@ -193,6 +198,13 @@ static void networkShots(App *app, const char *dir)
     render(app, dir, "settings-network");
     app->panel = PANEL_NONE;
     appLibTab(app, 0, 57);
+    render(app, dir, "library-network-set");
+    app->panel = PANEL_MENU;
+    app->menu_cursor = 0;
+    render(app, dir, "library-menu-network");
+    app->panel = PANEL_NONE;
+    g_preview_net_configured = false;  // The rest as before: no folder.
+    appNetworkFeedSettings();
 }
 
 int main(int argc, char **argv)

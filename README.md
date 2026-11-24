@@ -41,8 +41,8 @@ The screenshots show made-up books.
   black: the text and the paper change, pictures keep their colors). PDFs and
   comics show their own pages, fitted to the screen.
 - **Network folders**: a Windows shared folder (SMB), a NAS or Nextcloud
-  (WebDAV), or an FTP or SFTP server (Settings > Network folder). Its books
-  show in the library's **Network** tab (ZL/ZR); one you open is copied to
+  (WebDAV), or an FTP or SFTP server (Settings > Network folder). **X** in the library
+  switches between its books and the SD card's; one you open is copied to
   `sdmc:/books/Network/` and stays in your library, to read without the network.
 - **Zoom** on PDFs and comics: up and down, or two fingers, up to 3×; the left
   stick or a finger moves the page, drawn sharp at the screen's resolution.
@@ -65,9 +65,9 @@ The screenshots show made-up books.
 | | Library | Reading |
 |---|---|---|
 | **A** | Read the book selected | Next page |
-| **Right**, **R**, **ZR** / **Left**, **L**, **ZL** | Move (**ZL** / **ZR**: Library and Network tabs) | Next / previous page |
+| **Right**, **R**, **ZR** / **Left**, **L**, **ZL** | Move | Next / previous page |
 | **Up** / **Down** | Move | Bigger / smaller text; PDFs and comics: zoom |
-| **X** | | Contents and bookmarks |
+| **X** | SD card or network folder | Contents and bookmarks |
 | **Left stick** pressed | | Bookmark the page |
 | **Right stick** pressed | Upright or lying down | Upright or lying down |
 | **Y** | Sort by: recent, title, author, genre | Colors |
