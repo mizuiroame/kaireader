@@ -1,0 +1,10 @@
+build/
+tests/build/
+tests/preview/build/
+*.nro
+*.cover
+*.nacp
+*.elf
+*.map
+__pycache__/
+tools/.cache/
