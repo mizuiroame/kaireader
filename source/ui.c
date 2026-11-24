@@ -286,7 +286,7 @@ static void drawEmpty(int w)
     uiHitAdd(bx, by, bw, 48, HIT_RESCAN, 0);
 }
 
-static void drawLibrary(App *app)
+static void drawLibrary(App *app, uint64_t now_ns)
 {
     int w = gfxLayoutWidth(), h = gfxLayoutHeight();
     gfxClear(COLOR_BG);
@@ -296,8 +296,11 @@ static void drawLibrary(App *app)
 
     char sub[64];
     snprintf(sub, sizeof(sub), app->order_count == 1 ? T("1 book") : T("%d books"), app->order_count);
-    int tw = fontDraw(FONT_BOLD, 22, MARGIN, 74, T("Library"), COLOR_TEXT);
-    fontDraw(FONT_REGULAR, 18, MARGIN + tw + 14, 77, sub, COLOR_DIM);
+    bool network = app->lib_tab == 1;
+    int tw = fontDraw(FONT_BOLD, 22, MARGIN, 74, network ? T("Network folder") : T("Library"), COLOR_TEXT);
+    int sw0 = fontDraw(FONT_REGULAR, 18, MARGIN + tw + 14, 77, sub, COLOR_DIM);
+    if (network)  // The folder being looked through, after the count.
+        uiDrawNetScan(MARGIN + tw + 14 + sw0 + 20, 89.0f, now_ns);
     if (app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES) {  // The sort, at the right: a tap (or Y) changes it.
         char sort[64];
         snprintf(sort, sizeof(sort), "%s", T(prefsSortName(app->prefs.sort)));
@@ -308,7 +311,9 @@ static void drawLibrary(App *app)
         uiHitAdd(x - bw - 16, 64, sw + bw + 24, 44, HIT_SORT, 0);
     }
 
-    if (app->order_count == 0 && app->prefs.sort == SHELF_SORT_FAVORITES) {
+    if (app->order_count == 0 && network) {
+        uiDrawNetEmpty(app, now_ns);
+    } else if (app->order_count == 0 && app->prefs.sort == SHELF_SORT_FAVORITES) {
         fontDrawCentered(FONT_BOLD, 26, w / 2.0f, 250.0f, T("No favorites yet."), COLOR_TEXT);
         fontDrawCentered(FONT_REGULAR, 19, w / 2.0f, 296.0f,
                          T("Hold your finger on a cover, or choose \"Add to favorites\" in the + menu."), COLOR_DIM);
@@ -350,12 +355,17 @@ static void drawLibrary(App *app)
         uiHitClip(0, h);
         gfxResetClip();
     }
-    if (app->order_count == 0 && app->prefs.sort == SHELF_SORT_FAVORITES)  // Y back to the other books.
+    if (network)  // X back to the card's books.
+        drawFooter(app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES
+                       ? T("[A] Read  [Y] Sort  [X] SD card  [+] Menu")
+                       : T("[X] SD card  [+] Menu"));
+    else if (app->order_count == 0 && app->prefs.sort == SHELF_SORT_FAVORITES)  // Y back to the other books.
         drawFooter(davConfigured() ? T("[Y] Sort  [X] Network folder  [+] Menu") : T("[Y] Sort  [+] Menu"));
     else if (davConfigured())  // X goes to the other source.
         drawFooter(app->order_count ? T("[A] Read  [Y] Sort  [X] Network folder  [+] Menu") : T("[X] Network folder  [+] Menu"));
     else
         drawFooter(app->order_count ? T("[A] Read  [Y] Sort  [+] Menu") : T("[+] Menu"));
+    uiDrawNetCopy(app);
 }
 
 // --- The reader ---
@@ -528,7 +538,7 @@ static const char *menuLabel(const App *app, MenuItem item)
     case MENU_SETTINGS:
         return T("Settings");
     case MENU_RESCAN:
-        return app->lib_tab == 1 ? T("Read the network folder again") : T("Look for books again");
+        return app->lib_tab == 1 ? T("Look through the network folder again") : T("Look for books again");
     case MENU_EXIT:
         return T("Exit KaiReader");
     default:
@@ -725,10 +735,8 @@ static void drawContents(const App *app)
 void uiDraw(App *app, uint64_t now_ns)
 {
     uiHitReset();
-    if (app->view == VIEW_LIBRARY && app->lib_tab == 1 && davConfigured())
-        uiDrawNetwork(app, now_ns);
-    else if (app->view == VIEW_LIBRARY)
-        drawLibrary(app);
+    if (app->view == VIEW_LIBRARY)
+        drawLibrary(app, now_ns);
     else
         drawReader(app, now_ns);
     if (app->panel == PANEL_MENU)

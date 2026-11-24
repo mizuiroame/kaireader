@@ -10,6 +10,7 @@
 #include "lang.h"
 #include "net.h"
 #include "netjob.h"
+#include "netstream.h"
 #include "smbnet.h"
 
 #define TEST_TEXT_MAX 256
@@ -53,12 +54,19 @@ void appNetworkStart(App *app)
     char path[APP_FOLDER_MAX + 32];
     accountPath(app, path, sizeof(path));
     davLoadAccount(path);
+    netStreamInstall();  // "dav:/" books open over the network (covers, titles).
     appNetworkFeedSettings();
     useNetwork();
 }
 
 static void save(App *app, const DavAccount *a, uint64_t now)
 {
+    DavAccount before;
+    davGetAccount(&before);
+    bool another = strcmp(before.address, a->address) != 0;
+    memset(&before, 0, sizeof(before));
+    if (another)  // Another folder: the old one's library goes.
+        appNetForget(app);
     davUseAccount(a);
     davForget();  // The listing's connections were the old account's.
     char path[APP_FOLDER_MAX + 32];
@@ -67,7 +75,6 @@ static void save(App *app, const DavAccount *a, uint64_t now)
         appNotify(app, NOTICE_ERROR, T("It couldn't be written to the card."), now);
     useNetwork();
     appNetworkFeedSettings();
-    appNetForget(app);  // What was shown was the old folder's.
 }
 
 static void typeAddress(App *app, uint64_t now)

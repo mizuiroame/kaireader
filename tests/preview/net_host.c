@@ -1,34 +1,28 @@
 // The network for the previews: a made-up folder ("smb://NAS/Books/") whose
-// listings come at once, a copy that stays at 40%, and the account's
-// Settings rows filled in. Stands in for netjob.c, davnet.c and
-// app_network.c, which need the console's network.
+// books are the made-up ones in ./books (a "dav:/Novels/quiet.epub" opens
+// books/quiet.epub), found at once, a copy that stays at 40%, and the
+// account's Settings rows filled in. Stands in for netjob.c, davnet.c,
+// netstream.c and app_network.c, which need the console's network.
+#include <mupdf/fitz.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "app.h"
 #include "davnet.h"
+#include "doc.h"
 #include "netjob.h"
-#include "netlist.h"
 
 bool g_preview_net_configured;
 
-static const DavEntry TOP[] = {
-    {"Comics", true, -1, 0},
-    {"Ensayos", true, -1, 0},
-    {"Novels", true, -1, 0},
-    {".Trash", true, -1, 0},
-    {"The Harbor Ledger.pdf", false, 2283714, 0},
-    {"A Map of Small Islands.epub", false, 512300, 0},
-    {"Notes from the Lighthouse.epub", false, 1203400, 0},
-    {"Caf\xC3\xA9 Stories.fb2", false, 301200, 0},
-    {"Sample Comic.cbr", false, 4210000, 0},
-    {"Tide Tables 2026.cbz", false, 9120000, 0},
-    {"setup.exe", false, 102400, 0},
+static const char *const FOUND[] = {
+    "dav:/Novels/library2.epub", "dav:/Novels/library5.epub", "dav:/Novels/library7.epub",
+    "dav:/Novels/old.epub",      "dav:/Comics/strip.cbz",     "dav:/Comics/wide.pdf",
+    "dav:/Essays/tale.fb2",      "dav:/plain.pdf",
 };
 
-static char g_listed[DAV_ADDRESS_MAX];
-static bool g_list_ready;
+static bool g_scan_ready;
 static NetJobState g_copy = NETJOB_IDLE;
 
 bool davConfigured(void)
@@ -43,29 +37,51 @@ void davGetAccount(DavAccount *out)
         snprintf(out->address, sizeof(out->address), "%s", "smb://NAS/Books/");
 }
 
-void netJobList(const char *location)
+// "dav:/Novels/quiet.epub" -> "books/quiet.epub".
+static void fixtureOf(const char *location, char *out, size_t size)
 {
-    snprintf(g_listed, sizeof(g_listed), "%s", location);
-    g_list_ready = true;
+    const char *slash = strrchr(location, '/');
+    snprintf(out, size, "books/%s", slash ? slash + 1 : location);
 }
 
-bool netJobListing(void)
+static fz_stream *openFixture(fz_context *ctx, const char *location)
 {
+    char path[256];
+    fixtureOf(location, path, sizeof(path));
+    return fz_open_file(ctx, path);
+}
+
+bool netJobScan(void)
+{
+    g_scan_ready = true;
+    return true;
+}
+
+bool netJobScanning(int *found)
+{
+    *found = 0;
     return false;
 }
 
-bool netJobTakeList(char *location, size_t location_size, DavEntry **entries, size_t *count, bool *ok, char *why,
-                    size_t why_size)
+bool netJobTakeScan(NetBook **books, int *count, bool *ok, char *why, size_t why_size)
 {
-    if (!g_list_ready)
+    if (!g_scan_ready)
         return false;
-    g_list_ready = false;
-    size_t n = sizeof(TOP) / sizeof(TOP[0]);
-    *entries = malloc(sizeof(TOP));
-    memcpy(*entries, TOP, sizeof(TOP));
-    *count = netListBooks(*entries, n);
+    g_scan_ready = false;
+    int n = (int)(sizeof(FOUND) / sizeof(FOUND[0]));
+    *books = calloc((size_t)n, sizeof(**books));
+    *count = 0;
+    for (int i = 0; *books && i < n; i++) {
+        char path[256];
+        struct stat st;
+        fixtureOf(FOUND[i], path, sizeof(path));
+        if (stat(path, &st) != 0)
+            continue;
+        NetBook *b = &(*books)[(*count)++];
+        snprintf(b->location, sizeof(b->location), "%s", FOUND[i]);
+        b->size = (int64_t)st.st_size;
+    }
     *ok = true;
-    snprintf(location, location_size, "%s", g_listed);
     if (why_size)
         why[0] = '\0';
     return true;
@@ -106,6 +122,7 @@ void netJobStop(void)
 void appNetworkStart(App *app)
 {
     (void)app;
+    docSetRemoteOpener(openFixture);
     appNetworkFeedSettings();
 }
 

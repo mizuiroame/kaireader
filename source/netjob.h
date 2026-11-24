@@ -1,6 +1,6 @@
-// The network folder's slow work, off the screen's thread: listing a folder
-// (netlist.c keeps its folders and books) and copying a book to the card.
-// One listing and one copy at a time; the app asks each frame how they go.
+// The network folder's slow work, off the screen's thread: looking through it
+// for books (netlist.c keeps each folder's books) and copying a book to the
+// card. One of each at a time; the app asks each frame how they go.
 #pragma once
 
 #include <stdbool.h>
@@ -18,13 +18,21 @@ typedef enum {
     NETJOB_FAILED,
 } NetJobState;
 
-// Lists location; a listing asked while one runs follows it (only the newest).
-void netJobList(const char *location);
-bool netJobListing(void);
-// A listing come, once: its location, entries (malloc'd, the caller frees them),
-// or why it failed. False if none is waiting.
-bool netJobTakeList(char *location, size_t location_size, DavEntry **entries, size_t *count, bool *ok, char *why,
-                    size_t why_size);
+// A book found in the network folder: its location and size (-1 unknown).
+typedef struct {
+    char location[DAV_ADDRESS_MAX];
+    int64_t size;
+} NetBook;
+
+#define NETJOB_SCAN_DEPTH 4     // Folders in folders, as on the card (SHELF_SCAN_DEPTH).
+#define NETJOB_SCAN_MAX 4000    // Books at most (SHELF_MAX_BOOKS).
+
+// Looks through the whole folder (and its folders) for books. False if a scan runs already.
+bool netJobScan(void);
+// While a scan runs: true, and how many books it found so far.
+bool netJobScanning(int *found);
+// A scan ended, once: its books (malloc'd, the caller frees them) and whether the top could be read.
+bool netJobTakeScan(NetBook **books, int *count, bool *ok, char *why, size_t why_size);
 
 // Copies location to local (through local ".part", then renamed); size from the
 // listing, -1 if unknown. False if a copy runs already.

@@ -51,7 +51,7 @@ static void draw(App *app, uint64_t now)
 
 static bool isBackground(const HitRegion *r)
 {
-    return r->kind == HIT_LIBRARY || r->kind == HIT_NET_LIST || r->kind == HIT_PAGE || r->kind == HIT_OVERLAY_OUT ||
+    return r->kind == HIT_LIBRARY || r->kind == HIT_PAGE || r->kind == HIT_OVERLAY_OUT ||
            ((r->kind == HIT_MENU_ITEM || r->kind == HIT_CHAPTER || r->kind == HIT_SETTING) && r->arg < 0);
 }
 
@@ -177,27 +177,31 @@ static void networkShots(App *app, const char *dir)
     appSwitchSource(app, 50);  // No folder yet: Settings, with a word.
     render(app, dir, "network-none");
     app->panel = PANEL_NONE;
-    appLibTab(app, 0, 51);
     g_preview_net_configured = true;
     appNetworkFeedSettings();
-    appLibTab(app, 1, 52);
-    appUpdate(app, 53);
-    appNetMove(app, 4);
+    appSwitchSource(app, 52);  // The network folder's library: looked through, covers read over the "network".
+    settle(app);
     render(app, dir, "network");
     app->panel = PANEL_MENU;
     app->menu_cursor = 0;
     render(app, dir, "network-menu");
     app->panel = PANEL_NONE;
-    appNetPick(app, app->net_cursor, 54);
+    app->prefs.list_view = true;
+    appResort(app);
+    settle(app);
+    render(app, dir, "network-list");
+    app->prefs.list_view = false;
+    appResort(app);
+    appOpenBook(app, app->cursor, 54);  // Not on the card yet: copied first.
     render(app, dir, "network-copy");
-    appNetButtons(app, HidNpadButton_B, 55);
+    appHandleButtons(app, HidNpadButton_B, 55);
     appUpdate(app, 56);
     app->panel = PANEL_SETTINGS;
     app->settings_page = SETTINGS_PAGE_NETWORK;
     app->settings_cursor = 0;
     render(app, dir, "settings-network");
     app->panel = PANEL_NONE;
-    appLibTab(app, 0, 57);
+    appSwitchSource(app, 57);
     render(app, dir, "library-network-set");
     app->panel = PANEL_MENU;
     app->menu_cursor = 0;

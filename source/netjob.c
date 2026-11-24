@@ -19,48 +19,6 @@
 
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
 
-// --- Listing ---
-
-static pthread_t g_list_thread;
-static bool g_list_running, g_list_joinable;
-static char g_list_asked[DAV_ADDRESS_MAX];  // The next to list; "" none.
-static bool g_list_ready, g_list_ok;
-static char g_list_location[DAV_ADDRESS_MAX];
-static char g_list_why[NETJOB_WHY_MAX];
-static DavEntry *g_list_entries;
-static size_t g_list_count;
-
-static void *listThread(void *arg)
-{
-    (void)arg;
-    pthread_mutex_lock(&g_lock);
-    while (g_list_asked[0]) {
-        char location[DAV_ADDRESS_MAX];
-        snprintf(location, sizeof(location), "%s", g_list_asked);
-        g_list_asked[0] = '\0';
-        pthread_mutex_unlock(&g_lock);
-        DavEntry *entries = NULL;
-        size_t count = 0;
-        char why[NETJOB_WHY_MAX] = "";
-        bool ok = davList(location, &entries, &count, why, sizeof(why));
-        if (ok)
-            count = netListBooks(entries, count);
-        pthread_mutex_lock(&g_lock);
-        free(g_list_entries);  // One not taken: a newer one replaces it.
-        g_list_entries = ok ? entries : NULL;
-        if (!ok)
-            free(entries);
-        g_list_count = ok ? count : 0;
-        g_list_ok = ok;
-        snprintf(g_list_location, sizeof(g_list_location), "%s", location);
-        snprintf(g_list_why, sizeof(g_list_why), "%s", why);
-        g_list_ready = true;
-    }
-    g_list_running = false;
-    pthread_mutex_unlock(&g_lock);
-    return NULL;
-}
-
 static bool startThread(pthread_t *thread, void *(*run)(void *))
 {
     pthread_attr_t attr;
@@ -71,56 +29,152 @@ static bool startThread(pthread_t *thread, void *(*run)(void *))
     return ok;
 }
 
-void netJobList(const char *location)
+// --- Looking through the whole folder ---
+
+static pthread_t g_scan_thread;
+static bool g_scan_joinable, g_scan_running, g_scan_ready, g_scan_ok, g_scan_stop;
+static NetBook *g_scan_books;
+static int g_scan_count;
+static char g_scan_why[NETJOB_WHY_MAX];
+
+typedef struct {
+    char location[DAV_ADDRESS_MAX];
+    int depth;
+} Folder;
+
+// One folder's books into books (grown), its folders onto the queue.
+static bool scanFolder(const Folder *at, NetBook **books, int *count, int *cap, Folder **queue, int *queued,
+                       int *queue_cap, char *why, size_t why_size)
 {
-    pthread_mutex_lock(&g_lock);
-    snprintf(g_list_asked, sizeof(g_list_asked), "%s", location);
-    bool start = !g_list_running;
-    pthread_mutex_unlock(&g_lock);
-    if (!start)
-        return;  // The one running takes it next.
-    if (g_list_joinable)
-        pthread_join(g_list_thread, NULL);
-    g_list_joinable = false;
-    pthread_mutex_lock(&g_lock);
-    g_list_running = true;
-    pthread_mutex_unlock(&g_lock);
-    if (startThread(&g_list_thread, listThread)) {
-        g_list_joinable = true;
-        return;
+    DavEntry *entries = NULL;
+    size_t n = 0;
+    if (!davList(at->location, &entries, &n, why, why_size))
+        return false;
+    n = netListBooks(entries, n);
+    for (size_t i = 0; i < n && *count < NETJOB_SCAN_MAX; i++) {
+        char child[DAV_ADDRESS_MAX];
+        if (!netChild(at->location, entries[i].name, child, sizeof(child)))
+            continue;
+        if (entries[i].is_dir) {
+            if (at->depth + 1 > NETJOB_SCAN_DEPTH)
+                continue;
+            if (*queued == *queue_cap) {
+                Folder *grown = realloc(*queue, (size_t)(*queue_cap * 2 + 8) * sizeof(**queue));
+                if (!grown)
+                    continue;
+                *queue = grown;
+                *queue_cap = *queue_cap * 2 + 8;
+            }
+            Folder *f = &(*queue)[(*queued)++];
+            snprintf(f->location, sizeof(f->location), "%s", child);
+            f->depth = at->depth + 1;
+            continue;
+        }
+        if (*count == *cap) {
+            NetBook *grown = realloc(*books, (size_t)(*cap * 2 + 64) * sizeof(**books));
+            if (!grown)
+                break;
+            *books = grown;
+            *cap = *cap * 2 + 64;
+        }
+        NetBook *b = &(*books)[(*count)++];
+        snprintf(b->location, sizeof(b->location), "%s", child);
+        b->size = entries[i].size;
     }
-    pthread_mutex_lock(&g_lock);  // No thread: it fails at once.
-    g_list_running = false;
-    g_list_asked[0] = '\0';
-    g_list_ready = true;
-    g_list_ok = false;
-    snprintf(g_list_location, sizeof(g_list_location), "%s", location);
-    snprintf(g_list_why, sizeof(g_list_why), "%s", T("The folder couldn't be read."));
-    pthread_mutex_unlock(&g_lock);
+    free(entries);
+    return true;
 }
 
-bool netJobListing(void)
+static void *scanThread(void *arg)
 {
+    (void)arg;
+    NetBook *books = NULL;
+    Folder *queue = malloc(8 * sizeof(*queue));
+    int count = 0, cap = 0, queued = 0, queue_cap = queue ? 8 : 0, done = 0;
+    char why[NETJOB_WHY_MAX] = "";
+    bool ok = queue != NULL;
+    if (ok) {
+        snprintf(queue[0].location, sizeof(queue[0].location), "%s", DAV_ROOT);
+        queue[0].depth = 0;
+        queued = 1;
+    }
+    while (ok && done < queued && count < NETJOB_SCAN_MAX) {
+        pthread_mutex_lock(&g_lock);
+        bool stop = g_scan_stop;
+        g_scan_count = count;  // How many so far, for the screen.
+        pthread_mutex_unlock(&g_lock);
+        if (stop)
+            break;
+        Folder at = queue[done++];
+        char folder_why[NETJOB_WHY_MAX];
+        bool listed = scanFolder(&at, &books, &count, &cap, &queue, &queued, &queue_cap, folder_why, sizeof(folder_why));
+        if (!listed && at.depth == 0) {  // The top can't be read: nothing found means nothing.
+            ok = false;
+            snprintf(why, sizeof(why), "%s", folder_why);
+        }
+    }
+    free(queue);
     pthread_mutex_lock(&g_lock);
-    bool busy = g_list_running || g_list_asked[0];
+    free(g_scan_books);
+    g_scan_books = books;
+    g_scan_count = count;
+    g_scan_ok = ok;
+    snprintf(g_scan_why, sizeof(g_scan_why), "%s", why);
+    g_scan_ready = true;
+    g_scan_running = false;
     pthread_mutex_unlock(&g_lock);
-    return busy;
+    return NULL;
 }
 
-bool netJobTakeList(char *location, size_t location_size, DavEntry **entries, size_t *count, bool *ok, char *why,
-                    size_t why_size)
+bool netJobScan(void)
 {
     pthread_mutex_lock(&g_lock);
-    bool got = g_list_ready && !g_list_asked[0];  // One asked since: wait for it.
+    bool busy = g_scan_running;
+    pthread_mutex_unlock(&g_lock);
+    if (busy)
+        return false;
+    if (g_scan_joinable)
+        pthread_join(g_scan_thread, NULL);
+    g_scan_joinable = false;
+    pthread_mutex_lock(&g_lock);
+    g_scan_running = true;
+    g_scan_ready = false;
+    g_scan_stop = false;
+    g_scan_count = 0;
+    pthread_mutex_unlock(&g_lock);
+    if (startThread(&g_scan_thread, scanThread)) {
+        g_scan_joinable = true;
+        return true;
+    }
+    pthread_mutex_lock(&g_lock);
+    g_scan_running = false;
+    g_scan_ready = true;
+    g_scan_ok = false;
+    snprintf(g_scan_why, sizeof(g_scan_why), "%s", T("The folder couldn't be read."));
+    pthread_mutex_unlock(&g_lock);
+    return true;
+}
+
+bool netJobScanning(int *found)
+{
+    pthread_mutex_lock(&g_lock);
+    bool running = g_scan_running;
+    *found = g_scan_count;
+    pthread_mutex_unlock(&g_lock);
+    return running;
+}
+
+bool netJobTakeScan(NetBook **books, int *count, bool *ok, char *why, size_t why_size)
+{
+    pthread_mutex_lock(&g_lock);
+    bool got = g_scan_ready;
     if (got) {
-        snprintf(location, location_size, "%s", g_list_location);
-        snprintf(why, why_size, "%s", g_list_why);
-        *entries = g_list_entries;
-        *count = g_list_count;
-        *ok = g_list_ok;
-        g_list_entries = NULL;
-        g_list_count = 0;
-        g_list_ready = false;
+        *books = g_scan_books;
+        *count = g_scan_count;
+        *ok = g_scan_ok;
+        snprintf(why, why_size, "%s", g_scan_why);
+        g_scan_books = NULL;
+        g_scan_ready = false;
     }
     pthread_mutex_unlock(&g_lock);
     return got;
@@ -323,18 +377,15 @@ void netJobForgetCopy(void)
 void netJobStop(void)
 {
     g_cancel = true;
+    pthread_mutex_lock(&g_lock);
+    g_scan_stop = true;
+    pthread_mutex_unlock(&g_lock);
+    if (g_scan_joinable)
+        pthread_join(g_scan_thread, NULL);
+    g_scan_joinable = false;
+    free(g_scan_books);
+    g_scan_books = NULL;
     if (g_copy_joinable)
         pthread_join(g_copy_thread, NULL);
     g_copy_joinable = false;
-    pthread_mutex_lock(&g_lock);
-    g_list_asked[0] = '\0';
-    pthread_mutex_unlock(&g_lock);
-    if (g_list_joinable)
-        pthread_join(g_list_thread, NULL);
-    g_list_joinable = false;
-    pthread_mutex_lock(&g_lock);
-    free(g_list_entries);
-    g_list_entries = NULL;
-    g_list_ready = false;
-    pthread_mutex_unlock(&g_lock);
 }

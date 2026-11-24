@@ -34,10 +34,14 @@ static void pathIn(const App *app, const char *name, char *out, size_t size)
     snprintf(out, size, "%s/%s", app->folder, name);
 }
 
+#define CARD_SHELF "shelf.txt"
+#define NET_SHELF "shelf-network.txt"
+
+// The library shown (the card's, or the network folder's) to its file.
 static void saveShelf(App *app)
 {
-    char file[APP_FOLDER_MAX + 16];
-    pathIn(app, "shelf.txt", file, sizeof(file));
+    char file[APP_FOLDER_MAX + 32];
+    pathIn(app, app->lib_tab == 1 ? NET_SHELF : CARD_SHELF, file, sizeof(file));
     shelfSave(&app->shelf, file);
 }
 
@@ -163,6 +167,10 @@ static void keepCursorVisible(App *app)
 
 void appRescan(App *app, uint64_t now_ns)
 {
+    if (app->lib_tab == 1) {  // The network folder's: looked through again.
+        appNetScan(app, now_ns);
+        return;
+    }
     int found = shelfScan(&app->shelf, app->books_folder);
     sortShelf(app);
     if (now_ns) {
@@ -194,11 +202,12 @@ void appInit(App *app, const char *folder)
     app->book = -1;
     app->turn_from = -1;
     appNetworkStart(app);
+    appNetStart(app);
 }
 
 const ShelfBook *appSelectedBook(const App *app)
 {
-    if (app->view != VIEW_LIBRARY || app->lib_tab != 0 || app->cursor < 0 || app->cursor >= app->order_count)
+    if (app->view != VIEW_LIBRARY || app->cursor < 0 || app->cursor >= app->order_count)
         return NULL;
     return &app->shelf.items[app->order[app->cursor]];
 }
@@ -223,21 +232,7 @@ void appToggleFavorite(App *app, int order_index, uint64_t now_ns)
     }
 }
 
-void appOpenPath(App *app, const char *path, uint64_t now_ns)
-{
-    if (!shelfAdd(&app->shelf, path)) {
-        appNotify(app, NOTICE_ERROR, T("The library is full."), now_ns);
-        return;
-    }
-    sortShelf(app);
-    for (int i = 0; i < app->order_count; i++)
-        if (!strcmp(app->shelf.items[app->order[i]].path, path)) {
-            app->cursor = i;
-            keepCursorVisible(app);
-            appOpenBook(app, i, now_ns);
-            return;
-        }
-}
+
 
 // The screen's turn as Settings say: a fixed one, or Automatic (the motion
 // sensor started, the screen as it is until the console leans).
@@ -347,9 +342,14 @@ void appFree(App *app)
     free(app->lines);
     app->lines = NULL;
     coversFree(&app->covers);
+    if (davConfigured()) {  // The other library too, to its file.
+        char file[APP_FOLDER_MAX + 32];
+        pathIn(app, app->lib_tab == 1 ? CARD_SHELF : NET_SHELF, file, sizeof(file));
+        shelfSave(&app->other_shelf, file);
+    }
     shelfFree(&app->shelf);
+    shelfFree(&app->other_shelf);
     appNetworkExit();
-    appNetForget(app);
     bookmarksFree(&app->marks);
 }
 
@@ -403,15 +403,21 @@ ReadingLayout appLayout(const App *app)
 
 void appOpenBook(App *app, int order_index, uint64_t now_ns)
 {
-    (void)now_ns;
     if (order_index < 0 || order_index >= app->order_count)
         return;
+    char local[NET_LOCAL_MAX];
+    const char *open = app->shelf.items[app->order[order_index]].path;
+    if (davIsLocation(open)) {  // The network folder's: its copy on the card, made first if it isn't there.
+        if (!appNetReady(app, app->order[order_index], local, sizeof(local), now_ns))
+            return;
+        open = local;
+    }
     appCloseBook(app);
     app->book = app->order[order_index];
     appZoomReset(app);  // A book opens fitted.
     ReadingLayout layout = appLayout(app);
     const ShelfBook *b = &app->shelf.items[app->book];
-    app->generation = readingOpen(b->path, &layout, b->place);
+    app->generation = readingOpen(open, &layout, b->place);
     appMarksForBook(app);
     app->ready = false;
     app->view = VIEW_READER;
@@ -793,8 +799,7 @@ int appMenuRows(const App *app, MenuItem *out)
     if (app->view == VIEW_LIBRARY) {
         if (appSelectedBook(app))
             out[n++] = MENU_FAVORITE;
-        if (app->lib_tab == 0)
-            out[n++] = MENU_VIEW;
+        out[n++] = MENU_VIEW;
         out[n++] = davConfigured() ? MENU_SOURCE : MENU_NET_SETUP;
         out[n++] = MENU_RESCAN;
     }
@@ -857,6 +862,36 @@ static void openNetworkSettings(App *app)
     app->settings_page = SETTINGS_PAGE_NETWORK;
 }
 
+void appResort(App *app)
+{
+    sortShelf(app);
+    keepCursorVisible(app);
+}
+
+void appLibTab(App *app, int tab, uint64_t now_ns)
+{
+    tab = tab ? 1 : 0;
+    if (tab == app->lib_tab || (tab == 1 && !davConfigured()))
+        return;
+    saveShelf(app);
+    Shelf shown = app->shelf;  // The other library in its place, where it was left.
+    app->shelf = app->other_shelf;
+    app->other_shelf = shown;
+    int cursor = app->cursor, scroll = app->scroll;
+    app->lib_tab = tab;
+    app->order_count = 0;  // The order was the other shelf's.
+    sortShelf(app);
+    app->cursor = app->other_cursor < app->order_count ? app->other_cursor : 0;
+    app->scroll = app->other_scroll;
+    app->other_cursor = cursor;
+    app->other_scroll = scroll;
+    kineticStop(&app->kinetic);
+    layoutLibrary(app);
+    keepCursorVisible(app);
+    if (tab == 1 && !app->net_scanned)  // Once a session: what's in the folder now.
+        appNetScan(app, now_ns);
+}
+
 void appSwitchSource(App *app, uint64_t now_ns)
 {
     if (davConfigured()) {
@@ -902,10 +937,7 @@ static void menuPick(App *app, MenuItem item, uint64_t now_ns)
         openNetworkSettings(app);
         break;
     case MENU_RESCAN:
-        if (app->lib_tab == 1)
-            appNetLookAgain(app, now_ns);
-        else
-            appRescan(app, now_ns);
+        appRescan(app, now_ns);
         break;
     case MENU_EXIT:
         app->quit = true;
@@ -1084,12 +1116,13 @@ static void libraryMove(App *app, int dx, int dy)
 
 static void libraryButtons(App *app, uint64_t pressed, uint64_t now_ns)
 {
-    if (pressed & HidNpadButton_X) {  // The source: the SD card's books, or the network folder's.
-        appSwitchSource(app, now_ns);
+    if (app->net_copying[0]) {  // A book being copied to open: only B, to stop it.
+        if (pressed & HidNpadButton_B)
+            appNetCancelCopy();
         return;
     }
-    if (app->lib_tab == 1) {
-        appNetButtons(app, pressed, now_ns);
+    if (pressed & HidNpadButton_X) {  // The source: the SD card's books, or the network folder's.
+        appSwitchSource(app, now_ns);
         return;
     }
     if (pressed & HidNpadButton_Y) {
@@ -1271,17 +1304,14 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
     case HIT_SOURCE:
         appSwitchSource(app, now_ns);
         break;
-    case HIT_NET_ROW:
-        appNetPick(app, hit->arg, now_ns);
-        break;
     case HIT_NET_SETUP:  // No folder yet: its Settings page.
         openNetworkSettings(app);
         break;
     case HIT_RESCAN_NET:
-        appNetLookAgain(app, now_ns);
+        appNetScan(app, now_ns);
         break;
     case HIT_NET_CANCEL:
-        appNetButtons(app, HidNpadButton_B, now_ns);
+        appNetCancelCopy();
         break;
     case HIT_SORT:
         quickStep(app, SETTING_SORT, 1, now_ns);
@@ -1386,14 +1416,7 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
     }
     case TOUCH_DRAG: {
         const HitRegion *start = uiHitFind(e.start_x, e.start_y);
-        if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE && app->lib_tab == 1) {
-            app->net_drag -= e.dy;  // The network list follows the finger a row at a time.
-            int rows = app->net_drag / NET_ROW_H;
-            if (rows) {
-                appNetScroll(app, rows);
-                app->net_drag -= rows * NET_ROW_H;
-            }
-        } else if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE) {
+        if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE) {
             app->scroll -= e.dy;
             kineticDrag(&app->kinetic, -e.dy, now_ns);
             app->scroll = app->scroll < 0 ? 0 : app->scroll > maxScroll(app) ? maxScroll(app) : app->scroll;
@@ -1415,9 +1438,7 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
         break;
     }
     case TOUCH_DRAG_END:
-        if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE && app->lib_tab == 1) {
-            app->net_drag = 0;
-        } else if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE) {
+        if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE) {
             kineticRelease(&app->kinetic, now_ns);
         } else if (app->view == VIEW_READER && app->panel == PANEL_NONE) {
             const HitRegion *start = uiHitFind(e.start_x, e.start_y);

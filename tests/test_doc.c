@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <mupdf/fitz.h>
+
 #include "check.h"
 #include "doc.h"
 
@@ -308,6 +310,45 @@ static void testRenderPart(void)
     docClose(d);
 }
 
+// A "dav:/" path opened through the app's stream: here, a fixture file (as netstream.c reads one off the network).
+static int g_remote_opens;
+
+static fz_stream *openFixture(fz_context *ctx, const char *path)
+{
+    char file[256];
+    snprintf(file, sizeof(file), FIX "%s", path + strlen(DOC_REMOTE_PREFIX));
+    g_remote_opens++;
+    return fz_open_file(ctx, file);
+}
+
+static void testRemote(void)
+{
+    char error[DOC_ERROR_MAX];
+    CHECK(!docOpen("dav:/quiet.epub", NULL, error, sizeof(error)) && error[0]);  // No opener: it can't.
+    docSetRemoteOpener(openFixture);
+    Doc *d = docOpen("dav:/quiet.epub", NULL, error, sizeof(error));
+    CHECK(d && g_remote_opens == 1 && docReflowable(d));
+    if (d) {
+        char title[DOC_TEXT_MAX];
+        docTitle(d, title, sizeof(title));
+        CHECK(!strcmp(title, "The Quiet Lighthouse"));
+        docClose(d);
+    }
+    DocEpubInfo info;
+    CHECK(docEpubInfo("dav:/quiet.epub", 100, 150, &info) && info.cover.pixels && g_remote_opens == 2);
+    docImageFree(&info.cover);
+    d = docOpen("dav:/strip.cbz", NULL, error, sizeof(error));  // Its kind from its name.
+    CHECK(d && !docReflowable(d) && docPageCount(d) == 3);
+    if (d)
+        docClose(d);
+    d = docOpen("dav:/plain.pdf", NULL, error, sizeof(error));
+    CHECK(d && docPageCount(d) == 3);
+    if (d)
+        docClose(d);
+    CHECK(!docOpen("dav:/missing.epub", NULL, error, sizeof(error)) && error[0]);
+    docSetRemoteOpener(NULL);
+}
+
 void testDoc(void)
 {
     testCovers();
@@ -318,5 +359,6 @@ void testDoc(void)
     testFixed();
     testComicArchives();
     testRenderPart();
+    testRemote();
     testOthers();
 }

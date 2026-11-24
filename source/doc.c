@@ -117,10 +117,32 @@ static void quiet(void *user, const char *message)
     (void)message;
 }
 
+static DocRemoteOpener g_remote;
+
+void docSetRemoteOpener(DocRemoteOpener open)
+{
+    g_remote = open;
+}
+
+static bool isRemote(const char *path)
+{
+    return !strncmp(path, DOC_REMOTE_PREFIX, strlen(DOC_REMOTE_PREFIX));
+}
+
+// The file at path to read: on the card, or (a "dav:/" path) over the network.
+static fz_stream *openStream(fz_context *ctx, const char *path)
+{
+    if (!isRemote(path))
+        return fz_open_file(ctx, path);
+    if (!g_remote)
+        fz_throw(ctx, FZ_ERROR_ARGUMENT, "The network folder can't be read here.");
+    return g_remote(ctx, path);
+}
+
 // Opens path as the kind magic names (an extension MuPDF knows), whatever its own name says.
 static fz_document *openAs(fz_context *ctx, const char *path, const char *magic)
 {
-    fz_stream *stream = fz_open_file(ctx, path);
+    fz_stream *stream = openStream(ctx, path);
     fz_document *doc = NULL;
     fz_try(ctx)
     {
@@ -171,6 +193,8 @@ Doc *docOpen(const char *path, const DocColors *colors, char *error, size_t erro
         const char *dot = strrchr(path, '.');
         if (dot && !strcasecmp(dot, ".cb7"))  // A comic in a 7z archive: libarchive reads it as a CBR's.
             d->doc = openAs(d->ctx, path, "cbr");
+        else if (isRemote(path))  // Its kind from its name, as for a file.
+            d->doc = openAs(d->ctx, path, dot ? dot : path);
         else
             d->doc = fz_open_document(d->ctx, path);
         if (fz_needs_password(d->ctx, d->doc))
@@ -872,7 +896,23 @@ bool docEpubInfo(const char *path, int max_w, int max_h, DocEpubInfo *out)
     fz_try(ctx)
     {
         fz_register_document_handlers(ctx);
-        zip = fz_open_archive(ctx, path);
+        if (isRemote(path)) {
+            fz_stream *stm = openStream(ctx, path);
+            fz_try(ctx)
+            {
+                zip = fz_open_archive_with_stream(ctx, stm);
+            }
+            fz_always(ctx)
+            {
+                fz_drop_stream(ctx, stm);  // The archive keeps its own hold on it.
+            }
+            fz_catch(ctx)
+            {
+                fz_rethrow(ctx);
+            }
+        } else {
+            zip = fz_open_archive(ctx, path);
+        }
         buf = fz_read_archive_entry(ctx, zip, "META-INF/container.xml");
         xml = fz_parse_xml(ctx, buf, 0);
         fz_drop_buffer(ctx, buf);

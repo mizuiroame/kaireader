@@ -16,6 +16,13 @@
 
 typedef struct Doc Doc;
 
+struct fz_context;
+struct fz_stream;
+#define DOC_REMOTE_PREFIX "dav:/"  // A book of the network folder: opened through the remote opener.
+// Opens a "dav:/..." path as a stream MuPDF reads (it throws if it can't). Set by the app (netstream.c).
+typedef struct fz_stream *(*DocRemoteOpener)(struct fz_context *ctx, const char *path);
+void docSetRemoteOpener(DocRemoteOpener open);
+
 // One entry of the table of contents.
 typedef struct {
     char title[DOC_TEXT_MAX];
