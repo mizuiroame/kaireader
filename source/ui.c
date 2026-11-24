@@ -12,6 +12,7 @@
 #include "font.h"
 #include "gfx.h"
 #include "lang.h"
+#include "ui_brand.h"
 #include "ui_buttons.h"
 #include "ui_common.h"
 #include "ui_hit.h"
@@ -27,6 +28,8 @@
 #define BARS_TOP_H 64
 #define BARS_BOTTOM_H 84
 #define BARS_HELP_H 40  // Upright: the button help on a line of its own.
+#define ABOUT_H 540        // The About page, with Mizuiro's mark at its foot,
+#define ABOUT_BRAND_H 104  // the seal this tall.
 #define TURN_BUTTON_W 56            // The reading bar's turn button,
 #define TURN_BUTTON_FROM_RIGHT 290  // left of the clock and battery.
 
@@ -487,7 +490,7 @@ static void drawSettings(const App *app)
     int n = settingsRows(app->settings_page, rows);
     bool about = app->settings_page == SETTINGS_PAGE_ABOUT;
     int w = minInt(SETTINGS_W_MAX, gfxLayoutWidth() - 40);
-    int h = about ? 460 : 84 + n * SETTINGS_ROW_H + 110;
+    int h = about ? ABOUT_H : 84 + n * SETTINGS_ROW_H + 110;
     int x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
     gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
     uiHitAdd(x, y, w, h, HIT_SETTING, -1);
@@ -503,6 +506,7 @@ static void drawSettings(const App *app)
     fontDrawMiddle(FONT_BOLD, 22, tx, y + 40.0f, T(settingsPageTitle(app->settings_page)), COLOR_TEXT);
     if (about) {
         drawAboutText(x + 32, y + 90, w - 64);
+        uiDrawBrand(x + 32, y + h - ABOUT_BRAND_H - 52, ABOUT_BRAND_H);  // Mizuiro's seal and name.
         uiDrawHelp(x + 28, y + h - 30.0f, w - 56, T("[B] Back"));
         return;
     }

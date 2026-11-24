@@ -7,7 +7,7 @@ SRC     := ../../source
 OUT     := build
 CFLAGS  := -std=gnu11 -O1 -g -Wall -Wextra -pthread -DKAIREADER_VERSION=\"preview\" -I$(SRC) -I../../third_party -I$(OUT)
 UI_SRC  := gfx.c font.c ui.c ui_common.c ui_buttons.c ui_hit.c ui_notice.c util.c app.c touch.c kinetic.c \
-           image_impl.c lang.c notice.c approot.c shelf.c doc.c reading.c covers.c prefs.c settings.c
+           image_impl.c lang.c notice.c approot.c shelf.c doc.c reading.c covers.c prefs.c settings.c            motion.c ui_brand.c
 
 .PHONY: run clean
 
@@ -24,9 +24,17 @@ $(OUT)/font_regular_ttf.c: ../../data/font_regular.ttf embed.py
 $(OUT)/font_bold_ttf.c: ../../data/font_bold.ttf embed.py
 	python3 embed.py $< $(OUT) font_bold_ttf
 
-$(OUT)/preview: preview.c font_system_host.c $(addprefix $(SRC)/,$(UI_SRC)) $(OUT)/font_regular_ttf.c $(OUT)/font_bold_ttf.c
+$(OUT)/brand_seal_png.c: ../../data/brand_seal.png embed.py
+	python3 embed.py $< $(OUT) brand_seal_png
+
+$(OUT)/brand_word_png.c: ../../data/brand_word.png embed.py
+	python3 embed.py $< $(OUT) brand_word_png
+
+BRAND   := $(OUT)/brand_seal_png.c $(OUT)/brand_word_png.c
+
+$(OUT)/preview: preview.c font_system_host.c $(addprefix $(SRC)/,$(UI_SRC)) $(OUT)/font_regular_ttf.c $(OUT)/font_bold_ttf.c $(BRAND)
 	$(CC) $(CFLAGS) preview.c font_system_host.c $(addprefix $(SRC)/,$(UI_SRC)) \
-		$(OUT)/font_regular_ttf.c $(OUT)/font_bold_ttf.c -o $@ -lmupdf -lmupdf-third -lm -pthread
+		$(OUT)/font_regular_ttf.c $(OUT)/font_bold_ttf.c $(BRAND) -o $@ -lmupdf -lmupdf-third -lm -pthread
 
 clean:
 	rm -rf $(OUT)
