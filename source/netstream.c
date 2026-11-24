@@ -16,8 +16,6 @@
 
 #define NET_BLOCK (64 * 1024)
 #define NET_BLOCKS 24  // 1.5 MB kept: the zip's end, an OPF, a cover.
-#define NET_BIG_BLOCK (512 * 1024)  // RAR and 7z are read in order: fewer, bigger reads.
-#define NET_BIG_BLOCKS 6
 #define URL_MAX 2048
 #define AUTH_MAX 512
 #define RANGE_STALL_S 10
@@ -159,10 +157,10 @@ static fz_stream *netStreamOpen(fz_context *ctx, const char *location)
     NetStream *s = calloc(1, sizeof(*s));
     if (!s)
         fz_throw(ctx, FZ_ERROR_SYSTEM, "Out of memory.");
-    const char *dot = strrchr(location, '.');
-    bool in_order = dot && (!strcasecmp(dot, ".cbr") || !strcasecmp(dot, ".cb7") || !strcasecmp(dot, ".cbt"));
-    s->block_size = in_order ? NET_BIG_BLOCK : NET_BLOCK;
-    s->block_count = in_order ? NET_BIG_BLOCKS : NET_BLOCKS;
+    // One size for all: big blocks were tried for RAR and 7z (2026-11-24) and were slower,
+    // libarchive skipping from header to header rather than reading on.
+    s->block_size = NET_BLOCK;
+    s->block_count = NET_BLOCKS;
     for (int i = 0; i < NET_BLOCKS; i++)
         s->blocks[i].start = -1;
     s->size = -1;

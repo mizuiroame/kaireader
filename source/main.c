@@ -156,6 +156,7 @@ int main(int argc, char **argv)
 
     appFree(&app);  // Where the book was left, and the settings.
     readingStop();
+    appNetworkExit();  // After the reading thread: it may have been reading a cover over the network.
     sysinfoExit();
     fontExit();
     gfxExit();

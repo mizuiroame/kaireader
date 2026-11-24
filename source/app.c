@@ -331,6 +331,7 @@ static void rememberPlace(App *app)
     shelfMarkRead(b, st.current_place, st.current_percent, (int64_t)time(NULL));
 }
 
+// The network is left for main.c to stop, after the reading thread (it may be reading a cover over it).
 void appFree(App *app)
 {
     rememberPlace(app);
@@ -349,7 +350,6 @@ void appFree(App *app)
     }
     shelfFree(&app->shelf);
     shelfFree(&app->other_shelf);
-    appNetworkExit();
     bookmarksFree(&app->marks);
 }
 
