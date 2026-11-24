@@ -39,6 +39,8 @@ float prefsEm(int text_size);
 const char *prefsThemeName(int theme);  // English: shown with T().
 const char *prefsSortName(int sort);
 const char *prefsTurnName(int turn);
+// Settings' Screen: Horizontal, Vertical (on the side used last), Automatic, and round.
+int prefsStepTurn(Prefs *p, int dir);
 // The quick button's turn: lying down if upright, else upright on the side used last.
 // From Automatic, it starts from current (how the screen is now) and leaves Automatic.
 int prefsToggleTurn(Prefs *p, int current);

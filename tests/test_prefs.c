@@ -36,7 +36,8 @@ void testPrefs(void)
     CHECK(prefsLoad(&q, TMP_ROOT "/bad-settings.txt"));
     CHECK(q.text_size == PREFS_TEXT_DEFAULT && q.theme == THEME_DARK && q.clock_24h && q.sort == 0 && q.turn == 0);
     CHECK(!strcmp(prefsSortName(SHELF_SORT_AUTHOR), "Author") && !strcmp(prefsSortName(99), "Recently read"));
-    CHECK(!strcmp(prefsTurnName(1), "Upright, right side down") && !strcmp(prefsTurnName(7), "Lying down"));
+    CHECK(!strcmp(prefsTurnName(1), "Vertical") && !strcmp(prefsTurnName(2), "Vertical") &&
+          !strcmp(prefsTurnName(7), "Horizontal"));
 
     // The quick turn: upright on the side used last (right at first), and lying down again.
     Prefs t;
@@ -59,7 +60,14 @@ void testPrefs(void)
     CHECK(prefsToggleTurn(&t, GFX_TURN_NONE) == GFX_TURN_LEFT && t.turn == GFX_TURN_LEFT);
     t.turn = PREFS_TURN_AUTO;
     CHECK(prefsToggleTurn(&t, GFX_TURN_RIGHT) == GFX_TURN_NONE && t.upright == GFX_TURN_RIGHT);
-    CHECK(!strcmp(prefsTurnName(PREFS_TURN_AUTO), "Automatic (handheld)"));
+    CHECK(!strcmp(prefsTurnName(PREFS_TURN_AUTO), "Automatic"));
+    // Settings' three choices: Vertical on the side it stood on last.
+    prefsDefaults(&t);
+    t.upright = GFX_TURN_LEFT;
+    CHECK(prefsStepTurn(&t, 1) == GFX_TURN_LEFT && prefsStepTurn(&t, 1) == PREFS_TURN_AUTO);
+    CHECK(prefsStepTurn(&t, 1) == GFX_TURN_NONE && prefsStepTurn(&t, -1) == PREFS_TURN_AUTO);
+    t.turn = GFX_TURN_RIGHT;  // Turned right by the quick turn: Vertical is that side now.
+    CHECK(prefsStepTurn(&t, -1) == GFX_TURN_NONE && prefsStepTurn(&t, 1) == GFX_TURN_RIGHT);
     t.turn = PREFS_TURN_AUTO;
     CHECK(prefsSave(&t, TMP_ROOT "/turn.txt") && prefsLoad(&q, TMP_ROOT "/turn.txt") && q.turn == PREFS_TURN_AUTO);
 

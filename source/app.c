@@ -504,6 +504,8 @@ static void autoTurn(App *app, uint64_t now_ns)
     if (now_ns - app->turn_want_ns < AUTO_TURN_NS)
         return;
     gfxSetTurn(want);
+    if (want != GFX_TURN_NONE)
+        app->prefs.upright = want;  // The side Vertical and the quick turn use next.
     layoutLibrary(app);
     keepCursorVisible(app);
     relayout(app);

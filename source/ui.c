@@ -28,7 +28,7 @@
 #define BARS_TOP_H 64
 #define BARS_BOTTOM_H 84
 #define BARS_HELP_H 40  // Upright: the button help on a line of its own.
-#define ABOUT_H 540        // The About page, with Mizuiro's mark at its foot,
+#define ABOUT_GAP 8        // About: Mizuiro's mark this far under the text,
 #define ABOUT_BRAND_H 104  // the seal this tall.
 #define TURN_BUTTON_W 56            // The reading bar's turn button,
 #define TURN_BUTTON_FROM_RIGHT 290  // left of the clock and battery.
@@ -465,7 +465,8 @@ static void drawMenu(const App *app)
     uiDrawHelp(x + 28, y + h - 30.0f, w - 56, T("[A] Choose  [B] Close"));
 }
 
-static void drawAboutText(int x, int y, int w)
+// About's paragraphs from y down; returns where they end. Measures only, without draw.
+static int drawAboutText(int x, int y, int w, bool draw)
 {
     const char *paragraphs[] = {
         "KaiReader " KAIREADER_VERSION,
@@ -477,10 +478,12 @@ static void drawAboutText(int x, int y, int w)
         char lines[6][160];
         int n = wrapLines(p ? FONT_REGULAR : FONT_BOLD, p ? 18 : 22, paragraphs[p], w, lines, 6);
         for (int i = 0; i < n; i++, y += p ? 27 : 32)
-            fontDraw(p ? FONT_REGULAR : FONT_BOLD, p ? 18 : 22, x, y, lines[i],
-                     p == 0 ? COLOR_ACCENT : p == 1 ? COLOR_TEXT : COLOR_DIM);
+            if (draw)
+                fontDraw(p ? FONT_REGULAR : FONT_BOLD, p ? 18 : 22, x, y, lines[i],
+                         p == 0 ? COLOR_ACCENT : p == 1 ? COLOR_TEXT : COLOR_DIM);
         y += 14;
     }
+    return y;
 }
 
 static void drawSettings(const App *app)
@@ -490,7 +493,8 @@ static void drawSettings(const App *app)
     int n = settingsRows(app->settings_page, rows);
     bool about = app->settings_page == SETTINGS_PAGE_ABOUT;
     int w = minInt(SETTINGS_W_MAX, gfxLayoutWidth() - 40);
-    int h = about ? ABOUT_H : 84 + n * SETTINGS_ROW_H + 110;
+    int about_text = about ? drawAboutText(0, 0, w - 64, false) : 0;  // Its height, to fit the page to it.
+    int h = about ? 90 + about_text + ABOUT_GAP + ABOUT_BRAND_H + 64 : 84 + n * SETTINGS_ROW_H + 110;
     int x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
     gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
     uiHitAdd(x, y, w, h, HIT_SETTING, -1);
@@ -505,8 +509,8 @@ static void drawSettings(const App *app)
     }
     fontDrawMiddle(FONT_BOLD, 22, tx, y + 40.0f, T(settingsPageTitle(app->settings_page)), COLOR_TEXT);
     if (about) {
-        drawAboutText(x + 32, y + 90, w - 64);
-        uiDrawBrand(x + 32, y + h - ABOUT_BRAND_H - 52, ABOUT_BRAND_H);  // Mizuiro's seal and name.
+        int end = drawAboutText(x + 32, y + 90, w - 64, true);
+        uiDrawBrand(x + 32, end + ABOUT_GAP, ABOUT_BRAND_H);  // Mizuiro's seal and name, right under it.
         uiDrawHelp(x + 28, y + h - 30.0f, w - 56, T("[B] Back"));
         return;
     }

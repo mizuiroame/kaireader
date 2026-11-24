@@ -39,9 +39,8 @@ void testSettings(void)
     int changed = settingsStep(&p, SETTING_SCREEN, 1);
     CHECK((changed & SETTINGS_CHANGED_SCREEN) && (changed & SETTINGS_CHANGED_LAYOUT) && p.turn == GFX_TURN_RIGHT);
     settingsValue(&p, SETTING_SCREEN, value, sizeof(value), &name);
-    CHECK(!strcmp(value, "Upright, right side down"));
-    settingsStep(&p, SETTING_SCREEN, 1);
-    CHECK(settingsStep(&p, SETTING_SCREEN, 1) && p.turn == PREFS_TURN_AUTO);  // After the two upright ones,
+    CHECK(!strcmp(value, "Vertical"));
+    CHECK(settingsStep(&p, SETTING_SCREEN, 1) && p.turn == PREFS_TURN_AUTO);  // Horizontal, Vertical, Automatic,
     CHECK(settingsStep(&p, SETTING_SCREEN, 1) && p.turn == GFX_TURN_NONE);    // and round again.
     CHECK(settingsStep(&p, SETTING_PAGES, 1) == SETTINGS_CHANGED_LAYOUT && p.two_pages);
     settingsValue(&p, SETTING_PAGES, value, sizeof(value), &name);

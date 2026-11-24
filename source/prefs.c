@@ -25,10 +25,10 @@ static const char *const SORT_NAMES[SHELF_SORT_COUNT] = {
 };
 
 static const char *const TURN_NAMES[4] = {
-    N_("Lying down"),
-    N_("Upright, right side down"),
-    N_("Upright, left side down"),
-    N_("Automatic (handheld)"),
+    N_("Horizontal"),
+    N_("Vertical"),
+    N_("Vertical"),  // Either side down: the side is the quick turn's (or Automatic's) to choose.
+    N_("Automatic"),
 };
 
 // Ink and paper, 0xRRGGBB: soft contrast, never pure black on pure white.
@@ -157,6 +157,18 @@ int prefsTurnFromGravity(float x, float y, float z, int current)
     if (y <= -0.6f && ay > ax + MARGIN)
         return GFX_TURN_NONE;
     return current;
+}
+
+int prefsStepTurn(Prefs *p, int dir)
+{
+    // The three choices in order; Vertical is whichever side it stood on last.
+    int at = p->turn == GFX_TURN_NONE ? 0 : p->turn == PREFS_TURN_AUTO ? 2 : 1;
+    if (p->turn == GFX_TURN_RIGHT || p->turn == GFX_TURN_LEFT)
+        p->upright = p->turn;
+    at = ((at + (dir < 0 ? -1 : 1)) % 3 + 3) % 3;
+    p->turn = at == 0 ? GFX_TURN_NONE : at == 2 ? PREFS_TURN_AUTO : p->upright == GFX_TURN_LEFT ? GFX_TURN_LEFT
+                                                                                                 : GFX_TURN_RIGHT;
+    return p->turn;
 }
 
 int prefsToggleTurn(Prefs *p, int current)

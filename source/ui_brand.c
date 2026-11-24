@@ -39,8 +39,10 @@ int uiDrawBrand(int x, int y, int seal_h)
     gfxDrawImageScaledFb(x * GFX_SCALE, y * GFX_SCALE, seal_w * GFX_SCALE, seal_h * GFX_SCALE, s->w, s->h, s->pixels);
     int tx = x + (int)seal_w + 22;
     float word_h = seal_h * 0.2f, word_w = word_h * w->w / w->h;
-    fontDraw(FONT_REGULAR, 16, tx, y + (int)(seal_h * 0.5f - word_h - 22), T("Made by"), COLOR_DIM);
-    gfxDrawImageScaledFb(tx * GFX_SCALE, (y + seal_h * 0.5f - word_h / 2) * GFX_SCALE, word_w * GFX_SCALE,
-                         word_h * GFX_SCALE, w->w, w->h, w->pixels);
+    // "Made by" and the wordmark as one block, centered on the seal.
+    float block = 20 + 6 + word_h, top = y + (seal_h - block) / 2;
+    fontDraw(FONT_REGULAR, 16, tx, (int)top, T("Made by"), COLOR_DIM);
+    gfxDrawImageScaledFb(tx * GFX_SCALE, (top + 26) * GFX_SCALE, word_w * GFX_SCALE, word_h * GFX_SCALE, w->w, w->h,
+                         w->pixels);
     return seal_h;
 }
