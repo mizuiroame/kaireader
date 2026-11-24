@@ -206,7 +206,7 @@ static void drawEmpty(int w)
 {
     const char *lines[] = {
         T("No books yet."),
-        T("Put EPUB, PDF, CBZ, FB2, MOBI or TXT files in the books folder of the SD card:"),
+        T("Put EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files in the books folder of the SD card:"),
         "sdmc:/books",
         T("Books with DRM (bought in a store that locks them) can't be opened."),
     };
@@ -481,9 +481,9 @@ static int drawAboutText(int x, int y, int w, bool draw)
 {
     const char *paragraphs[] = {
         "KaiReader " KAIREADER_VERSION,
-        T("A book reader for Switch 2 homebrew. Your books from sdmc:/books: EPUB, PDF, CBZ, FB2, MOBI, TXT and XPS."),
+        T("A book reader for Switch 2 homebrew. Your books from sdmc:/books or a network folder: EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS."),
         T("Pages are drawn with MuPDF (Artifex Software), under the GNU AGPL 3.0. KaiReader is free software under the same license; its code is on GitHub (mizuiroame/kaireader)."),
-        T("Books locked with DRM can't be opened: only books you can read anywhere."),
+        T("Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub."),
     };
     for (int p = 0; p < 4; p++) {
         char lines[6][160];
