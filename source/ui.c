@@ -25,6 +25,7 @@
 #define PANEL_RADIUS 22
 #define MENU_W 480
 #define MENU_ROW_H 54
+#define MENU_LINE_H 17  // Between the menu's groups: a thin line.
 #define SETTINGS_W_MAX 760
 #define SETTINGS_ROW_H 50
 #define CONTENTS_W_MAX 780
@@ -550,15 +551,22 @@ static void drawMenu(const App *app)
 {
     dim();
     MenuItem rows[MENU_COUNT];
-    int n = appMenuRows(app, rows);
-    int w = minInt(MENU_W, gfxLayoutWidth() - 40), h = 70 + n * MENU_ROW_H + 56;
+    int n = appMenuRows(app, rows), lines = 0;
+    for (int i = 1; i < n; i++)
+        lines += appMenuGroup(rows[i]) != appMenuGroup(rows[i - 1]);
+    int w = minInt(MENU_W, gfxLayoutWidth() - 40), h = 70 + n * MENU_ROW_H + lines * MENU_LINE_H + 56;
     int x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
     gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
     uiHitAdd(x, y, w, h, HIT_MENU_ITEM, -1);
     int name_w = fontDraw(FONT_BOLD, 24, x + 28, y + 22, "KaiReader", COLOR_ACCENT);
     fontDraw(FONT_REGULAR, 17, x + 28 + name_w + 10, y + 28, KAIREADER_VERSION, COLOR_DIM);
+    int ry = y + 70 - MENU_ROW_H;
     for (int i = 0; i < n; i++) {
-        int ry = y + 70 + i * MENU_ROW_H;
+        ry += MENU_ROW_H;
+        if (i > 0 && appMenuGroup(rows[i]) != appMenuGroup(rows[i - 1])) {  // A new group: a line before it.
+            gfxFillRect(x + 28, ry + MENU_LINE_H / 2 - 4, w - 56, 1, COLOR_SURFACE_HI);
+            ry += MENU_LINE_H;
+        }
         bool on = i == app->menu_cursor;
         if (on)
             gfxFillRoundRect(x + 12, ry, w - 24, MENU_ROW_H - 4, 12, COLOR_SURFACE_HI);

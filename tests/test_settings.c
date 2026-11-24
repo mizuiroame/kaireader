@@ -8,8 +8,9 @@
 void testSettings(void)
 {
     SettingRow rows[SETTINGS_ROWS_MAX];
-    CHECK(settingsRows(SETTINGS_PAGE_MAIN, rows) == 5 && rows[0] == SETTING_OPEN_READING);
-    CHECK(settingsOpens(rows[2]) == SETTINGS_PAGE_NETWORK && settingsOpens(rows[4]) == SETTINGS_PAGE_ABOUT);
+    CHECK(settingsRows(SETTINGS_PAGE_MAIN, rows) == 5 && rows[0] == SETTING_OPEN_LIBRARY);
+    CHECK(settingsOpens(rows[1]) == SETTINGS_PAGE_NETWORK && settingsOpens(rows[2]) == SETTINGS_PAGE_READING);
+    CHECK(settingsOpens(rows[4]) == SETTINGS_PAGE_ABOUT);
     CHECK(settingsOpens(SETTING_CLOCK) == SETTINGS_PAGE_MAIN);
     // Library: the sort, the view (a grid or a list), looking again.
     CHECK(settingsRows(SETTINGS_PAGE_LIBRARY, rows) == 3 && rows[1] == SETTING_VIEW && settingsHasValue(SETTING_VIEW));

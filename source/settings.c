@@ -85,9 +85,9 @@ int settingsRows(SettingsPage page, SettingRow *out)
     int n = 0;
     switch (page) {
     case SETTINGS_PAGE_MAIN:
-        out[n++] = SETTING_OPEN_READING;
-        out[n++] = SETTING_OPEN_LIBRARY;
+        out[n++] = SETTING_OPEN_LIBRARY;  // As KaiPlayer's: the library, where it comes from, then the rest.
         out[n++] = SETTING_OPEN_NETWORK;
+        out[n++] = SETTING_OPEN_READING;
         out[n++] = SETTING_OPEN_DISPLAY;
         out[n++] = SETTING_OPEN_ABOUT;
         break;

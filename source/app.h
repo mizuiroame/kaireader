@@ -271,6 +271,8 @@ bool appTwoPages(const App *app);
 void appColumn(const App *app, int side, int *x, int *y, int *w, int *h);
 // The menu's rows now (the reader has more): into out, how many.
 int appMenuRows(const App *app, MenuItem *out);
+// The menu's groups (a line between them): the book's, the library's, then Settings and Exit.
+int appMenuGroup(MenuItem item);
 // The chapter the page is in (-1 if none), for the bars.
 int appChapterOf(const App *app, int page);
 // Rows the contents panel shows, for the screen's height.

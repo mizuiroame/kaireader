@@ -788,6 +788,21 @@ static void quickStep(App *app, SettingRow row, int dir, uint64_t now_ns)
 
 // --- The menu ---
 
+int appMenuGroup(MenuItem item)
+{
+    switch (item) {
+    case MENU_CONTENTS:
+    case MENU_BOOKMARK:
+    case MENU_FAVORITE:
+        return 0;
+    case MENU_SETTINGS:
+    case MENU_EXIT:
+        return 2;
+    default:
+        return 1;
+    }
+}
+
 int appMenuRows(const App *app, MenuItem *out)
 {
     int n = 0;
@@ -799,8 +814,8 @@ int appMenuRows(const App *app, MenuItem *out)
     if (app->view == VIEW_LIBRARY) {
         if (appSelectedBook(app))
             out[n++] = MENU_FAVORITE;
-        out[n++] = MENU_VIEW;
         out[n++] = davConfigured() ? MENU_SOURCE : MENU_NET_SETUP;
+        out[n++] = MENU_VIEW;
         out[n++] = MENU_RESCAN;
     }
     out[n++] = MENU_SETTINGS;
