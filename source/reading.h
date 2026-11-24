@@ -23,6 +23,7 @@ typedef struct {
     float em;            // Text size of a reflowable book, in points.
     float pixel_scale;   // Pixels per point.
     DocColors colors;
+    float zoom;          // Fixed pages rendered this much bigger than fitted (1, or 0, for fitted).
 } ReadingLayout;
 
 typedef enum {

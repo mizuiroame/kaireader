@@ -73,7 +73,7 @@ static float fitScale(Doc *d, int page, const ReadingLayout *l)
     if (!docPageSize(d, page, &w, &h))
         return l->pixel_scale;
     float s = l->fixed_w / w < l->fixed_h / h ? l->fixed_w / w : l->fixed_h / h;
-    return s * l->pixel_scale;
+    return s * l->pixel_scale * (l->zoom > 1.0f ? l->zoom : 1.0f);
 }
 
 static int percentOf(int page, int pages)

@@ -34,18 +34,25 @@ static void readTouch(App *app, uint64_t now)
     static bool full_hd;  // Seen coordinates beyond 1280x720: scale them down.
     HidTouchScreenState state = {0};
     bool touching = hidGetTouchScreenStates(&state, 1) > 0 && state.count > 0;
-    int x = 0, y = 0;
-    if (touching) {
-        x = (int)state.touches[0].x;
-        y = (int)state.touches[0].y;
-        if (x >= SCREEN_W || y >= SCREEN_H)
+    int count = touching ? (int)state.count : 0, px[2] = {0, 0}, py[2] = {0, 0};
+    for (int i = 0; i < count && i < 2; i++) {
+        px[i] = (int)state.touches[i].x;
+        py[i] = (int)state.touches[i].y;
+        if (px[i] >= SCREEN_W || py[i] >= SCREEN_H)
             full_hd = true;
-        if (full_hd) {
-            x = x * SCREEN_W / PANEL_W;
-            y = y * SCREEN_W / PANEL_W;
-        }
     }
-    appHandleTouch(app, touching, x, y, now);
+    for (int i = 0; i < 2 && full_hd; i++) {
+        px[i] = px[i] * SCREEN_W / PANEL_W;
+        py[i] = py[i] * SCREEN_W / PANEL_W;
+    }
+    int tx[2] = {px[0], px[1]}, ty[2] = {py[0], py[1]};  // Two fingers, turned with the screen: zoom.
+    appTurnPoint(&tx[0], &ty[0]);
+    appTurnPoint(&tx[1], &ty[1]);
+    if (appZoomTouches(app, count, (float)tx[0], (float)ty[0], (float)tx[1], (float)ty[1], now)) {
+        touchReset(&app->touch);  // No tap or drag when they lift.
+        return;
+    }
+    appHandleTouch(app, touching, px[0], py[0], now);
 }
 
 static char g_folder[APPROOT_PATH_MAX];

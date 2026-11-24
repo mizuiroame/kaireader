@@ -63,7 +63,7 @@ void uiDrawMarkButton(const App *app, int x, int y)
 void uiDrawContentsTabs(const App *app, int x, int y)
 {
     char marks[64];
-    snprintf(marks, sizeof(marks), app->book_mark_count ? "%s  %d" : "%s", T("Bookmarks"), app->book_mark_count);
+    snprintf(marks, sizeof(marks), app->book_mark_count ? "%s (%d)" : "%s", T("Bookmarks"), app->book_mark_count);
     const char *names[2] = {T("Contents"), marks};
     int tx = x;
     for (int t = 0; t < 2; t++) {

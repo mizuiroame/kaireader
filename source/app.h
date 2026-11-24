@@ -58,6 +58,7 @@ typedef enum {
 typedef struct {
     unsigned generation;
     int page;
+    float zoom;      // The zoom it was rendered at (a fixed page; 1 for fitted).
     DocImage image;  // NULL pixels: free slot.
 } PageSlot;
 
@@ -120,6 +121,13 @@ typedef struct {
     uint64_t turn_start_ns;
     int turn_want;            // Screen: Automatic: the turn gravity asks for, and since when.
     uint64_t turn_want_ns;
+    // Zoom on a fixed page (app_zoom.c): shown, and rendered at; the page middle's offset.
+    float zoom, render_zoom;
+    float pan_x, pan_y;
+    uint64_t zoom_changed_ns;
+    bool pinching;            // Two fingers on the screen: zooming.
+    bool touch_held;          // After two fingers, until every finger is up: no tap, no drag.
+    float pinch_distance, pinch_zoom, pinch_x, pinch_y;
     DocChapter *chapters;
     int chapter_count;
     int drag_rows;            // A drag in the contents: rows moved so far.
@@ -152,6 +160,26 @@ bool appShownMarked(const App *app);  // The page shown (either of two) has a bo
 void appToggleMark(App *app, uint64_t now_ns);
 void appMarksGo(App *app, int i);
 void appMarksRemoveAt(App *app, int i, uint64_t now_ns);
+
+// app_zoom.c: zoom on fixed pages (PDF, comics), one page at a time.
+bool appZoomable(const App *app);
+bool appZoomed(const App *app);
+void appZoomTo(App *app, float zoom, float cx, float cy, uint64_t now_ns);
+void appZoomStep(App *app, int dir, uint64_t now_ns);  // Up (+1) or down (-1) a step.
+void appZoomPan(App *app, float dx, float dy);         // A finger's move.
+void appZoomPanStep(App *app, int dx, int dy);         // A stick's push.
+void appZoomToStart(App *app);   // A new page: its top left, as it's read.
+void appZoomReset(App *app);
+void appZoomTick(App *app, uint64_t now_ns);  // Each frame: sharp once it rests.
+// Two fingers on the screen, each frame (count: how many touch; the first two, turned with the
+// screen). True while they own the touch: from two fingers down until every finger is up.
+bool appZoomTouches(App *app, int count, float x0, float y0, float x1, float y1, uint64_t now_ns);
+// The page rendered again at the zoom, keeping the pages shown until the sharp ones come.
+void appRenderAgain(App *app);
+// A page's image, of this layout or (a fixed page) one before, its size in pixels and the zoom it was made at.
+bool appPageImageZoom(const App *app, int page, float *w, float *h, float *zoom);
+// Touch coordinates as the panel reports them, turned with the screen (as appHandleTouch does).
+void appTurnPoint(int *x, int *y);
 
 // The page image of a page, if it's here.
 const DocImage *appPageImage(const App *app, int page);

@@ -1,5 +1,5 @@
 // A book open with MuPDF: EPUB, FB2, MOBI, XHTML and TXT, which flow into
-// pages of the size asked (reflowable), and PDF, XPS and comic books (CBZ),
+// pages of the size asked (reflowable), and PDF, XPS and comic books (CBZ, CBR, CB7, CBT),
 // whose pages are fixed. A Doc belongs to one thread: KaiReader's reading
 // thread (reading.h); the tests use it directly.
 #pragma once

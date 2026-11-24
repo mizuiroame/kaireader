@@ -223,11 +223,37 @@ def pdf(path: str) -> None:
         f.write(out)
 
 
+STRIP = [(200, 40, 40), (40, 160, 60), (40, 60, 200)]
+
+
 def cbz(path: str) -> None:
-    colors = [(200, 40, 40), (40, 160, 60), (40, 60, 200)]
     with zipfile.ZipFile(path, "w") as z:
-        for i, c in enumerate(colors, 1):
+        for i, c in enumerate(STRIP, 1):
             z.writestr(f"page{i:02d}.png", png(300, 450, c))
+
+
+def cbt_cb7(folder: str) -> None:
+    """The strip as a CBT (tar) and, when 7z is there, a CB7."""
+    import io
+    import shutil
+    import subprocess
+    import tarfile
+    import tempfile
+    with tarfile.open(os.path.join(folder, "strip-tar.cbt"), "w") as t:
+        for i, c in enumerate(STRIP, 1):
+            data = png(300, 450, c)
+            info = tarfile.TarInfo(f"page{i:02d}.png")
+            info.size = len(data)
+            t.addfile(info, io.BytesIO(data))
+    seven = shutil.which("7z")
+    if not seven:
+        return
+    with tempfile.TemporaryDirectory() as tmp:
+        for i, c in enumerate(STRIP, 1):
+            with open(os.path.join(tmp, f"page{i:02d}.png"), "wb") as f:
+                f.write(png(300, 450, c))
+        out = os.path.abspath(os.path.join(folder, "strip-7z.cb7"))
+        subprocess.run([seven, "a", "-t7z", out, "."], cwd=tmp, check=True, stdout=subprocess.DEVNULL)
 
 
 def fb2(path: str) -> None:
@@ -253,6 +279,7 @@ def main() -> None:
     epub(os.path.join(folder, "old.epub"), False)
     pdf(os.path.join(folder, "plain.pdf"))
     cbz(os.path.join(folder, "strip.cbz"))
+    cbt_cb7(folder)
     fb2(os.path.join(folder, "tale.fb2"))
     txt(os.path.join(folder, "notes.txt"))
     with zipfile.ZipFile(os.path.join(folder, "broken.epub"), "w") as z:

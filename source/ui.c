@@ -336,8 +336,7 @@ static void drawBars(const App *app)
     drawTurnButton(w - MARGIN - TURN_BUTTON_FROM_RIGHT, 8);
     uiDrawMarkButton(app, w - MARGIN - TURN_BUTTON_FROM_RIGHT - MARK_BUTTON_W - 12, 8);
 
-    bool upright = gfxTurn() != GFX_TURN_NONE;
-    int top = h - BARS_BOTTOM_H - (upright ? BARS_HELP_H : 0);
+    int top = h - BARS_BOTTOM_H - BARS_HELP_H;  // The button help on a line of its own: it's long.
     gfxBlendRect(0, top, w, h - top, COLOR_BG, 240);
     int bw = 120;
     gfxFillRoundRect(MARGIN, top + 12, bw, 36, 18, COLOR_SURFACE_HI);
@@ -362,11 +361,10 @@ static void drawBars(const App *app)
     int ch = appChapterOf(app, app->page);
     if (ch >= 0)
         fontDrawClipped(FONT_REGULAR, 16, left, top + 50, width / 2, app->chapters[ch].title, COLOR_DIM);
-    const char *help = T("[Y] Colors  [^v] Text size  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library");
-    if (upright)  // No room beside the chapter: a line of its own, under it.
-        uiDrawHelp(MARGIN, top + BARS_BOTTOM_H + 12.0f, w - 2 * MARGIN, help);
-    else
-        uiDrawHelp(w / 2, top + 62.0f, w / 2 - MARGIN, help);
+    const char *help = app->reflowable
+                           ? T("[X] Contents  [Y] Colors  [^v] Text size  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library")
+                           : T("[X] Contents  [^v] Zoom  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library");
+    uiDrawHelp(MARGIN, top + BARS_BOTTOM_H + 12.0f, w - 2 * MARGIN, help);
 }
 
 static void drawReader(App *app, uint64_t now_ns)

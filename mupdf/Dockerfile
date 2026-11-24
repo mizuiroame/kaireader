@@ -1,5 +1,6 @@
 # MuPDF for Switch 2 under the AGPL-3.0, KaiReader's engine for EPUB, PDF, XPS,
-# FB2, MOBI and comic books (CBZ). Built with the Switch 2 environment over the
+# FB2, MOBI and comic books (CBZ, CBT, and CBR and CB7 through libarchive, BSD,
+# from the Switch portlibs). Built with the Switch 2 environment over the
 # KaiRadio image (it has libcurl and the libounce devkit):
 #   docker build -t kaireader-devkit mupdf
 # Left out: JavaScript in PDFs (mujs), OCR (tesseract), barcodes, the document
@@ -25,13 +26,14 @@ RUN curl -fsSL -o mupdf.tar.gz "https://mupdf.com/downloads/archive/mupdf-${MUPD
 COPY switch_compat.h /tmp/mupdf/switch_compat.h
 
 RUN . /opt/devkitpro/switch2vars.sh \
- && make -j"$(nproc)" OS=switch2 build=release \
+ && export PKG_CONFIG_PATH=/opt/devkitpro/portlibs/switch/lib/pkgconfig PKG_CONFIG_LIBDIR=/opt/devkitpro/portlibs/switch/lib/pkgconfig \
+ && make -j"$(nproc)" OS=switch2 build=release archive=yes \
       CC=aarch64-none-elf-gcc CXX=aarch64-none-elf-g++ AR=aarch64-none-elf-ar \
       HAVE_X11=no HAVE_GLUT=no HAVE_CURL=no HAVE_PTHREAD=no HAVE_OBJCOPY=no \
       mujs=no tesseract=no barcode=no extract=no tofu=yes tofu_cjk=yes \
       XCFLAGS="-include /tmp/mupdf/switch_compat.h -D__SWITCH__ -D__SWITCH2__ -isystem $DEVKITPRO/libounce/include $CFLAGS -DFZ_ENABLE_JS=0 -DFZ_ENABLE_ICC=1" \
       libs \
- && make OS=switch2 build=release prefix="$PORTLIBS_PREFIX" \
+ && make OS=switch2 build=release archive=yes prefix="$PORTLIBS_PREFIX" \
       mujs=no tesseract=no barcode=no extract=no tofu=yes tofu_cjk=yes install-libs \
  && cp COPYING "$PORTLIBS_PREFIX/include/mupdf/COPYING-AGPL-3.0.txt" \
  && rm -rf /tmp/mupdf

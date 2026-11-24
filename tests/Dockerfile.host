@@ -3,7 +3,7 @@
 #   docker build -t kaireader-host -f tests/Dockerfile.host tests
 FROM debian:12
 RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ make libc6-dev ca-certificates curl \
-      python3 zip \
+      python3 zip pkg-config libarchive-dev p7zip-full \
  && rm -rf /var/lib/apt/lists/*
 
 ARG MUPDF_VERSION=1.28.6
@@ -13,9 +13,9 @@ WORKDIR /tmp/mupdf
 RUN curl -fsSL -o mupdf.tar.gz "https://mupdf.com/downloads/archive/mupdf-${MUPDF_VERSION}-source.tar.gz" \
  && echo "${MUPDF_SHA256}  mupdf.tar.gz" | sha256sum -c - \
  && tar xzf mupdf.tar.gz --strip-components=1 && rm mupdf.tar.gz \
- && make -j"$(nproc)" build=release HAVE_X11=no HAVE_GLUT=no HAVE_CURL=no \
+ && make -j"$(nproc)" build=release archive=yes HAVE_X11=no HAVE_GLUT=no HAVE_CURL=no \
       mujs=no tesseract=no barcode=no extract=no tofu=yes tofu_cjk=yes \
       XCFLAGS="-DFZ_ENABLE_JS=0" libs \
- && make build=release prefix=/usr/local mujs=no tesseract=no barcode=no extract=no tofu=yes tofu_cjk=yes install-libs \
+ && make build=release archive=yes prefix=/usr/local mujs=no tesseract=no barcode=no extract=no tofu=yes tofu_cjk=yes install-libs \
  && rm -rf /tmp/mupdf
 WORKDIR /src

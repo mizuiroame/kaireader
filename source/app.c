@@ -186,6 +186,7 @@ void appInit(App *app, const char *folder)
     shelfLoad(&app->shelf, path);
     appRescan(app, 0);
     appMarksLoad(app);
+    appZoomReset(app);
     app->book = -1;
     app->turn_from = -1;
 }
@@ -289,6 +290,7 @@ ReadingLayout appLayout(const App *app)
     l.em = prefsEm(app->prefs.text_size);
     l.pixel_scale = GFX_SCALE * gfxDetail();
     l.colors = prefsColors(app->prefs.theme);
+    l.zoom = app->render_zoom > 1.0f ? app->render_zoom : 1.0f;
     return l;
 }
 
@@ -299,6 +301,7 @@ void appOpenBook(App *app, int order_index, uint64_t now_ns)
         return;
     appCloseBook(app);
     app->book = app->order[order_index];
+    appZoomReset(app);  // A book opens fitted.
     ReadingLayout layout = appLayout(app);
     const ShelfBook *b = &app->shelf.items[app->book];
     app->generation = readingOpen(b->path, &layout, b->place);
@@ -347,14 +350,47 @@ static void relayout(App *app)
     freeSlots(app);
 }
 
-const DocImage *appPageImage(const App *app, int page)
+// The slot holding page: of this layout, or (a fixed page, any_layout) one before.
+static const PageSlot *slotOf(const App *app, int page, bool any_layout)
 {
+    const PageSlot *older = NULL;
     for (int i = 0; i < PAGE_SLOTS; i++) {
         const PageSlot *s = &app->slots[i];
-        if (s->image.pixels && s->generation == app->generation && s->page == page)
-            return &s->image;
+        if (!s->image.pixels || s->page != page)
+            continue;
+        if (s->generation == app->generation)
+            return s;
+        older = s;
     }
-    return NULL;
+    return any_layout && !app->reflowable ? older : NULL;
+}
+
+const DocImage *appPageImage(const App *app, int page)
+{
+    const PageSlot *s = slotOf(app, page, true);
+    return s ? &s->image : NULL;
+}
+
+bool appPageImageZoom(const App *app, int page, float *w, float *h, float *zoom)
+{
+    const PageSlot *s = slotOf(app, page, true);
+    if (!s)
+        return false;
+    *w = (float)s->image.width;
+    *h = (float)s->image.height;
+    *zoom = s->zoom > 1.0f ? s->zoom : 1.0f;
+    return true;
+}
+
+void appRenderAgain(App *app)
+{
+    if (app->book < 0 || !app->ready)
+        return;
+    ReadingStatus st;
+    readingGetStatus(&st);
+    DocPlace place = st.generation == app->generation ? st.current_place : app->shelf.items[app->book].place;
+    ReadingLayout layout = appLayout(app);
+    app->generation = readingRelayout(&layout, place);  // Ready stays: a fixed book's pages are the same.
 }
 
 void appPageRect(const App *app, int page, int *x, int *y, int *w, int *h)
@@ -365,14 +401,16 @@ void appPageRect(const App *app, int page, int *x, int *y, int *w, int *h)
         appColumn(app, side, x, y, w, h);
         return;
     }
-    // A fixed page, rendered to fit the screen (or its half): its size in layout units. Two
-    // pages meet in the middle, as in a book.
-    float per = GFX_SCALE * gfxDetail();
-    *w = (int)(img->width / per + 0.5f);
-    *h = (int)(img->height / per + 0.5f);
+    // A fixed page, rendered to fit the screen (or its half), maybe zoomed: its size in layout
+    // units. Two pages meet in the middle, as in a book.
+    float iw = 0, ih = 0, made = 1;
+    appPageImageZoom(app, page, &iw, &ih, &made);
+    float per = GFX_SCALE * gfxDetail() * made, zoom = appTwoPages(app) ? 1.0f : app->zoom;
+    *w = (int)(iw / per * zoom + 0.5f);
+    *h = (int)(ih / per * zoom + 0.5f);
     int middle = gfxLayoutWidth() / 2;
-    *x = !appTwoPages(app) ? (gfxLayoutWidth() - *w) / 2 : side ? middle + 6 : middle - 6 - *w;
-    *y = (gfxLayoutHeight() - *h) / 2;
+    *x = !appTwoPages(app) ? (int)((gfxLayoutWidth() - *w) / 2.0f + app->pan_x) : side ? middle + 6 : middle - 6 - *w;
+    *y = (int)((gfxLayoutHeight() - *h) / 2.0f + (appTwoPages(app) ? 0 : app->pan_y));
 }
 
 int appChapterOf(const App *app, int page)
@@ -393,7 +431,7 @@ int appContentsRows(void)
 // Keeps a rendered page; the slot of the page farthest from the one read goes.
 static void keepPage(App *app, ReadingPage *p)
 {
-    if (p->generation != app->generation || appPageImage(app, p->page)) {
+    if (p->generation != app->generation || slotOf(app, p->page, false)) {
         docImageFree(&p->image);
         return;
     }
@@ -410,6 +448,7 @@ static void keepPage(App *app, ReadingPage *p)
     freeSlot(best);
     best->generation = p->generation;
     best->page = p->page;
+    best->zoom = app->render_zoom;
     best->image = p->image;
     p->image.pixels = NULL;
 }
@@ -453,11 +492,11 @@ static void followBook(App *app, uint64_t now_ns)
         return;
     appMarksUpdate(app);
     int want[READING_WANT_MAX], n = 0;
-    // The pages shown first, then the ones after, then before.
+    // The pages shown first, then the ones after, then before (zoomed in: only the page, they're big).
     const int one[] = {app->page, app->page + 1, app->page - 1, app->page + 2};
     const int two[] = {app->page, app->page + 1, app->page + 2, app->page + 3, app->page - 2, app->page - 1};
     const int *around = appTwoPages(app) ? two : one;
-    int count = appTwoPages(app) ? 6 : 4;
+    int count = appTwoPages(app) ? 6 : appZoomed(app) ? 1 : 4;
     for (int i = 0; i < count && n < READING_WANT_MAX; i++)
         if (around[i] >= 0 && around[i] < app->pages && !appPageImage(app, around[i]))
             want[n++] = around[i];
@@ -523,6 +562,7 @@ static void autoTurn(App *app, uint64_t now_ns)
 void appUpdate(App *app, uint64_t now_ns)
 {
     autoTurn(app, now_ns);
+    appZoomTick(app, now_ns);
     static uint64_t last_save;
     takeCovers(app);
     if (app->view == VIEW_READER)
@@ -888,10 +928,25 @@ static void turnPage(App *app, int dir, uint64_t now_ns)
     app->turn_dir = dir;
     app->turn_start_ns = now_ns;
     app->page = to;
+    appZoomToStart(app);
+    if (appZoomed(app))
+        app->turn_from = -1;  // A zoomed page doesn't slide: it's shown at its top left.
 }
 
 static void readerButtons(App *app, uint64_t pressed, uint64_t now_ns)
 {
+    if (appZoomed(app)) {  // The left stick moves the zoomed page; the d-pad and L/R still turn it.
+        int dx = (pressed & HidNpadButton_StickLRight) ? 1 : (pressed & HidNpadButton_StickLLeft) ? -1 : 0;
+        int dy = (pressed & HidNpadButton_StickLDown) ? 1 : (pressed & HidNpadButton_StickLUp) ? -1 : 0;
+        if (dx || dy)
+            appZoomPanStep(app, dx, dy);
+        pressed &= ~(uint64_t)(HidNpadButton_StickLLeft | HidNpadButton_StickLRight | HidNpadButton_StickLUp |
+                               HidNpadButton_StickLDown);
+    }
+    if (app->ready && !app->reflowable && (pressed & (BUTTONS_UP | BUTTONS_DOWN))) {
+        appZoomStep(app, (pressed & BUTTONS_UP) ? 1 : -1, now_ns);  // Up and down: closer or farther.
+        return;
+    }
     // Left and right turn the page, up and down change the text size: lying down
     // and upright alike (upright, they're turned with the console).
     uint64_t next = BUTTONS_RIGHT | HidNpadButton_R | HidNpadButton_ZR | HidNpadButton_A;
@@ -1091,6 +1146,11 @@ static void turnPoint(int *x, int *y)
     }
 }
 
+void appTurnPoint(int *x, int *y)
+{
+    turnPoint(x, y);
+}
+
 void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
 {
     turnPoint(&x, &y);
@@ -1110,6 +1170,9 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
             app->scroll = app->scroll < 0 ? 0 : app->scroll > maxScroll(app) ? maxScroll(app) : app->scroll;
         } else if (app->view == VIEW_READER && app->panel == PANEL_NONE && start && start->kind == HIT_SLIDER) {
             sliderTo(app, e.x);
+        } else if (app->view == VIEW_READER && app->panel == PANEL_NONE && appZoomed(app) && start &&
+                   start->kind == HIT_PAGE) {
+            appZoomPan(app, (float)e.dx, (float)e.dy);  // The zoomed page follows the finger.
         } else if (app->panel == PANEL_CONTENTS) {
             // Rows follow the finger, a whole row at a time.
             int rows = (e.start_y - e.y) / CONTENTS_ROW_H;
@@ -1128,7 +1191,7 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
         } else if (app->view == VIEW_READER && app->panel == PANEL_NONE) {
             const HitRegion *start = uiHitFind(e.start_x, e.start_y);
             int dx = e.x - e.start_x, dy = e.y - e.start_y;
-            if (start && start->kind == HIT_PAGE && abs(dx) > SWIPE_MIN && abs(dx) > abs(dy))
+            if (start && start->kind == HIT_PAGE && !appZoomed(app) && abs(dx) > SWIPE_MIN && abs(dx) > abs(dy))
                 turnPage(app, dx < 0 ? 1 : -1, now_ns);  // Swiped left: the next page, as on paper.
         }
         app->drag_rows = 0;

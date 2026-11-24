@@ -29,7 +29,8 @@ struct Doc {
 };
 
 static const char *const KNOWN[] = {
-    ".epub", ".pdf", ".xps", ".oxps", ".cbz", ".cbt", ".fb2", ".fbz", ".mobi", ".txt", ".xhtml", ".html", ".htm",
+    ".epub", ".pdf", ".xps", ".oxps", ".cbz", ".cbt", ".cbr", ".cb7", ".fb2", ".fbz", ".mobi", ".txt", ".xhtml",
+    ".html", ".htm",
 };
 
 bool docKnownName(const char *name)
@@ -116,6 +117,26 @@ static void quiet(void *user, const char *message)
     (void)message;
 }
 
+// Opens path as the kind magic names (an extension MuPDF knows), whatever its own name says.
+static fz_document *openAs(fz_context *ctx, const char *path, const char *magic)
+{
+    fz_stream *stream = fz_open_file(ctx, path);
+    fz_document *doc = NULL;
+    fz_try(ctx)
+    {
+        doc = fz_open_document_with_stream(ctx, magic, stream);
+    }
+    fz_always(ctx)
+    {
+        fz_drop_stream(ctx, stream);  // The document keeps its own hold on it.
+    }
+    fz_catch(ctx)
+    {
+        fz_rethrow(ctx);
+    }
+    return doc;
+}
+
 Doc *docOpen(const char *path, const DocColors *colors, char *error, size_t error_size)
 {
     if (error_size)
@@ -147,7 +168,11 @@ Doc *docOpen(const char *path, const DocColors *colors, char *error, size_t erro
         fz_install_load_system_font_funcs(d->ctx, NULL, loadCjk, loadFallback);
         fz_set_user_css(d->ctx, css);
         fz_set_use_document_css(d->ctx, 1);
-        d->doc = fz_open_document(d->ctx, path);
+        const char *dot = strrchr(path, '.');
+        if (dot && !strcasecmp(dot, ".cb7"))  // A comic in a 7z archive: libarchive reads it as a CBR's.
+            d->doc = openAs(d->ctx, path, "cbr");
+        else
+            d->doc = fz_open_document(d->ctx, path);
         if (fz_needs_password(d->ctx, d->doc))
             fz_throw(d->ctx, FZ_ERROR_ARGUMENT, "This book is locked with a password or DRM.");
         d->reflowable = fz_is_document_reflowable(d->ctx, d->doc) != 0;

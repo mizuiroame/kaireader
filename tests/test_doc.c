@@ -22,7 +22,7 @@ static void testNames(void)
 {
     CHECK(docKnownName("a.epub") && docKnownName("B.EPUB") && docKnownName("x.Pdf") && docKnownName("c.cbz"));
     CHECK(docKnownName("t.fb2") && docKnownName("m.mobi") && docKnownName("n.txt"));
-    CHECK(!docKnownName("a.cbr") && !docKnownName("a.mkv") && !docKnownName(".epub") && !docKnownName("epub"));
+    CHECK(!docKnownName("a.cbx") && !docKnownName("a.mkv") && !docKnownName(".epub") && !docKnownName("epub"));
     CHECK(!docKnownName("a.epub.part") && !docKnownName(NULL) && !docKnownName("a.epubx"));
 }
 
@@ -165,6 +165,25 @@ static void testOldEpub(void)
     docClose(d);
 }
 
+// The same three-page strip as a tar (CBT) and a 7z (CB7, through libarchive): its pages and their colors.
+static void testComicArchives(void)
+{
+    static const char *const FILES[] = {FIX "strip-tar.cbt", FIX "strip-7z.cb7"};
+    for (int f = 0; f < 2; f++) {
+        Doc *d = openOk(FILES[f]);
+        if (!d)
+            continue;
+        CHECK(!docReflowable(d) && docPageCount(d) == 3);
+        DocImage img;
+        CHECK(docRender(d, 1, 1.0f, &img) && img.width > 0);
+        if (img.pixels)
+            CHECK((img.pixels[img.width * (img.height / 2) + img.width / 2] & 0xFFFFFF) == 0x3CA028);  // Green, page 2.
+        docImageFree(&img);
+        docClose(d);
+    }
+    CHECK(docKnownName("x.cbr") && docKnownName("X.CB7"));
+}
+
 static void testFixed(void)
 {
     Doc *d = openOk(FIX "plain.pdf");
@@ -267,5 +286,6 @@ void testDoc(void)
     testOldEpub();
     testPictureColors();
     testFixed();
+    testComicArchives();
     testOthers();
 }

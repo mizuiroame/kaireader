@@ -69,7 +69,7 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -lmupdf -lmupdf-third -lnx -lm
+LIBS	:= -lmupdf -lmupdf-third -larchive -lexpat -llzma -lbz2 -llz4 -lzstd -lz -lnx -lm
 ifeq ($(GPU),1)
 LIBS	:= -lEGL $(LIBS)
 endif

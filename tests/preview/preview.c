@@ -269,6 +269,16 @@ int main(int argc, char **argv)
     appOpenBook(&app, indexOfBook(&app, "plain.pdf"), 7);
     settle(&app);
     render(&app, dir, "pdf");
+    // Zoomed in twice with up, then moved to the right with the left stick.
+    appHandleButtons(&app, HidNpadButton_Up, 20);
+    appHandleButtons(&app, HidNpadButton_Up, 21);
+    appHandleButtons(&app, HidNpadButton_StickLRight, 22);
+    appHandleButtons(&app, HidNpadButton_StickLRight, 23);
+    settle(&app);
+    render(&app, dir, "pdf-zoom");
+    app.bars = true;
+    render(&app, dir, "pdf-zoom-bars");
+    app.bars = false;
     appCloseBook(&app);
     appOpenBook(&app, indexOfBook(&app, "strip.cbz"), 8);
     settle(&app);

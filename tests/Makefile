@@ -5,7 +5,7 @@ CC      ?= gcc
 SRC     := ../source
 SAN     := -fsanitize=address,undefined -fno-omit-frame-pointer
 CFLAGS  := -DKAIREADER_VERSION=\"test\" -std=gnu11 -g -O1 -Wall -Wextra -fwrapv -pthread -I$(SRC) $(SAN)
-LDFLAGS := $(SAN) -pthread -lmupdf -lmupdf-third -lm
+LDFLAGS := $(SAN) -pthread -lmupdf -lmupdf-third -larchive -lm
 OBJDIR  := build
 
 TESTED  := util.c approot.c kinetic.c lang.c notice.c doc.c shelf.c reading.c prefs.c settings.c bookmarks.c
