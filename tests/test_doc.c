@@ -336,6 +336,7 @@ static void testRemote(void)
     }
     DocEpubInfo info;
     CHECK(docEpubInfo("dav:/quiet.epub", 100, 150, &info) && info.cover.pixels && g_remote_opens == 2);
+    CHECK(!strcmp(info.title, "The Quiet Lighthouse") && !strcmp(info.author, "Ana Example"));  // A card from the package.
     docImageFree(&info.cover);
     d = docOpen("dav:/strip.cbz", NULL, error, sizeof(error));  // Its kind from its name.
     CHECK(d && !docReflowable(d) && docPageCount(d) == 3);

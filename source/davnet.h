@@ -27,6 +27,8 @@ bool davPasswordMissing(void);
 // thread uses it at a time). NULL with why if it can't be.
 typedef struct DavFile DavFile;
 DavFile *davFileOpen(const char *location, char *why, size_t why_size);
+// The same, an SMB one on a connection kept between files (covers: one sign-in for all).
+DavFile *davFileOpenKept(const char *location, char *why, size_t why_size);
 int64_t davFileSize(const DavFile *f);
 // Up to size bytes at offset (fewer at the end), checking cancel. Bytes read; -1 if it failed or was cancelled.
 int64_t davFileRead(DavFile *f, int64_t offset, uint8_t *to, size_t size, const volatile bool *cancel);

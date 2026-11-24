@@ -161,7 +161,7 @@ static fz_stream *netStreamOpen(fz_context *ctx, const char *location)
     char why[256] = "";
     bool ok;
     if (davReadsFiles()) {
-        s->file = davFileOpen(location, why, sizeof(why));
+        s->file = davFileOpenKept(location, why, sizeof(why));  // One sign-in for all the covers.
         ok = s->file != NULL;
         if (ok)
             s->size = davFileSize(s->file);

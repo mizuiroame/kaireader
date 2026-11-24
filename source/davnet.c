@@ -148,7 +148,7 @@ struct DavFile {
     void *file;  // SmbFile, FtpFile or SftpFile.
 };
 
-DavFile *davFileOpen(const char *location, char *why, size_t why_size)
+static DavFile *openFile(const char *location, bool kept, char *why, size_t why_size)
 {
     if (sayMissing(why, why_size))
         return NULL;
@@ -159,7 +159,9 @@ DavFile *davFileOpen(const char *location, char *why, size_t why_size)
     if (f) {
         f->protocol = davProtocolOf(a.address);
         switch (f->protocol) {
-        case DAV_SMB: f->file = smbFileOpen(&a, location, why, why_size); break;
+        case DAV_SMB:
+            f->file = kept ? smbFileOpenKept(&a, location, why, why_size) : smbFileOpen(&a, location, why, why_size);
+            break;
         case DAV_FTP: f->file = ftpFileOpen(&a, location, why, why_size); break;
         case DAV_SFTP: f->file = sftpFileOpen(&a, location, key, why, why_size); break;
         default: snprintf(why, why_size, "%s", T("Set up the network folder in Settings first.")); break;
@@ -174,6 +176,16 @@ DavFile *davFileOpen(const char *location, char *why, size_t why_size)
         f = NULL;
     }
     return f;
+}
+
+DavFile *davFileOpen(const char *location, char *why, size_t why_size)
+{
+    return openFile(location, false, why, why_size);
+}
+
+DavFile *davFileOpenKept(const char *location, char *why, size_t why_size)
+{
+    return openFile(location, true, why, why_size);
 }
 
 int64_t davFileSize(const DavFile *f)

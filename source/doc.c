@@ -804,6 +804,12 @@ static void readNames(fz_xml *package, DocEpubInfo *out)
     fz_xml *metadata = findTag(package, "metadata", 0);
     if (!metadata)
         return;
+    const char *title = textOf(findTag(fz_xml_down(metadata), "title", 0));
+    if (title)
+        cleanText(title, out->title, sizeof(out->title));
+    const char *author = textOf(findTag(fz_xml_down(metadata), "creator", 0));
+    if (author)
+        cleanText(author, out->author, sizeof(out->author));
     const char *subject = textOf(findTag(fz_xml_down(metadata), "subject", 0));
     if (subject)
         cleanText(subject, out->genre, sizeof(out->genre));

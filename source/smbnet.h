@@ -24,6 +24,9 @@ typedef struct SmbFile SmbFile;
 // Opens a book for reading, on a connection of its own (one thread uses it
 // at a time). NULL with why if it can't be.
 SmbFile *smbFileOpen(const DavAccount *a, const char *location, char *why, size_t why_size);
+// The same on a connection kept between books (one sign-in for many): for
+// books read a few blocks at a time, one thread at a time.
+SmbFile *smbFileOpenKept(const DavAccount *a, const char *location, char *why, size_t why_size);
 int64_t smbFileSize(const SmbFile *f);
 // Reads up to size bytes at offset (fewer at the end), in the server's
 // largest reads, checking cancel between them. Bytes read; -1 if it failed or was cancelled.

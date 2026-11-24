@@ -107,6 +107,8 @@ typedef struct {
     DocImage cover;
     char genre[DOC_TEXT_MAX];
     char author_sort[DOC_TEXT_MAX];
+    char title[DOC_TEXT_MAX];   // Its dc:title and first dc:creator, as the book open says them:
+    char author[DOC_TEXT_MAX];  // with a cover too, the book needn't be opened for its library card.
 } DocEpubInfo;
 
 // False for files that aren't EPUBs or whose package can't be read.

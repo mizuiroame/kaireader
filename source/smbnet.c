@@ -20,7 +20,10 @@ struct SmbFile {
     struct smb2fh *fh;
     int64_t size;
     uint32_t max_read;
+    bool kept;  // On the kept connection (smbFileOpenKept): not its own.
 };
+
+static void dropKept(void);
 
 // What a failure means, for the person. libsmb2's codes don't say it (a
 // wrong password comes back as -ECONNREFUSED, nobody there as -1): its
@@ -186,6 +189,7 @@ static void dropList(void)
 
 void smbForget(void)
 {
+    dropKept();
     pthread_mutex_lock(&g_lock);
     dropList();
     pthread_mutex_unlock(&g_lock);
@@ -344,6 +348,91 @@ SmbFile *smbFileOpen(const DavAccount *a, const char *location, char *why, size_
     return f;
 }
 
+// --- The kept connection, for books read a few blocks at a time ---
+
+static pthread_mutex_t g_kept_lock = PTHREAD_MUTEX_INITIALIZER;
+static struct smb2_context *g_kept;
+static DavAccount g_kept_account;
+static int g_kept_files;   // Open on it.
+static bool g_kept_stale;  // Forgotten while files were open: dropped when the last closes.
+
+static void destroyKept(void)  // g_kept_lock held.
+{
+    if (g_kept) {
+        smb2_disconnect_share(g_kept);
+        smb2_destroy_context(g_kept);
+    }
+    g_kept = NULL;
+    g_kept_stale = false;
+    memset(&g_kept_account, 0, sizeof(g_kept_account));
+}
+
+static void dropKept(void)
+{
+    pthread_mutex_lock(&g_kept_lock);
+    if (g_kept_files > 0)
+        g_kept_stale = true;
+    else
+        destroyKept();
+    pthread_mutex_unlock(&g_kept_lock);
+}
+
+SmbFile *smbFileOpenKept(const DavAccount *a, const char *location, char *why, size_t why_size)
+{
+    char path[PATH_MAX_SMB];
+    if (!davSmbPath(a->address, location, path, sizeof(path))) {
+        snprintf(why, why_size, "%s", T("That folder's name is too long."));
+        return NULL;
+    }
+    pthread_mutex_lock(&g_kept_lock);
+    if (g_kept && (g_kept_stale || !sameAccount(&g_kept_account, a))) {
+        if (g_kept_files > 0) {  // Still in use by others: this one on a connection of its own.
+            pthread_mutex_unlock(&g_kept_lock);
+            return smbFileOpen(a, location, why, why_size);
+        }
+        destroyKept();
+    }
+    SmbFile *f = calloc(1, sizeof(*f));
+    struct smb2_stat_64 st;
+    bool ok = false;
+    for (int attempt = 0; f && attempt < 2 && !ok; attempt++) {
+        bool reused = g_kept != NULL;
+        if (!g_kept) {
+            g_kept = connectShare(a, why, why_size);
+            if (!g_kept)
+                break;
+            g_kept_account = *a;
+        }
+        f->fh = smb2_open(g_kept, path, O_RDONLY);
+        ok = f->fh && smb2_fstat(g_kept, f->fh, &st) == 0;
+        if (!ok) {
+            if (f->fh)
+                smb2_close(g_kept, f->fh);
+            f->fh = NULL;
+            explain(g_kept, -ENOENT, why, why_size);
+            if (!reused || g_kept_files > 0)
+                break;
+            destroyKept();  // The kept one may have gone stale (the server dropped it): once more, anew.
+        }
+    }
+    if (!ok) {
+        pthread_mutex_unlock(&g_kept_lock);
+        if (!f)
+            snprintf(why, why_size, "%s", T("Out of memory."));
+        free(f);
+        return NULL;
+    }
+    f->smb2 = g_kept;
+    f->kept = true;
+    f->size = (int64_t)st.smb2_size;
+    f->max_read = smb2_get_max_read_size(g_kept);
+    if (!f->max_read)
+        f->max_read = 64 * 1024;
+    g_kept_files++;
+    pthread_mutex_unlock(&g_kept_lock);
+    return f;
+}
+
 int64_t smbFileSize(const SmbFile *f)
 {
     return f->size;
@@ -356,22 +445,40 @@ int64_t smbFileRead(SmbFile *f, int64_t offset, uint8_t *to, size_t size, const 
     if ((int64_t)size > f->size - offset)
         size = (size_t)(f->size - offset);
     size_t done = 0;
-    while (done < size) {
-        if (cancel && *cancel)
-            return -1;
+    if (f->kept)
+        pthread_mutex_lock(&g_kept_lock);
+    int64_t result = -2;  // Not yet known.
+    while (done < size && result == -2) {
+        if (cancel && *cancel) {
+            result = -1;
+            break;
+        }
         uint32_t piece = size - done < f->max_read ? (uint32_t)(size - done) : f->max_read;
         int n = smb2_pread(f->smb2, f->fh, to + done, piece, (uint64_t)(offset + (int64_t)done));
         if (n <= 0)
-            return n == 0 ? (int64_t)done : -1;
-        done += (size_t)n;
+            result = n == 0 ? (int64_t)done : -1;
+        else
+            done += (size_t)n;
     }
-    return (int64_t)done;
+    if (f->kept)
+        pthread_mutex_unlock(&g_kept_lock);
+    return result == -2 ? (int64_t)done : result;
 }
 
 void smbFileClose(SmbFile *f)
 {
     if (!f)
         return;
+    if (f->kept) {
+        pthread_mutex_lock(&g_kept_lock);
+        if (f->fh)
+            smb2_close(f->smb2, f->fh);
+        if (--g_kept_files == 0 && g_kept_stale)
+            destroyKept();
+        pthread_mutex_unlock(&g_kept_lock);
+        free(f);
+        return;
+    }
     if (f->smb2) {
         if (f->fh)
             smb2_close(f->smb2, f->fh);

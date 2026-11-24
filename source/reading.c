@@ -222,23 +222,52 @@ static void renderPart(unsigned generation, ReadingPartAsk ask)
     givePage(out);
 }
 
+// A cover made, to the app (or dropped if there's no room for it).
+static void giveCover(ReadingCover *c)
+{
+    pthread_mutex_lock(&g_lock);
+    if (g_cover_count < COVER_QUEUE) {
+        g_covers[g_cover_count++] = c;
+        c = NULL;
+    }
+    pthread_mutex_unlock(&g_lock);
+    if (c) {
+        docImageFree(&c->image);
+        free(c);
+    }
+}
+
 static void makeCover(const CoverAsk *ask)
 {
     ReadingCover *c = calloc(1, sizeof(*c));
     if (!c)
         return;
     snprintf(c->path, sizeof(c->path), "%s", ask->path);
+    // An EPUB with a cover and a title: its package says all of it, the book needn't be opened
+    // (a book on the network reads half as much).
+    DocEpubInfo first;
+    bool epub = docEpubInfo(ask->path, ask->w, ask->h, &first);
+    if (epub && first.cover.pixels && first.title[0]) {
+        c->image = first.cover;
+        c->ok = true;
+        snprintf(c->title, sizeof(c->title), "%s", first.title);
+        snprintf(c->author, sizeof(c->author), "%s", first.author);
+        snprintf(c->genre, sizeof(c->genre), "%s", first.genre);
+        snprintf(c->author_sort, sizeof(c->author_sort), "%s", first.author_sort);
+        giveCover(c);
+        return;
+    }
     char error[DOC_ERROR_MAX];
     Doc *d = docOpen(ask->path, NULL, error, sizeof(error));
     if (d) {
         docTitle(d, c->title, sizeof(c->title));
         docAuthor(d, c->author, sizeof(c->author));
-        DocEpubInfo info;
-        if (docEpubInfo(ask->path, ask->w, ask->h, &info)) {
-            c->image = info.cover;
-            c->ok = info.cover.pixels != NULL;
-            snprintf(c->genre, sizeof(c->genre), "%s", info.genre);
-            snprintf(c->author_sort, sizeof(c->author_sort), "%s", info.author_sort);
+        if (epub) {  // Its package, read above: its cover (if any), genre and sorted author.
+            c->image = first.cover;
+            first.cover.pixels = NULL;
+            c->ok = c->image.pixels != NULL;
+            snprintf(c->genre, sizeof(c->genre), "%s", first.genre);
+            snprintf(c->author_sort, sizeof(c->author_sort), "%s", first.author_sort);
         } else {
             docSubject(d, c->genre, sizeof(c->genre));
         }
@@ -251,16 +280,8 @@ static void makeCover(const CoverAsk *ask)
         }
         docClose(d);
     }
-    pthread_mutex_lock(&g_lock);
-    if (g_cover_count < COVER_QUEUE) {
-        g_covers[g_cover_count++] = c;
-        c = NULL;
-    }
-    pthread_mutex_unlock(&g_lock);
-    if (c) {
-        docImageFree(&c->image);
-        free(c);
-    }
+    docImageFree(&first.cover);  // Not taken (the book couldn't be opened).
+    giveCover(c);
 }
 
 // The bookmarks' pages and first words, for generation (g_lock held on entry and exit).
