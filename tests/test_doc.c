@@ -194,6 +194,16 @@ static void testCovers(void)
     CHECK(!docEpubCover(FIX "broken.epub", 100, 150, &img) && !img.pixels);
     CHECK(!docEpubCover(FIX "missing.epub", 100, 150, &img));
     CHECK(!docEpubCover(FIX "quiet.epub", 0, 150, &img) && !docEpubCover(NULL, 10, 10, &img));
+
+    // The genre and the author's sort name, EPUB 3 (a refining meta) and EPUB 2 (opf:file-as).
+    DocEpubInfo info;
+    CHECK(docEpubInfo(FIX "quiet.epub", 100, 150, &info) && info.cover.pixels);
+    CHECK(!strcmp(info.genre, "Sea Stories") && !strcmp(info.author_sort, "Example, Ana"));
+    docImageFree(&info.cover);
+    CHECK(docEpubInfo(FIX "old.epub", 0, 0, &info) && !info.cover.pixels);  // Size 0: no picture asked.
+    CHECK(!strcmp(info.genre, "Harbors") && !strcmp(info.author_sort, "Example, Ana"));
+    CHECK(!docEpubInfo(FIX "plain.pdf", 10, 10, &info) && !info.genre[0]);
+    CHECK(!docEpubInfo(FIX "broken.epub", 10, 10, &info) && !info.cover.pixels);
 }
 
 void testDoc(void)

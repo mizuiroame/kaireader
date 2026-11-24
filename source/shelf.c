@@ -95,14 +95,15 @@ static int split(char *line, char **fields, int max)
     return n;
 }
 
-// One line: path, size, chapter, fraction, percent, last read, title, author (tab-separated).
+// One line: path, size, chapter, fraction, percent, last read, title, author, genre,
+// author's sort name (tab-separated; the last two since 0.2).
 static void readLine(Shelf *s, char *line)
 {
     line[strcspn(line, "\r\n")] = 0;
     if (!line[0] || line[0] == '#')
         return;
-    char *f[8] = {0};
-    if (split(line, f, 8) < 6 || shelfFind(s, f[0]))
+    char *f[10] = {0};
+    if (split(line, f, 10) < 6 || shelfFind(s, f[0]))
         return;
     ShelfBook *b = shelfAdd(s, f[0]);
     if (!b)
@@ -121,6 +122,8 @@ static void readLine(Shelf *s, char *line)
         b->last_read = 0;
     copyField(b->title, sizeof(b->title), f[6]);
     copyField(b->author, sizeof(b->author), f[7]);
+    copyField(b->genre, sizeof(b->genre), f[8]);
+    copyField(b->author_sort, sizeof(b->author_sort), f[9]);
 }
 
 bool shelfLoad(Shelf *s, const char *file)
@@ -152,13 +155,15 @@ bool shelfSave(const Shelf *s, const char *file)
     FILE *f = fopen(tmp, "w");
     if (!f)
         return false;
-    fprintf(f, "# KaiReader: path, size, chapter, fraction, percent, last read, title, author\n");
+    fprintf(f, "# KaiReader: path, size, chapter, fraction, percent, last read, title, author, genre, "
+               "author sorted\n");
     for (int i = 0; i < s->count; i++) {
         const ShelfBook *b = &s->items[i];
         if (!b->present && b->percent < 0)
             continue;
-        fprintf(f, "%s\t%lld\t%d\t%.6f\t%d\t%lld\t%s\t%s\n", b->path, (long long)b->size, b->place.chapter,
-                b->place.fraction, b->percent, (long long)b->last_read, b->title, b->author);
+        fprintf(f, "%s\t%lld\t%d\t%.6f\t%d\t%lld\t%s\t%s\t%s\t%s\n", b->path, (long long)b->size,
+                b->place.chapter, b->place.fraction, b->percent, (long long)b->last_read, b->title, b->author,
+                b->genre, b->author_sort);
     }
     bool ok = !ferror(f);
     ok = fclose(f) == 0 && ok;
@@ -200,7 +205,7 @@ static void scanFolder(Shelf *s, const char *folder, int depth)
             b->place = (DocPlace){0, 0};
             b->percent = -1;
             b->last_read = 0;
-            b->title[0] = b->author[0] = 0;
+            b->title[0] = b->author[0] = b->genre[0] = b->author_sort[0] = 0;
         }
         b->size = (int64_t)st.st_size;
         b->present = true;
@@ -227,32 +232,69 @@ int shelfScan(Shelf *s, const char *folder)
 }
 
 static const Shelf *g_sorting;
+static ShelfSort g_sort;
+
+// The name a book's author is sorted by: its sort name, or the name as written.
+static const char *authorKey(const ShelfBook *b)
+{
+    return b->author_sort[0] ? b->author_sort : b->author;
+}
+
+// Empty ones last; the rest by name. 0 if they're the same.
+static int compareText(const char *a, const char *b)
+{
+    if (!a[0] != !b[0])
+        return a[0] ? -1 : 1;
+    return utilCompareNames(a, b);
+}
 
 static int compareBooks(const void *pa, const void *pb)
 {
     const ShelfBook *a = &g_sorting->items[*(const int *)pa], *b = &g_sorting->items[*(const int *)pb];
-    bool ra = a->last_read > 0, rb = b->last_read > 0;
-    if (ra != rb)
-        return ra ? -1 : 1;
-    if (ra && a->last_read != b->last_read)
-        return a->last_read > b->last_read ? -1 : 1;
+    int c = 0;
+    if (g_sort == SHELF_SORT_RECENT) {
+        bool ra = a->last_read > 0, rb = b->last_read > 0;
+        if (ra != rb)
+            return ra ? -1 : 1;
+        if (ra && a->last_read != b->last_read)
+            return a->last_read > b->last_read ? -1 : 1;
+    } else if (g_sort == SHELF_SORT_GENRE) {
+        c = compareText(a->genre, b->genre);
+        if (!c)
+            c = compareText(authorKey(a), authorKey(b));
+    } else if (g_sort == SHELF_SORT_AUTHOR) {
+        c = compareText(authorKey(a), authorKey(b));
+    }
+    if (c)
+        return c;
     char na[SHELF_TEXT_MAX], nb[SHELF_TEXT_MAX];
     shelfDisplayName(a, na, sizeof(na));
     shelfDisplayName(b, nb, sizeof(nb));
-    int c = utilCompareNames(na, nb);
+    c = utilCompareNames(na, nb);
     return c ? c : strcmp(a->path, b->path);
 }
 
-int shelfOrder(const Shelf *s, int *order, int max)
+int shelfOrder(const Shelf *s, ShelfSort sort, int *order, int max)
 {
     int n = 0;
     for (int i = 0; i < s->count && n < max; i++)
         if (s->items[i].present)
             order[n++] = i;
     g_sorting = s;
+    g_sort = sort >= 0 && sort < SHELF_SORT_COUNT ? sort : SHELF_SORT_RECENT;
     qsort(order, (size_t)n, sizeof(*order), compareBooks);
     g_sorting = NULL;
     return n;
+}
+
+void shelfGroupOf(const ShelfBook *b, ShelfSort sort, char *out, size_t size)
+{
+    if (sort == SHELF_SORT_GENRE)
+        copyField(out, size, b->genre);
+    else if (sort == SHELF_SORT_AUTHOR)
+        copyField(out, size, b->author[0] ? b->author : b->author_sort);
+    else if (size)
+        out[0] = 0;
 }
 
 void shelfDisplayName(const ShelfBook *b, char *out, size_t size)
@@ -281,6 +323,14 @@ void shelfMarkRead(ShelfBook *b, DocPlace place, int percent, int64_t now)
     b->place = place;
     b->percent = percent < 0 ? 0 : percent > 100 ? 100 : percent;
     b->last_read = now;
+}
+
+void shelfSetDetails(ShelfBook *b, const char *genre, const char *author_sort)
+{
+    if (genre && genre[0])
+        copyField(b->genre, sizeof(b->genre), genre);
+    if (author_sort && author_sort[0])
+        copyField(b->author_sort, sizeof(b->author_sort), author_sort);
 }
 
 void shelfSetInfo(ShelfBook *b, const char *title, const char *author)

@@ -74,10 +74,23 @@ bool docPageSize(Doc *d, int page, float *w, float *h);
 bool docRender(Doc *d, int page, float scale, const DocColors *colors, DocImage *out);
 void docImageFree(DocImage *image);
 
-// The cover picture an EPUB names (EPUB 3's cover-image, or EPUB 2's
-// <meta name="cover">), fitted into max_w x max_h. False for other files and
-// for EPUBs without one (their first page is their cover).
+// What an EPUB's package says beyond the title: its cover picture (EPUB 3's
+// cover-image, or EPUB 2's <meta name="cover">) fitted into max_w x max_h,
+// its first subject (the genre), and its author as sorted ("Example, Ana",
+// from file-as). Empty or NULL pixels for what it doesn't say.
+typedef struct {
+    DocImage cover;
+    char genre[DOC_TEXT_MAX];
+    char author_sort[DOC_TEXT_MAX];
+} DocEpubInfo;
+
+// False for files that aren't EPUBs or whose package can't be read.
+bool docEpubInfo(const char *path, int max_w, int max_h, DocEpubInfo *out);
+// Only the cover: false if there's none.
 bool docEpubCover(const char *path, int max_w, int max_h, DocImage *out);
+
+// The genre a PDF's Subject gives (empty if none). False if there's none.
+bool docSubject(Doc *d, char *out, size_t size);
 
 // The title or author the book gives (empty if none). False if there's none.
 bool docTitle(Doc *d, char *out, size_t size);

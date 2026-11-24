@@ -3,6 +3,41 @@
 #include <math.h>
 #include <string.h>
 
+static int g_turn;
+
+void gfxSetTurn(int turn)
+{
+    g_turn = turn == GFX_TURN_RIGHT || turn == GFX_TURN_LEFT ? turn : GFX_TURN_NONE;
+#ifndef KAI_GPU
+    gfxResetClip();
+#endif
+}
+
+int gfxTurn(void)
+{
+    return g_turn;
+}
+
+int gfxLayoutWidth(void)
+{
+    return g_turn ? GFX_HEIGHT : GFX_WIDTH;
+}
+
+int gfxLayoutHeight(void)
+{
+    return g_turn ? GFX_WIDTH : GFX_HEIGHT;
+}
+
+int gfxFbWidth(void)
+{
+    return g_turn ? GFX_FB_HEIGHT : GFX_FB_WIDTH;
+}
+
+int gfxFbHeight(void)
+{
+    return g_turn ? GFX_FB_WIDTH : GFX_FB_HEIGHT;
+}
+
 #ifndef KAI_GPU
 static uint32_t *g_pixels;
 static uint32_t g_stride;  // In pixels.
@@ -56,7 +91,7 @@ static inline void blendPixel(uint32_t *p, Color color, unsigned alpha)
 
 void gfxClear(Color color)
 {
-    gfxFillRect(0, 0, GFX_WIDTH, GFX_HEIGHT, color);
+    gfxFillRect(0, 0, gfxLayoutWidth(), gfxLayoutHeight(), color);
 }
 
 // Layout rectangle to framebuffer pixels. Both edges are converted, so
@@ -131,7 +166,7 @@ void gfxFillRoundRect(int x, int y, int w, int h, int radius, Color color)
             int xs[2] = {x + dx, x + w - 1 - dx}, ys[2] = {y + dy, y + h - 1 - dy};
             for (int i = 0; i < 4; i++) {
                 int px = xs[i & 1], py = ys[i >> 1];
-                if (g_pixels && px >= 0 && px < GFX_FB_WIDTH && py >= 0 && py < GFX_FB_HEIGHT)
+                if (g_pixels && px >= 0 && px < gfxFbWidth() && py >= 0 && py < gfxFbHeight())
                     blendPixel(g_pixels + (size_t)py * g_stride + px, color, a);
             }
         }
@@ -312,14 +347,14 @@ void gfxBlitRounded(int x, int y, int size, int image_size, const uint32_t *pixe
     float corner_lo = (float)r, corner_hi = (float)(image_size - r);
     for (int row = 0; row < image_size; row++) {
         int py = fy + row;
-        if (!g_pixels || py < 0 || py >= GFX_FB_HEIGHT)
+        if (!g_pixels || py < 0 || py >= gfxFbHeight())
             continue;
         const uint32_t *src = pixels + (size_t)row * image_size;
         uint32_t *dst = g_pixels + (size_t)py * g_stride;
         float cy = row + 0.5f;
         for (int col = 0; col < image_size; col++) {
             int px = fx + col;
-            if (px < 0 || px >= GFX_FB_WIDTH)
+            if (px < 0 || px >= gfxFbWidth())
                 continue;
             float cx = col + 0.5f;
             // Inside the corners' squares, coverage comes from the corner circle.
@@ -348,8 +383,8 @@ void gfxCopyFrame(const uint32_t *pixels)
 {
     if (!g_pixels)
         return;
-    for (int y = 0; y < GFX_FB_HEIGHT; y++)
-        memcpy(g_pixels + (size_t)y * g_stride, pixels + (size_t)y * GFX_FB_WIDTH, GFX_FB_WIDTH * sizeof(uint32_t));
+    for (int y = 0; y < gfxFbHeight(); y++)
+        memcpy(g_pixels + (size_t)y * g_stride, pixels + (size_t)y * gfxFbWidth(), gfxFbWidth() * sizeof(uint32_t));
 }
 
 void gfxSetClip(int x, int y, int w, int h)
@@ -357,15 +392,15 @@ void gfxSetClip(int x, int y, int w, int h)
     toFb(&x, &y, &w, &h);
     g_clip_x0 = x < 0 ? 0 : x;
     g_clip_y0 = y < 0 ? 0 : y;
-    g_clip_x1 = x + w > GFX_FB_WIDTH ? GFX_FB_WIDTH : x + w;
-    g_clip_y1 = y + h > GFX_FB_HEIGHT ? GFX_FB_HEIGHT : y + h;
+    g_clip_x1 = x + w > gfxFbWidth() ? gfxFbWidth() : x + w;
+    g_clip_y1 = y + h > gfxFbHeight() ? gfxFbHeight() : y + h;
 }
 
 void gfxResetClip(void)
 {
     g_clip_x0 = g_clip_y0 = 0;
-    g_clip_x1 = GFX_FB_WIDTH;
-    g_clip_y1 = GFX_FB_HEIGHT;
+    g_clip_x1 = gfxFbWidth();
+    g_clip_y1 = gfxFbHeight();
 }
 
 void gfxSetClipRound(int x, int y, int w, int h, int radius)
@@ -405,7 +440,7 @@ void gfxSaveRectFb(int x, int y, int w, int h, uint32_t *out)
     for (int py = 0; py < h; py++) {
         for (int px = 0; px < w; px++) {
             int sx = x + px, sy = y + py;
-            bool inside = g_pixels && sx >= 0 && sy >= 0 && sx < GFX_FB_WIDTH && sy < GFX_FB_HEIGHT;
+            bool inside = g_pixels && sx >= 0 && sy >= 0 && sx < gfxFbWidth() && sy < gfxFbHeight();
             out[(size_t)py * w + px] = inside ? g_pixels[(size_t)sy * g_stride + sx] | 0xFF000000u : 0;
         }
     }
@@ -415,8 +450,8 @@ void gfxSaveFrame(uint32_t *pixels)
 {
     if (!g_pixels)
         return;
-    for (int y = 0; y < GFX_FB_HEIGHT; y++)
-        memcpy(pixels + (size_t)y * GFX_FB_WIDTH, g_pixels + (size_t)y * g_stride, GFX_FB_WIDTH * sizeof(uint32_t));
+    for (int y = 0; y < gfxFbHeight(); y++)
+        memcpy(pixels + (size_t)y * gfxFbWidth(), g_pixels + (size_t)y * g_stride, gfxFbWidth() * sizeof(uint32_t));
 }
 
 void gfxDrawImageFb(int x, int y, int w, int h, const uint32_t *pixels)
@@ -482,7 +517,7 @@ static bool ringSpan(float cx, float dy, float outer, int *x0, int *x1)
     *x0 = (int)floorf(cx - half) - 1;
     *x1 = (int)ceilf(cx + half) + 1;
     if (*x0 < 0) *x0 = 0;
-    if (*x1 > GFX_FB_WIDTH) *x1 = GFX_FB_WIDTH;
+    if (*x1 > gfxFbWidth()) *x1 = gfxFbWidth();
     return *x0 < *x1;
 }
 
@@ -500,7 +535,7 @@ void gfxBlitDisc(float cx, float cy, float radius, float hole, int image_size, c
     int32_t du = (int32_t)(c * 65536.0f), dv = (int32_t)(-s * 65536.0f);
     int y0 = (int)floorf(cy - radius) - 1, y1 = (int)ceilf(cy + radius) + 1;
     if (y0 < 0) y0 = 0;
-    if (y1 > GFX_FB_HEIGHT) y1 = GFX_FB_HEIGHT;
+    if (y1 > gfxFbHeight()) y1 = gfxFbHeight();
     for (int py = y0; py < y1; py++) {
         float dy = py + 0.5f - cy;
         int x0, x1;

@@ -553,11 +553,94 @@ static void urlDecode(char *s)
     *o = 0;
 }
 
-bool docEpubCover(const char *path, int max_w, int max_h, DocImage *out)
+// An element's text ("<dc:subject>Sea stories</dc:subject>"), or NULL.
+static const char *textOf(fz_xml *node)
+{
+    fz_xml *in = node ? fz_xml_down(node) : NULL;
+    return in ? fz_xml_text(in) : NULL;
+}
+
+// The first subject; the first creator's sort name (EPUB 2's opf:file-as, or
+// EPUB 3's <meta refines="#id" property="file-as">).
+static void readNames(fz_xml *package, DocEpubInfo *out)
+{
+    fz_xml *metadata = findTag(package, "metadata", 0);
+    if (!metadata)
+        return;
+    const char *subject = textOf(findTag(fz_xml_down(metadata), "subject", 0));
+    if (subject)
+        cleanText(subject, out->genre, sizeof(out->genre));
+    fz_xml *creator = findTag(fz_xml_down(metadata), "creator", 0);
+    if (!creator)
+        return;
+    const char *file_as = fz_xml_att(creator, "opf:file-as");
+    if (!file_as)
+        file_as = fz_xml_att(creator, "file-as");
+    const char *id = fz_xml_att(creator, "id");
+    for (fz_xml *meta = findTag(fz_xml_down(metadata), "meta", 0); meta && !file_as && id;
+         meta = nextTag(meta, "meta")) {
+        const char *refines = fz_xml_att(meta, "refines"), *property = fz_xml_att(meta, "property");
+        if (refines && refines[0] == '#' && !strcmp(refines + 1, id) && property && !strcmp(property, "file-as"))
+            file_as = textOf(meta);
+    }
+    if (file_as)
+        cleanText(file_as, out->author_sort, sizeof(out->author_sort));
+}
+
+// The cover picture at entry in the zip, fitted into max_w x max_h (never enlarged).
+static bool readCover(fz_context *ctx, fz_archive *zip, const char *entry, int max_w, int max_h, DocImage *out)
+{
+    bool ok = false;
+    fz_buffer *buf = NULL;
+    fz_image *image = NULL;
+    fz_pixmap *pix = NULL, *rgb = NULL, *small = NULL;
+    fz_var(ok);
+    fz_var(buf);
+    fz_var(image);
+    fz_var(pix);
+    fz_var(rgb);
+    fz_var(small);
+    fz_try(ctx)
+    {
+        buf = fz_read_archive_entry(ctx, zip, entry);
+        image = fz_new_image_from_buffer(ctx, buf);
+        if (image->w <= 0 || image->h <= 0 || (uint64_t)image->w * (uint64_t)image->h > COVER_PIXELS_MAX)
+            fz_throw(ctx, FZ_ERROR_LIMIT, "cover too big");
+        float s = (float)max_w / image->w < (float)max_h / image->h ? (float)max_w / image->w : (float)max_h / image->h;
+        if (s > 1)
+            s = 1;
+        int w = (int)(image->w * s + 0.5f), h = (int)(image->h * s + 0.5f);
+        w = w < 1 ? 1 : w;
+        h = h < 1 ? 1 : h;
+        fz_matrix ctm = fz_scale((float)w, (float)h);  // Lets the decoder skip detail it won't need.
+        pix = fz_get_pixmap_from_image(ctx, image, NULL, &ctm, NULL, NULL);
+        if (pix->colorspace != fz_device_rgb(ctx) || pix->alpha)
+            rgb = fz_convert_pixmap(ctx, pix, fz_device_rgb(ctx), NULL, NULL, fz_default_color_params, 0);
+        fz_pixmap *src = rgb ? rgb : pix;
+        if (src->w != w || src->h != h)
+            small = fz_scale_pixmap(ctx, src, 0, 0, (float)w, (float)h, NULL);
+        ok = toImage(small ? small : src, out);
+    }
+    fz_always(ctx)
+    {
+        fz_drop_pixmap(ctx, small);
+        fz_drop_pixmap(ctx, rgb);
+        fz_drop_pixmap(ctx, pix);
+        fz_drop_image(ctx, image);
+        fz_drop_buffer(ctx, buf);
+    }
+    fz_catch(ctx)
+    {
+        ok = false;
+    }
+    return ok;
+}
+
+bool docEpubInfo(const char *path, int max_w, int max_h, DocEpubInfo *out)
 {
     memset(out, 0, sizeof(*out));
     const char *dot = path ? strrchr(path, '.') : NULL;
-    if (!dot || strcasecmp(dot, ".epub") || max_w <= 0 || max_h <= 0)
+    if (!dot || strcasecmp(dot, ".epub"))
         return false;
     fz_context *ctx = fz_new_context(NULL, NULL, 32u << 20);
     if (!ctx)
@@ -565,19 +648,14 @@ bool docEpubCover(const char *path, int max_w, int max_h, DocImage *out)
     fz_set_warning_callback(ctx, quiet, NULL);
     fz_set_error_callback(ctx, quiet, NULL);
     bool ok = false;
+    char entry[820] = "";
     fz_archive *zip = NULL;
     fz_buffer *buf = NULL;
     fz_xml *xml = NULL;
-    fz_image *image = NULL;
-    fz_pixmap *pix = NULL, *rgb = NULL, *small = NULL;
     fz_var(ok);
     fz_var(zip);
     fz_var(buf);
     fz_var(xml);
-    fz_var(image);
-    fz_var(pix);
-    fz_var(rgb);
-    fz_var(small);
     fz_try(ctx)
     {
         fz_register_document_handlers(ctx);
@@ -598,49 +676,52 @@ bool docEpubCover(const char *path, int max_w, int max_h, DocImage *out)
         xml = fz_parse_xml(ctx, buf, 0);
         fz_drop_buffer(ctx, buf);
         buf = NULL;
-        const char *href = coverHref(fz_xml_root(xml));
-        if (!href || !href[0] || strlen(href) >= 400 || strstr(href, "://"))
-            fz_throw(ctx, FZ_ERROR_FORMAT, "no cover");
-        // The href is relative to the package's folder.
-        char entry[820];
-        const char *slash = strrchr(opf, '/');
-        snprintf(entry, sizeof(entry), "%.*s%s", slash ? (int)(slash - opf + 1) : 0, opf, href);
-        urlDecode(entry);
-        fz_cleanname(entry);
-        buf = fz_read_archive_entry(ctx, zip, entry);
-        image = fz_new_image_from_buffer(ctx, buf);
-        if (image->w <= 0 || image->h <= 0 || (uint64_t)image->w * (uint64_t)image->h > COVER_PIXELS_MAX)
-            fz_throw(ctx, FZ_ERROR_LIMIT, "cover too big");
-        float s = (float)max_w / image->w < (float)max_h / image->h ? (float)max_w / image->w : (float)max_h / image->h;
-        if (s > 1)
-            s = 1;
-        int w = (int)(image->w * s + 0.5f), h = (int)(image->h * s + 0.5f);
-        w = w < 1 ? 1 : w;
-        h = h < 1 ? 1 : h;
-        fz_matrix ctm = fz_scale((float)w, (float)h);  // Lets the decoder skip detail it won't need.
-        pix = fz_get_pixmap_from_image(ctx, image, NULL, &ctm, NULL, NULL);
-        if (pix->colorspace != fz_device_rgb(ctx) || pix->alpha) {
-            rgb = fz_convert_pixmap(ctx, pix, fz_device_rgb(ctx), NULL, NULL, fz_default_color_params, 0);
+        fz_xml *package = fz_xml_root(xml);
+        readNames(package, out);
+        ok = true;
+        const char *href = coverHref(package);
+        if (href && href[0] && strlen(href) < 400 && !strstr(href, "://")) {
+            // The href is relative to the package's folder.
+            const char *slash = strrchr(opf, '/');
+            snprintf(entry, sizeof(entry), "%.*s%s", slash ? (int)(slash - opf + 1) : 0, opf, href);
+            urlDecode(entry);
+            fz_cleanname(entry);
         }
-        fz_pixmap *src = rgb ? rgb : pix;
-        if (src->w != w || src->h != h)
-            small = fz_scale_pixmap(ctx, src, 0, 0, (float)w, (float)h, NULL);
-        ok = toImage(small ? small : src, out);
     }
     fz_always(ctx)
     {
-        fz_drop_pixmap(ctx, small);
-        fz_drop_pixmap(ctx, rgb);
-        fz_drop_pixmap(ctx, pix);
-        fz_drop_image(ctx, image);
         fz_drop_xml(ctx, xml);
         fz_drop_buffer(ctx, buf);
-        fz_drop_archive(ctx, zip);
     }
     fz_catch(ctx)
     {
         ok = false;
     }
+    if (ok && entry[0] && max_w > 0 && max_h > 0)
+        readCover(ctx, zip, entry, max_w, max_h, &out->cover);
+    fz_try(ctx)
+    {
+        fz_drop_archive(ctx, zip);
+    }
+    fz_catch(ctx)
+    {
+    }
     fz_drop_context(ctx);
     return ok;
+}
+
+bool docEpubCover(const char *path, int max_w, int max_h, DocImage *out)
+{
+    DocEpubInfo info;
+    if (max_w <= 0 || max_h <= 0 || !docEpubInfo(path, max_w, max_h, &info) || !info.cover.pixels) {
+        memset(out, 0, sizeof(*out));
+        return false;
+    }
+    *out = info.cover;
+    return true;
+}
+
+bool docSubject(Doc *d, char *out, size_t size)
+{
+    return meta(d, FZ_META_INFO_SUBJECT, out, size);
 }

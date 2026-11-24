@@ -12,8 +12,11 @@ typedef enum {
     HIT_LIBRARY,      // The library's grid, for drags.
     HIT_EXIT,         // The X in the corner: quits.
     HIT_MENU_BUTTON,  // The title: opens the + menu.
-    HIT_MENU_ITEM,    // arg: a row of the menu. A tap picks it (or steps it, for a value).
-    HIT_MENU_STEP,    // arg: row * 2, + 1 for the right half: steps a value back or forward.
+    HIT_MENU_ITEM,    // arg: a row of the + menu. A tap picks it.
+    HIT_SETTING,      // arg: a row of the Settings page open. A tap opens its page, or steps it forward.
+    HIT_SETTING_STEP, // arg: row * 2, + 1 for the right half: steps a value back or forward.
+    HIT_SETTINGS_BACK,  // The Back button on a Settings page.
+    HIT_SORT,         // The library's sort, at its top right: a tap changes it.
     HIT_OVERLAY_OUT,  // Outside a panel: closes it.
     HIT_NOTICE,       // A notice bubble: a tap sends it away.
     HIT_PAGE,         // The page: left third back, right third forward, the middle shows the bars.

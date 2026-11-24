@@ -8,7 +8,7 @@
 #include "ui_common.h"
 #include "ui_hit.h"
 
-#define NOTICE_W_MAX 760
+#define NOTICE_W_MAX (gfxLayoutWidth() - 40 < 760 ? gfxLayoutWidth() - 40 : 760)  // Narrower on a turned screen.
 #define NOTICE_W_MIN 300
 #define NOTICE_PAD 18
 #define NOTICE_ICON 30
@@ -90,9 +90,9 @@ static void drawBubble(const NoticeView *v, int y_place, int w, int h, bool two,
 {
     const Notice *n = v->notice;
     float eased = ease(v->slide < 0.0f ? 0.0f : v->slide > 1.0f ? 1.0f : v->slide);
-    int x = (GFX_WIDTH - w) / 2, y = y_place;
+    int x = (gfxLayoutWidth() - w) / 2, y = y_place;
     if (v->leaving)
-        x += (int)((1.0f - eased) * (float)(GFX_WIDTH - x));  // Out to the side, past the others.
+        x += (int)((1.0f - eased) * (float)(gfxLayoutWidth() - x));  // Out to the side, past the others.
     else
         y = (int)((float)y_place - (1.0f - eased) * (float)(y_place + h + 12));  // In from above.
     int text_max = NOTICE_W_MAX - 2 * NOTICE_PAD - NOTICE_ICON - NOTICE_GAP;

@@ -15,6 +15,22 @@
 #define GFX_FB_HEIGHT 1080
 #define GFX_SCALE 1.5f
 
+// The screen turned, for reading with the console held upright like a book:
+// drawing is then laid out in 720 x 1280 (1080 x 1920 framebuffer pixels)
+// and shown turned. GFX_TURN_RIGHT: the console turned clockwise (its right
+// side down); GFX_TURN_LEFT: counterclockwise. The GPU turns what it draws;
+// the CPU draws upright into a 1080 x 1920 target (the PC previews).
+#define GFX_TURN_NONE 0
+#define GFX_TURN_RIGHT 1
+#define GFX_TURN_LEFT 2
+void gfxSetTurn(int turn);
+int gfxTurn(void);
+// The layout's size now: 1280 x 720, or 720 x 1280 turned; and in framebuffer pixels.
+int gfxLayoutWidth(void);
+int gfxLayoutHeight(void);
+int gfxFbWidth(void);
+int gfxFbHeight(void);
+
 // A layout coordinate or length in framebuffer pixels (rounded down).
 static inline int gfxToFb(int v)
 {

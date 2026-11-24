@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include "doc.h"
+#include "shelf.h"
 
 #define PREFS_TEXT_SIZES 10
 #define PREFS_TEXT_DEFAULT 4
@@ -21,6 +22,8 @@ typedef struct {
     int text_size;  // 0 to PREFS_TEXT_SIZES - 1.
     int theme;      // ReadTheme.
     bool clock_24h;
+    int sort;       // ShelfSort: how the library is ordered.
+    int turn;       // gfx.h's GFX_TURN_*: the console held as it is, or upright like a book.
 } Prefs;
 
 void prefsDefaults(Prefs *p);
@@ -31,4 +34,6 @@ bool prefsSave(const Prefs *p, const char *file);
 // The text size in points of a size index (clamped).
 float prefsEm(int text_size);
 const char *prefsThemeName(int theme);  // English: shown with T().
+const char *prefsSortName(int sort);
+const char *prefsTurnName(int turn);
 DocColors prefsColors(int theme);

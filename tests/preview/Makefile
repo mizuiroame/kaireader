@@ -7,13 +7,13 @@ SRC     := ../../source
 OUT     := build
 CFLAGS  := -std=gnu11 -O1 -g -Wall -Wextra -pthread -DKAIREADER_VERSION=\"preview\" -I$(SRC) -I../../third_party -I$(OUT)
 UI_SRC  := gfx.c font.c ui.c ui_common.c ui_buttons.c ui_hit.c ui_notice.c util.c app.c touch.c kinetic.c \
-           image_impl.c lang.c notice.c approot.c shelf.c doc.c reading.c covers.c prefs.c
+           image_impl.c lang.c notice.c approot.c shelf.c doc.c reading.c covers.c prefs.c settings.c
 
 .PHONY: run clean
 
 run: $(OUT)/preview
 	@mkdir -p $(OUT)/books
-	python3 ../make_fixtures.py $(OUT)/books
+	python3 ../make_fixtures.py $(OUT)/books --library
 	rm -f $(OUT)/books/broken.epub $(OUT)/books/empty.pdf
 	cd $(OUT) && ./preview shots
 	python3 topng.py $(OUT)/shots

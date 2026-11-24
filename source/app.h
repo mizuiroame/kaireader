@@ -1,5 +1,6 @@
 // KaiReader's state and what the buttons and the touch screen do with it.
-// The screens (ui.c) only draw it.
+// The screens (ui.c) only draw it. Every size comes from the layout of the
+// moment: 1280 x 720, or 720 x 1280 with the console upright (gfx.h).
 #pragma once
 
 #include <stdbool.h>
@@ -10,6 +11,7 @@
 #include "notice.h"
 #include "prefs.h"
 #include "reading.h"
+#include "settings.h"
 #include "shelf.h"
 #include "sysinfo.h"
 #include "touch.h"
@@ -18,19 +20,16 @@
 #define PAGE_SLOTS 5
 
 // The library's grid, in layout units.
-#define LIB_COLUMNS 6
 #define LIB_COVER_W 160
 #define LIB_COVER_H 240
 #define LIB_CELL_W 196
 #define LIB_CELL_H 318
+#define LIB_GROUP_H 46       // A group's name (an author, a genre) above its books.
 #define LIB_TOP 116
-#define LIB_LEFT ((1280 - LIB_COLUMNS * LIB_CELL_W) / 2 + (LIB_CELL_W - LIB_COVER_W) / 2)
+#define LIB_SIDE 24          // Room at each side of the grid, at least.
+#define FOOTER_H 56          // The help line at the bottom.
 
-// The reader's page: a column for books that flow, the whole screen for fixed pages.
-#define READ_COLUMN_W 800
-#define READ_COLUMN_H 664
-#define READ_COLUMN_Y 22
-#define CONTENTS_ROWS 11  // Rows the contents panel shows.
+#define CONTENTS_ROW_H 48
 #define READ_TURN_NS 180000000ull  // A page sliding to the next.
 
 typedef enum {
@@ -40,18 +39,16 @@ typedef enum {
 
 typedef enum {
     PANEL_NONE,
-    PANEL_MENU,      // + : text size, colors, contents, library, about, exit.
+    PANEL_MENU,      // + : a few things to do (and Settings).
+    PANEL_SETTINGS,  // Settings, in pages.
     PANEL_CONTENTS,  // The book's table of contents.
-    PANEL_ABOUT,
 } Panel;
 
 typedef enum {
-    MENU_TEXT_SIZE,
-    MENU_THEME,
     MENU_CONTENTS,
-    MENU_LIBRARY,
-    MENU_CLOCK,
-    MENU_ABOUT,
+    MENU_LIBRARY,     // Back to the library.
+    MENU_SETTINGS,
+    MENU_RESCAN,
     MENU_EXIT,
     MENU_COUNT,
 } MenuItem;
@@ -62,12 +59,23 @@ typedef struct {
     DocImage image;  // NULL pixels: free slot.
 } PageSlot;
 
+// One line of the library's grid: a group's name, or up to a row of books.
+typedef struct {
+    int y, h;        // Where, from the grid's top, in layout units.
+    int first;       // Its first book, in order; -1 for a group's name.
+    int count;       // Books on it.
+    int group_book;  // A group's name: the book whose group it is.
+} LibLine;
+
 typedef struct {
     char folder[APP_FOLDER_MAX];        // KaiReader's own files (next to the NRO).
     char books_folder[APP_FOLDER_MAX];  // Where the books are.
     Shelf shelf;
     int order[SHELF_MAX_BOOKS];  // The shelf's present books in the library's order.
     int order_count;
+    LibLine *lines;              // The grid, from order and the screen's width.
+    int line_count;
+    int columns;
     Prefs prefs;
     Covers covers;
     SysInfo sys;
@@ -78,6 +86,8 @@ typedef struct {
     View view;
     Panel panel;
     int menu_cursor;
+    SettingsPage settings_page;
+    int settings_cursor;
     int contents_cursor;
     int contents_first;  // The first row shown.
 
@@ -85,7 +95,6 @@ typedef struct {
     int cursor;       // In order.
     int scroll;       // Pixels the grid is moved up.
     Kinetic kinetic;
-    bool dragging;
 
     // The book open.
     int book;                 // Its index in the shelf; -1 when none.
@@ -100,8 +109,7 @@ typedef struct {
     uint64_t turn_start_ns;
     DocChapter *chapters;
     int chapter_count;
-    bool slider_drag;
-    int drag_dx;              // A drag across the page: how far, for a swipe.
+    int drag_rows;            // A drag in the contents: rows moved so far.
 } App;
 
 void appInit(App *app, const char *folder);
@@ -110,6 +118,7 @@ void appFree(App *app);  // Saves where the book open was left, and the settings
 // Each frame: takes the pages and covers made, follows the book's layout.
 void appUpdate(App *app, uint64_t now_ns);
 void appHandleButtons(App *app, uint64_t pressed, uint64_t now_ns);
+// x and y as the panel reports them (1280 x 720): turned here with the screen.
 void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns);
 
 void appNotify(App *app, NoticeKind kind, const char *text, uint64_t now_ns);
@@ -123,7 +132,14 @@ const DocImage *appPageImage(const App *app, int page);
 // The room a page gets on screen (layout units), and the layout for the reading thread.
 void appPageRect(const App *app, int page, int *x, int *y, int *w, int *h);
 ReadingLayout appLayout(const App *app);
+// The column a flowing book is laid out in: its size and where it is.
+void appColumn(int *x, int *y, int *w, int *h);
 // The menu's rows now (the reader has more): into out, how many.
 int appMenuRows(const App *app, MenuItem *out);
 // The chapter the page is in (-1 if none), for the bars.
 int appChapterOf(const App *app, int page);
+// Rows the contents panel shows, for the screen's height.
+int appContentsRows(void);
+// The grid's left edge (the first cover's x) and the height of the library's view.
+int appLibraryLeft(const App *app);
+int appLibraryViewH(void);

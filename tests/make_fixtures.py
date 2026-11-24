@@ -1,6 +1,6 @@
 """Makes the made-up books the host tests open (all text invented here).
 
-    python3 make_fixtures.py <folder>
+    python3 make_fixtures.py <folder> [--library]
 
 quiet.epub    EPUB 3: nav table of contents, three chapters, a cover image
 old.epub      EPUB 2: NCX table of contents only, cover named by <meta name="cover">
@@ -10,6 +10,7 @@ tale.fb2      FictionBook 2
 notes.txt     plain text
 broken.epub   a ZIP with nothing of an EPUB in it
 empty.pdf     zero bytes
+library*.epub with --library: eight more, with drawn covers, several authors and genres (previews)
 """
 
 from __future__ import annotations
@@ -37,6 +38,75 @@ def png(width: int, height: int, rgb: tuple[int, int, int]) -> bytes:
 
     return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
             + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))
+
+
+def art_png(width: int, height: int, sky: tuple, sea: tuple, sun: tuple, seed: int) -> bytes:
+    """A made-up cover: a sky fading down, a sun, and a sea with a few wave lines."""
+    horizon = int(height * (0.55 + (seed % 3) * 0.05))
+    sun_x, sun_y, sun_r = width * (0.3 + (seed % 4) * 0.13), horizon - height * 0.12, width * 0.16
+    rows = []
+    for y in range(height):
+        row = bytearray(b"\x00")
+        for x in range(width):
+            if y < horizon:
+                t = y / horizon
+                c = [int(sky[i] * (1 - t) + sun[i] * 0.35 * t + sky[i] * 0.4 * t) for i in range(3)]
+                if (x - sun_x) ** 2 + (y - sun_y) ** 2 < sun_r ** 2:
+                    c = list(sun)
+            else:
+                t = (y - horizon) / (height - horizon)
+                c = [int(sea[i] * (1 - 0.5 * t)) for i in range(3)]
+                wave = (y - horizon) % 22 < 3 and (x + y * 3 + seed * 17) % 60 < 38
+                if wave:
+                    c = [min(255, v + 45) for v in c]
+            row += bytes(min(255, max(0, v)) for v in c)
+        rows.append(bytes(row))
+
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(b"".join(rows), 9)) + chunk(b"IEND", b""))
+
+
+# Made-up books for the previews' library: title, author, sorted name, genre, cover colors.
+LIBRARY = [
+    ("The Salt Ledger", "Mara Fennick", "Fennick, Mara", "Mystery", (40, 50, 90), (20, 70, 110), (240, 190, 90)),
+    ("North of the Bell", "Ivo Castellan", "Castellan, Ivo", "Adventure", (90, 120, 170), (30, 60, 100), (250, 230, 200)),
+    ("Copper Evenings", "Mara Fennick", "Fennick, Mara", "Mystery", (120, 60, 70), (60, 40, 60), (250, 160, 90)),
+    ("A Map of Small Islands", "Lio Arden", "Arden, Lio", "Travel", (100, 170, 200), (20, 110, 140), (255, 240, 170)),
+    ("The Gull Keeper", "Ivo Castellan", "Castellan, Ivo", "Adventure", (60, 90, 80), (20, 60, 70), (230, 220, 160)),
+    ("Lanterns at Low Tide", "Noor Halden", "Halden, Noor", "Poetry", (30, 30, 60), (10, 30, 60), (250, 200, 120)),
+    ("Fog Stair", "Lio Arden", "Arden, Lio", "Travel", (150, 150, 160), (70, 80, 90), (240, 240, 230)),
+    ("Ropes and Wind", "Noor Halden", "Halden, Noor", "Poetry", (180, 110, 80), (60, 70, 100), (255, 220, 150)),
+]
+
+
+def library_epub(path: str, number: int) -> None:
+    title, author, file_as, genre, sky, sea, sun = LIBRARY[number]
+    with zipfile.ZipFile(path, "w") as z:
+        z.writestr(zipfile.ZipInfo("mimetype"), "application/epub+zip", compress_type=zipfile.ZIP_STORED)
+        z.writestr("META-INF/container.xml",
+                   '<?xml version="1.0"?><container version="1.0" '
+                   'xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles>'
+                   '<rootfile full-path="content.opf" media-type="application/oebps-package+xml"/>'
+                   "</rootfiles></container>")
+        z.writestr("cover.png", art_png(200, 300, sky, sea, sun, number))
+        z.writestr("ch1.xhtml", chapter_xhtml(title, number * 3 + 1, 25))
+        z.writestr("nav.xhtml", '<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml" '
+                   'xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Contents</title></head><body>'
+                   f'<nav epub:type="toc"><ol><li><a href="ch1.xhtml">{title}</a></li></ol></nav></body></html>')
+        z.writestr("content.opf",
+                   '<?xml version="1.0" encoding="utf-8"?><package xmlns="http://www.idpf.org/2007/opf" '
+                   'version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/">'
+                   f'<dc:title>{title}</dc:title><dc:creator id="a">{author}</dc:creator>'
+                   f'<meta refines="#a" property="file-as">{file_as}</meta><dc:subject>{genre}</dc:subject>'
+                   f'<dc:language>en</dc:language><dc:identifier id="uid">urn:uuid:00000000-0000-4000-9000-'
+                   f'{number:012d}</dc:identifier></metadata><manifest>'
+                   '<item id="cover" href="cover.png" media-type="image/png" properties="cover-image"/>'
+                   '<item id="ch1" href="ch1.xhtml" media-type="application/xhtml+xml"/>'
+                   '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>'
+                   '</manifest><spine><itemref idref="ch1"/></spine></package>')
 
 
 def chapter_xhtml(title: str, seed: int, paragraphs: int) -> str:
@@ -79,7 +149,12 @@ def epub(path: str, version3: bool) -> None:
                        f'<nav epub:type="toc"><ol>{links}</ol></nav></body></html>')
             items.append('<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>')
         title = "The Quiet Lighthouse" if version3 else "An Older Harbor"
-        meta = (f'<dc:title>{title}</dc:title><dc:creator>Ana Example</dc:creator>'
+        # EPUB 3 sorts its author with a refining <meta>; EPUB 2 with opf:file-as.
+        creator = ('<dc:creator id="a1">Ana Example</dc:creator><meta refines="#a1" property="file-as">'
+                   'Example, Ana</meta><dc:subject>Sea Stories</dc:subject>' if version3 else
+                   '<dc:creator opf:file-as="Example, Ana" xmlns:opf="http://www.idpf.org/2007/opf">Ana Example'
+                   '</dc:creator><dc:subject>Harbors</dc:subject><dc:subject>Second subject</dc:subject>')
+        meta = (f'<dc:title>{title}</dc:title>{creator}'
                 '<dc:language>en</dc:language><dc:identifier id="uid">urn:uuid:00000000-0000-4000-8000-'
                 f'{"000000000003" if version3 else "000000000002"}</dc:identifier>'
                 + ("" if version3 else '<meta name="cover" content="front"/>'))
@@ -155,6 +230,9 @@ def main() -> None:
     with zipfile.ZipFile(os.path.join(folder, "broken.epub"), "w") as z:
         z.writestr("hello.txt", "not a book")
     open(os.path.join(folder, "empty.pdf"), "wb").close()
+    if "--library" in sys.argv:  # More books, with drawn covers, for the previews' library.
+        for i in range(len(LIBRARY)):
+            library_epub(os.path.join(folder, f"library{i + 1}.epub"), i)
 
 
 if __name__ == "__main__":

@@ -70,7 +70,7 @@ static void testScan(void)
 
     // Order: being read (most recent first), then by name.
     int order[16];
-    int n = shelfOrder(&s, order, 16);
+    int n = shelfOrder(&s, SHELF_SORT_RECENT, order, 16);
     CHECK(n == 4);
     if (n == 4) {
         shelfDisplayName(&s.items[order[0]], name, sizeof(name));
@@ -81,7 +81,7 @@ static void testScan(void)
     shelfMarkRead(z, (DocPlace){0, 0.5}, 150, 2000);
     CHECK(z->percent == 100);
     shelfSetInfo(z, "Zebra\tTales", "Ana\nExample");
-    n = shelfOrder(&s, order, 16);
+    n = shelfOrder(&s, SHELF_SORT_RECENT, order, 16);
     CHECK(n == 4 && &s.items[order[0]] == z && &s.items[order[1]] == deep);
     shelfDisplayName(z, name, sizeof(name));
     CHECK(!strcmp(name, "Zebra Tales") && !strcmp(z->author, "Ana Example"));
@@ -100,7 +100,7 @@ static void testScan(void)
     remove(ROOT "/books/zebra_tales.epub");
     remove(ROOT "/books/Atlas.PDF");
     CHECK(shelfScan(&t, ROOT "/books") == 2);
-    CHECK(shelfOrder(&t, order, 16) == 2);
+    CHECK(shelfOrder(&t, SHELF_SORT_RECENT, order, 16) == 2);
     CHECK(shelfSave(&t, ROOT "/shelf.txt"));
     shelfFree(&t);
     CHECK(shelfLoad(&t, ROOT "/shelf.txt") && t.count == 3);
@@ -152,8 +152,53 @@ static void testBadFile(void)
     shelfFree(&s);
 }
 
+static void testSorts(void)
+{
+    mkdir(TMP_ROOT, 0755);
+    mkdir(ROOT, 0755);
+    Shelf s = {0};
+    const char *paths[] = {"/a/1.epub", "/a/2.epub", "/a/3.epub", "/a/4.epub"};
+    for (int i = 0; i < 4; i++)
+        shelfAdd(&s, paths[i]);
+    shelfSetInfo(&s.items[0], "Zebra", "Bo Sample");
+    shelfSetDetails(&s.items[0], "Sea", "Sample, Bo");
+    shelfSetInfo(&s.items[1], "Apple", "Ana Example");
+    shelfSetDetails(&s.items[1], "Sea", "Example, Ana");
+    shelfSetInfo(&s.items[2], "Middle", "Cy Placeholder");
+    shelfSetDetails(&s.items[2], "Harbor", NULL);  // No sort name: by the name as written.
+    shelfSetInfo(&s.items[3], "Nobody's", "");      // No author, no genre: last.
+    int order[4];
+    CHECK(shelfOrder(&s, SHELF_SORT_TITLE, order, 4) == 4);
+    CHECK(order[0] == 1 && order[1] == 2 && order[2] == 3 && order[3] == 0);
+    shelfOrder(&s, SHELF_SORT_AUTHOR, order, 4);
+    CHECK(order[0] == 2 && order[1] == 1 && order[2] == 0 && order[3] == 3);  // "Cy P.", "Example", "Sample".
+    shelfOrder(&s, SHELF_SORT_GENRE, order, 4);
+    CHECK(order[0] == 2 && order[1] == 1 && order[2] == 0 && order[3] == 3);  // Harbor; Sea: Example, Sample.
+    char group[SHELF_TEXT_MAX];
+    shelfGroupOf(&s.items[0], SHELF_SORT_GENRE, group, sizeof(group));
+    CHECK(!strcmp(group, "Sea"));
+    shelfGroupOf(&s.items[0], SHELF_SORT_AUTHOR, group, sizeof(group));
+    CHECK(!strcmp(group, "Bo Sample"));
+    shelfGroupOf(&s.items[0], SHELF_SORT_TITLE, group, sizeof(group));
+    CHECK(!group[0]);
+    shelfGroupOf(&s.items[3], SHELF_SORT_GENRE, group, sizeof(group));
+    CHECK(!group[0]);
+    shelfSetDetails(&s.items[0], "", "");  // Empty ones keep what was there.
+    CHECK(!strcmp(s.items[0].genre, "Sea") && !strcmp(s.items[0].author_sort, "Sample, Bo"));
+    // Kept on the card, and read back.
+    s.items[0].percent = 5;
+    CHECK(shelfSave(&s, ROOT "/sorted.txt"));
+    Shelf t = {0};
+    CHECK(shelfLoad(&t, ROOT "/sorted.txt"));
+    ShelfBook *z = shelfFind(&t, "/a/1.epub");
+    CHECK(z && !strcmp(z->genre, "Sea") && !strcmp(z->author_sort, "Sample, Bo"));
+    shelfFree(&t);
+    shelfFree(&s);
+}
+
 void testShelf(void)
 {
+    testSorts();
     testScan();
     testBadFile();
 }

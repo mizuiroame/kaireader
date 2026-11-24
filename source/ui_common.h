@@ -21,7 +21,7 @@
 
 #define MARGIN 32
 #define HEADER_H 64
-#define FOOTER_Y 664
+#define UI_SLIDER_LEFT (MARGIN + 140)  // The reader's page slider: from here to as far from the right.
 
 // A 0xRRGGBB color (a page's paper or ink) as a Color.
 static inline Color uiColorOf(uint32_t rgb)

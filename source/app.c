@@ -21,6 +21,9 @@
 
 #define SWIPE_MIN 80          // Layout pixels across for a swipe to turn the page.
 #define SAVE_EVERY_NS (30ull * 1000000000ull)
+#define COLUMN_W_WIDE 800     // A flowing book's column, the console lying down,
+#define COLUMN_SIDE_UPRIGHT 40  // and its margins upright.
+#define COLUMN_TOP 22
 
 static void pathIn(const App *app, const char *name, char *out, size_t size)
 {
@@ -46,11 +49,107 @@ void appNotify(App *app, NoticeKind kind, const char *text, uint64_t now_ns)
     noticePush(&app->notices, kind, text, now_ns);
 }
 
+// --- The library's grid ---
+
+int appLibraryViewH(void)
+{
+    return gfxLayoutHeight() - FOOTER_H - LIB_TOP;
+}
+
+int appLibraryLeft(const App *app)
+{
+    return (gfxLayoutWidth() - app->columns * LIB_CELL_W) / 2 + (LIB_CELL_W - LIB_COVER_W) / 2;
+}
+
+static int gridHeight(const App *app)
+{
+    if (app->line_count == 0)
+        return 0;
+    const LibLine *last = &app->lines[app->line_count - 1];
+    return last->y + last->h;
+}
+
+static int maxScroll(const App *app)
+{
+    int max = gridHeight(app) - appLibraryViewH();
+    return max < 0 ? 0 : max;
+}
+
+// The grid's lines: a group's name where the group changes (by author or
+// genre), then its books in rows of as many as fit across.
+static void layoutLibrary(App *app)
+{
+    int columns = (gfxLayoutWidth() - 2 * LIB_SIDE) / LIB_CELL_W;
+    app->columns = columns < 2 ? 2 : columns;
+    free(app->lines);
+    app->lines = malloc((size_t)(2 * app->order_count + 1) * sizeof(*app->lines));
+    app->line_count = 0;
+    if (!app->lines)
+        return;
+    int y = 0;
+    char group[SHELF_TEXT_MAX], last[SHELF_TEXT_MAX] = "";
+    bool grouped = app->prefs.sort == SHELF_SORT_AUTHOR || app->prefs.sort == SHELF_SORT_GENRE;
+    for (int i = 0; i < app->order_count;) {
+        if (grouped) {
+            shelfGroupOf(&app->shelf.items[app->order[i]], (ShelfSort)app->prefs.sort, group, sizeof(group));
+            if (i == 0 || strcmp(group, last)) {
+                app->lines[app->line_count++] = (LibLine){y, LIB_GROUP_H, -1, 0, i};
+                y += LIB_GROUP_H;
+                snprintf(last, sizeof(last), "%s", group);
+            }
+        }
+        int n = 0;
+        while (i + n < app->order_count && n < app->columns) {
+            if (grouped && n > 0) {
+                shelfGroupOf(&app->shelf.items[app->order[i + n]], (ShelfSort)app->prefs.sort, group, sizeof(group));
+                if (strcmp(group, last))
+                    break;  // The next group starts a row of its own.
+            }
+            n++;
+        }
+        app->lines[app->line_count++] = (LibLine){y, LIB_CELL_H, i, n, -1};
+        y += LIB_CELL_H;
+        i += n;
+    }
+    if (app->scroll > maxScroll(app))
+        app->scroll = maxScroll(app);
+}
+
+// The line a book is on.
+static int lineOf(const App *app, int book)
+{
+    for (int i = 0; i < app->line_count; i++) {
+        const LibLine *l = &app->lines[i];
+        if (l->first >= 0 && book >= l->first && book < l->first + l->count)
+            return i;
+    }
+    return -1;
+}
+
 static void sortShelf(App *app)
 {
-    app->order_count = shelfOrder(&app->shelf, app->order, SHELF_MAX_BOOKS);
-    if (app->cursor >= app->order_count)
-        app->cursor = app->order_count ? app->order_count - 1 : 0;
+    int selected = app->order_count && app->cursor < app->order_count ? app->order[app->cursor] : -1;
+    app->order_count = shelfOrder(&app->shelf, (ShelfSort)app->prefs.sort, app->order, SHELF_MAX_BOOKS);
+    app->cursor = 0;
+    for (int i = 0; i < app->order_count; i++)
+        if (app->order[i] == selected)
+            app->cursor = i;
+    layoutLibrary(app);
+}
+
+static void keepCursorVisible(App *app)
+{
+    int line = lineOf(app, app->cursor);
+    if (line < 0)
+        return;
+    int top = app->lines[line].y, bottom = top + app->lines[line].h;
+    if (line > 0 && app->lines[line - 1].first < 0)
+        top = app->lines[line - 1].y;  // Its group's name shows too.
+    if (top < app->scroll)
+        app->scroll = top;
+    if (bottom > app->scroll + appLibraryViewH())
+        app->scroll = bottom - appLibraryViewH();
+    kineticStop(&app->kinetic);
 }
 
 void appRescan(App *app, uint64_t now_ns)
@@ -77,6 +176,7 @@ void appInit(App *app, const char *folder)
     prefsDefaults(&app->prefs);
     pathIn(app, "settings.txt", path, sizeof(path));
     prefsLoad(&app->prefs, path);
+    gfxSetTurn(app->prefs.turn);
     pathIn(app, "shelf.txt", path, sizeof(path));
     shelfLoad(&app->shelf, path);
     appRescan(app, 0);
@@ -119,17 +219,32 @@ void appFree(App *app)
     freeSlots(app);
     free(app->chapters);
     app->chapters = NULL;
+    free(app->lines);
+    app->lines = NULL;
     coversFree(&app->covers);
     shelfFree(&app->shelf);
 }
 
+// --- The reader's page ---
+
+void appColumn(int *x, int *y, int *w, int *h)
+{
+    int sw = gfxLayoutWidth(), sh = gfxLayoutHeight();
+    *w = gfxTurn() ? sw - 2 * COLUMN_SIDE_UPRIGHT : COLUMN_W_WIDE;
+    *h = sh - COLUMN_TOP - 34;  // The page number goes under it.
+    *x = (sw - *w) / 2;
+    *y = COLUMN_TOP;
+}
+
 ReadingLayout appLayout(const App *app)
 {
+    int x, y, w, h;
+    appColumn(&x, &y, &w, &h);
     ReadingLayout l;
-    l.box_w = READ_COLUMN_W;
-    l.box_h = READ_COLUMN_H;
-    l.fixed_w = GFX_WIDTH;
-    l.fixed_h = GFX_HEIGHT;
+    l.box_w = (float)w;
+    l.box_h = (float)h;
+    l.fixed_w = (float)gfxLayoutWidth();
+    l.fixed_h = (float)gfxLayoutHeight();
     l.em = prefsEm(app->prefs.text_size);
     l.pixel_scale = GFX_SCALE * gfxDetail();
     l.colors = prefsColors(app->prefs.theme);
@@ -171,15 +286,13 @@ void appCloseBook(App *app)
     app->ready = false;
     app->view = VIEW_LIBRARY;
     app->panel = PANEL_NONE;
-    sortShelf(app);
-    app->cursor = 0;  // The book just read is first now.
-    app->scroll = 0;
+    sortShelf(app);  // The book just read may move (first, sorted by recent).
+    keepCursorVisible(app);
 }
 
-// A new text size or colors: the book is laid out again where it is.
+// A new text size, colors or screen: the book is laid out again where it is.
 static void relayout(App *app)
 {
-    savePrefs(app);
     if (app->book < 0 || !app->ready)
         return;
     ReadingStatus st;
@@ -206,18 +319,15 @@ void appPageRect(const App *app, int page, int *x, int *y, int *w, int *h)
 {
     const DocImage *img = appPageImage(app, page);
     if (app->reflowable || !img) {
-        *w = READ_COLUMN_W;
-        *h = READ_COLUMN_H;
-        *x = (GFX_WIDTH - *w) / 2;
-        *y = READ_COLUMN_Y;
+        appColumn(x, y, w, h);
         return;
     }
     // A fixed page, rendered to fit the screen: its size in layout units.
     float per = GFX_SCALE * gfxDetail();
     *w = (int)(img->width / per + 0.5f);
     *h = (int)(img->height / per + 0.5f);
-    *x = (GFX_WIDTH - *w) / 2;
-    *y = (GFX_HEIGHT - *h) / 2;
+    *x = (gfxLayoutWidth() - *w) / 2;
+    *y = (gfxLayoutHeight() - *h) / 2;
 }
 
 int appChapterOf(const App *app, int page)
@@ -227,6 +337,12 @@ int appChapterOf(const App *app, int page)
         if (app->chapters[i].page >= 0 && app->chapters[i].page <= page)
             found = i;
     return found;
+}
+
+int appContentsRows(void)
+{
+    int rows = (gfxLayoutHeight() - 200) / CONTENTS_ROW_H;
+    return rows < 4 ? 4 : rows;
 }
 
 // Keeps a rendered page; the slot of the page farthest from the one read goes.
@@ -262,7 +378,6 @@ static void followBook(App *app, uint64_t now_ns)
             char text[NOTICE_TEXT_MAX];
             snprintf(text, sizeof(text), T("The book couldn't be opened: %s"), st.error);
             appNotify(app, NOTICE_ERROR, text, now_ns);
-            app->ready = false;
             readingClose();
             app->book = -1;
             app->view = VIEW_LIBRARY;
@@ -300,27 +415,29 @@ static void followBook(App *app, uint64_t now_ns)
     readingSetCurrent(app->generation, app->page);
 }
 
-// Covers made, and the titles they bring: the library is sorted again by them,
-// the book selected staying selected.
+// Covers made, and what they bring (title, author, genre): the library is
+// sorted again with it, the book selected staying selected.
 static void takeCovers(App *app)
 {
     ReadingCover c;
-    bool renamed = false;
+    bool learned = false;
     while (readingTakeCover(&c)) {
         ShelfBook *b = shelfFind(&app->shelf, c.path);
-        if (b && !b->title[0] && c.title[0]) {
-            shelfSetInfo(b, c.title, c.author);
-            renamed = true;
+        if (b) {
+            if (!b->title[0] && c.title[0]) {
+                shelfSetInfo(b, c.title, c.author);
+                learned = true;
+            }
+            if ((c.genre[0] && strcmp(b->genre, c.genre)) ||
+                (c.author_sort[0] && strcmp(b->author_sort, c.author_sort))) {
+                shelfSetDetails(b, c.genre, c.author_sort);
+                learned = true;
+            }
         }
         coversPut(&app->covers, &c, b ? b->size : 0);
     }
-    if (!renamed || app->order_count == 0)
-        return;
-    int selected = app->order[app->cursor];
-    sortShelf(app);
-    for (int i = 0; i < app->order_count; i++)
-        if (app->order[i] == selected)
-            app->cursor = i;
+    if (learned && app->view == VIEW_LIBRARY)
+        sortShelf(app);
 }
 
 void appUpdate(App *app, uint64_t now_ns)
@@ -335,11 +452,8 @@ void appUpdate(App *app, uint64_t now_ns)
         int step = kineticStep(&app->kinetic, now_ns);
         if (step) {
             app->scroll += step;
-            int rows = (app->order_count + LIB_COLUMNS - 1) / LIB_COLUMNS;
-            int max = rows * LIB_CELL_H - (FOOTER_Y - LIB_TOP);
-            max = max < 0 ? 0 : max;
-            if (app->scroll < 0 || app->scroll > max) {
-                app->scroll = app->scroll < 0 ? 0 : max;
+            if (app->scroll < 0 || app->scroll > maxScroll(app)) {
+                app->scroll = app->scroll < 0 ? 0 : maxScroll(app);
                 kineticStop(&app->kinetic);
             }
         }
@@ -352,54 +466,65 @@ void appUpdate(App *app, uint64_t now_ns)
     }
 }
 
+// --- Changes from Settings and the quick buttons ---
+
+static void applyChange(App *app, int changed, uint64_t now_ns)
+{
+    savePrefs(app);
+    if (changed & SETTINGS_CHANGED_SCREEN) {
+        gfxSetTurn(app->prefs.turn);
+        layoutLibrary(app);
+        keepCursorVisible(app);
+    }
+    if (changed & SETTINGS_CHANGED_ORDER)
+        sortShelf(app);
+    if (changed & SETTINGS_CHANGED_LAYOUT)
+        relayout(app);
+    if (changed & SETTINGS_RESCAN)
+        appRescan(app, now_ns);
+}
+
+static void stepSetting(App *app, SettingRow row, int dir, uint64_t now_ns)
+{
+    if (row == SETTING_TEXT_SIZE && app->view == VIEW_READER && app->ready && !app->reflowable) {
+        appNotify(app, NOTICE_INFO, T("This book's pages are fixed: the text size is for books that flow."), now_ns);
+        return;
+    }
+    applyChange(app, settingsStep(&app->prefs, row, dir), now_ns);
+}
+
+// A quick button (Y, up, down) changes a setting and says to what.
+static void quickStep(App *app, SettingRow row, int dir, uint64_t now_ns)
+{
+    if (row == SETTING_TEXT_SIZE && app->ready && !app->reflowable) {
+        stepSetting(app, row, dir, now_ns);
+        return;
+    }
+    int before = app->prefs.text_size;
+    stepSetting(app, row, dir, now_ns);
+    if (row == SETTING_TEXT_SIZE && app->prefs.text_size == before)
+        return;  // At an end already.
+    char value[64], line[160];
+    bool name;
+    settingsValue(&app->prefs, row, value, sizeof(value), &name);
+    snprintf(line, sizeof(line), "%s: %s", T(settingsLabel(row)), name ? T(value) : value);
+    appNotify(app, NOTICE_INFO, line, now_ns);
+}
+
 // --- The menu ---
 
 int appMenuRows(const App *app, MenuItem *out)
 {
     int n = 0;
-    bool reading = app->view == VIEW_READER;
-    out[n++] = MENU_TEXT_SIZE;
-    out[n++] = MENU_THEME;
-    if (reading) {
+    if (app->view == VIEW_READER) {
         out[n++] = MENU_CONTENTS;
         out[n++] = MENU_LIBRARY;
     }
-    out[n++] = MENU_CLOCK;
-    out[n++] = MENU_ABOUT;
+    out[n++] = MENU_SETTINGS;
+    if (app->view == VIEW_LIBRARY)
+        out[n++] = MENU_RESCAN;
     out[n++] = MENU_EXIT;
     return n;
-}
-
-static void notifyTextSize(App *app, uint64_t now_ns)
-{
-    char text[64];
-    snprintf(text, sizeof(text), T("Text size %d of %d"), app->prefs.text_size + 1, PREFS_TEXT_SIZES);
-    appNotify(app, NOTICE_INFO, text, now_ns);
-}
-
-static void stepTextSize(App *app, int dir, uint64_t now_ns)
-{
-    int size = app->prefs.text_size + dir;
-    if (size < 0 || size >= PREFS_TEXT_SIZES)
-        return;
-    app->prefs.text_size = size;
-    if (app->view == VIEW_READER && app->ready && !app->reflowable) {
-        savePrefs(app);
-        appNotify(app, NOTICE_INFO, T("This book's pages are fixed: the text size is for books that flow."), now_ns);
-        return;
-    }
-    notifyTextSize(app, now_ns);
-    relayout(app);
-}
-
-static void stepTheme(App *app, int dir, uint64_t now_ns)
-{
-    app->prefs.theme = (app->prefs.theme + dir + THEME_COUNT) % THEME_COUNT;
-    appNotify(app, NOTICE_INFO, T(prefsThemeName(app->prefs.theme)), now_ns);
-    if (app->reflowable)
-        relayout(app);
-    else
-        savePrefs(app);
 }
 
 static void openContents(App *app, uint64_t now_ns)
@@ -411,53 +536,46 @@ static void openContents(App *app, uint64_t now_ns)
         appNotify(app, NOTICE_INFO, T("This book has no table of contents."), now_ns);
         return;
     }
+    int rows = appContentsRows();
     app->panel = PANEL_CONTENTS;
     int at = appChapterOf(app, app->page);
     app->contents_cursor = at < 0 ? 0 : at;
-    app->contents_first = app->contents_cursor - CONTENTS_ROWS / 2;
-    if (app->contents_first > app->chapter_count - CONTENTS_ROWS)
-        app->contents_first = app->chapter_count - CONTENTS_ROWS;
+    app->contents_first = app->contents_cursor - rows / 2;
+    if (app->contents_first > app->chapter_count - rows)
+        app->contents_first = app->chapter_count - rows;
     if (app->contents_first < 0)
         app->contents_first = 0;
 }
 
-static void menuPick(App *app, MenuItem item, int dir, uint64_t now_ns)
+static void openSettings(App *app)
 {
+    app->panel = PANEL_SETTINGS;
+    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_cursor = 0;
+}
+
+static void menuPick(App *app, MenuItem item, uint64_t now_ns)
+{
+    app->panel = PANEL_NONE;
     switch (item) {
-    case MENU_TEXT_SIZE:
-        stepTextSize(app, dir ? dir : 1, now_ns);
-        break;
-    case MENU_THEME:
-        stepTheme(app, dir ? dir : 1, now_ns);
-        break;
-    case MENU_CLOCK:
-        app->prefs.clock_24h = !app->prefs.clock_24h;
-        savePrefs(app);
-        break;
     case MENU_CONTENTS:
-        if (!dir)
-            openContents(app, now_ns);
+        openContents(app, now_ns);
         break;
     case MENU_LIBRARY:
-        if (!dir)
-            appCloseBook(app);
+        appCloseBook(app);
         break;
-    case MENU_ABOUT:
-        if (!dir)
-            app->panel = PANEL_ABOUT;
+    case MENU_SETTINGS:
+        openSettings(app);
+        break;
+    case MENU_RESCAN:
+        appRescan(app, now_ns);
         break;
     case MENU_EXIT:
-        if (!dir)
-            app->quit = true;
+        app->quit = true;
         break;
     default:
         break;
     }
-}
-
-static bool isValueRow(MenuItem item)
-{
-    return item == MENU_TEXT_SIZE || item == MENU_THEME || item == MENU_CLOCK;
 }
 
 static void menuButtons(App *app, uint64_t pressed, uint64_t now_ns)
@@ -466,29 +584,84 @@ static void menuButtons(App *app, uint64_t pressed, uint64_t now_ns)
     int n = appMenuRows(app, rows);
     if (app->menu_cursor >= n)
         app->menu_cursor = n - 1;
-    MenuItem item = rows[app->menu_cursor];
-    if (pressed & (HidNpadButton_B | HidNpadButton_Plus)) {
+    if (pressed & (HidNpadButton_B | HidNpadButton_Plus))
         app->panel = PANEL_NONE;
-    } else if (pressed & BUTTONS_UP) {
+    else if (pressed & BUTTONS_UP)
         app->menu_cursor = (app->menu_cursor + n - 1) % n;
-    } else if (pressed & BUTTONS_DOWN) {
+    else if (pressed & BUTTONS_DOWN)
         app->menu_cursor = (app->menu_cursor + 1) % n;
-    } else if ((pressed & BUTTONS_LEFT) && isValueRow(item)) {
-        menuPick(app, item, -1, now_ns);
-    } else if ((pressed & BUTTONS_RIGHT) && isValueRow(item)) {
-        menuPick(app, item, 1, now_ns);
+    else if (pressed & HidNpadButton_A)
+        menuPick(app, rows[app->menu_cursor], now_ns);
+}
+
+// --- Settings ---
+
+// A row of the page open: it opens its page, does its action, or steps its value.
+static void settingsPick(App *app, int index, int dir, uint64_t now_ns)
+{
+    SettingRow rows[SETTINGS_ROWS_MAX];
+    int n = settingsRows(app->settings_page, rows);
+    if (index < 0 || index >= n)
+        return;
+    app->settings_cursor = index;
+    SettingRow row = rows[index];
+    SettingsPage opens = settingsOpens(row);
+    if (opens != SETTINGS_PAGE_MAIN) {
+        if (dir >= 0) {
+            app->settings_page = opens;
+            app->settings_cursor = 0;
+        }
+        return;
+    }
+    if (settingsHasValue(row))
+        stepSetting(app, row, dir ? dir : 1, now_ns);
+    else if (!dir)
+        stepSetting(app, row, 0, now_ns);
+}
+
+static void settingsBack(App *app)
+{
+    if (app->settings_page == SETTINGS_PAGE_MAIN) {
+        app->panel = PANEL_NONE;
+        return;
+    }
+    // Back on the main page, on the row of the page left.
+    SettingRow rows[SETTINGS_ROWS_MAX];
+    int n = settingsRows(SETTINGS_PAGE_MAIN, rows);
+    for (int i = 0; i < n; i++)
+        if (settingsOpens(rows[i]) == app->settings_page)
+            app->settings_cursor = i;
+    app->settings_page = SETTINGS_PAGE_MAIN;
+}
+
+static void settingsButtons(App *app, uint64_t pressed, uint64_t now_ns)
+{
+    SettingRow rows[SETTINGS_ROWS_MAX];
+    int n = settingsRows(app->settings_page, rows);
+    if (pressed & HidNpadButton_Plus) {
+        app->panel = PANEL_NONE;
+    } else if (pressed & HidNpadButton_B) {
+        settingsBack(app);
+    } else if (n == 0) {  // About: only back.
+        if (pressed & HidNpadButton_A)
+            settingsBack(app);
+    } else if (pressed & BUTTONS_UP) {
+        app->settings_cursor = (app->settings_cursor + n - 1) % n;
+    } else if (pressed & BUTTONS_DOWN) {
+        app->settings_cursor = (app->settings_cursor + 1) % n;
+    } else if (pressed & BUTTONS_LEFT) {
+        settingsPick(app, app->settings_cursor, -1, now_ns);
+    } else if (pressed & BUTTONS_RIGHT) {
+        settingsPick(app, app->settings_cursor, 1, now_ns);
     } else if (pressed & HidNpadButton_A) {
-        if (!isValueRow(item))
-            app->panel = PANEL_NONE;
-        menuPick(app, item, 0, now_ns);
+        settingsPick(app, app->settings_cursor, 0, now_ns);
     }
 }
 
 // --- The contents ---
 
-static void contentsGo(App *app, int entry, uint64_t now_ns)
+static void contentsGo(App *app, int entry)
 {
-    (void)now_ns;
     if (entry < 0 || entry >= app->chapter_count)
         return;
     int page = app->chapters[entry].page;
@@ -501,6 +674,7 @@ static void contentsGo(App *app, int entry, uint64_t now_ns)
 
 static void contentsMove(App *app, int to)
 {
+    int rows = appContentsRows();
     if (to < 0)
         to = 0;
     if (to >= app->chapter_count)
@@ -508,12 +682,13 @@ static void contentsMove(App *app, int to)
     app->contents_cursor = to;
     if (to < app->contents_first)
         app->contents_first = to;
-    if (to >= app->contents_first + CONTENTS_ROWS)
-        app->contents_first = to - CONTENTS_ROWS + 1;
+    if (to >= app->contents_first + rows)
+        app->contents_first = to - rows + 1;
 }
 
-static void contentsButtons(App *app, uint64_t pressed, uint64_t now_ns)
+static void contentsButtons(App *app, uint64_t pressed)
 {
+    int rows = appContentsRows();
     if (pressed & (HidNpadButton_B | HidNpadButton_X))
         app->panel = PANEL_NONE;
     else if (pressed & BUTTONS_UP)
@@ -521,53 +696,57 @@ static void contentsButtons(App *app, uint64_t pressed, uint64_t now_ns)
     else if (pressed & BUTTONS_DOWN)
         contentsMove(app, app->contents_cursor + 1);
     else if (pressed & BUTTONS_LEFT)
-        contentsMove(app, app->contents_cursor - CONTENTS_ROWS);
+        contentsMove(app, app->contents_cursor - rows);
     else if (pressed & BUTTONS_RIGHT)
-        contentsMove(app, app->contents_cursor + CONTENTS_ROWS);
+        contentsMove(app, app->contents_cursor + rows);
     else if (pressed & HidNpadButton_A)
-        contentsGo(app, app->contents_cursor, now_ns);
+        contentsGo(app, app->contents_cursor);
 }
 
 // --- The library and the reader ---
 
-static void keepCursorVisible(App *app)
+static void libraryMove(App *app, int dx, int dy)
 {
-    int row = app->cursor / LIB_COLUMNS;
-    int top = row * LIB_CELL_H, bottom = top + LIB_CELL_H;
-    int view = FOOTER_Y - LIB_TOP;
-    if (top < app->scroll)
-        app->scroll = top;
-    if (bottom > app->scroll + view)
-        app->scroll = bottom - view;
-    kineticStop(&app->kinetic);
-}
-
-static void libraryButtons(App *app, uint64_t pressed, uint64_t now_ns)
-{
-    int n = app->order_count;
-    if (pressed & HidNpadButton_Y) {
-        appRescan(app, now_ns);
-        return;
-    }
-    if (n == 0)
-        return;
-    int c = app->cursor;
-    if (pressed & BUTTONS_LEFT)
-        c = c > 0 ? c - 1 : c;
-    else if (pressed & BUTTONS_RIGHT)
-        c = c + 1 < n ? c + 1 : c;
-    else if (pressed & BUTTONS_UP)
-        c = c - LIB_COLUMNS >= 0 ? c - LIB_COLUMNS : c;
-    else if (pressed & BUTTONS_DOWN)
-        c = c + LIB_COLUMNS < n ? c + LIB_COLUMNS : (c / LIB_COLUMNS < (n - 1) / LIB_COLUMNS ? n - 1 : c);
-    else if (pressed & HidNpadButton_A) {
-        appOpenBook(app, c, now_ns);
-        return;
+    int n = app->order_count, c = app->cursor;
+    if (dx)
+        c = c + dx < 0 ? 0 : c + dx >= n ? n - 1 : c + dx;
+    if (dy) {
+        int line = lineOf(app, c);
+        int column = line >= 0 ? c - app->lines[line].first : 0;
+        // The next line of books that way (past a group's name), at the same column or its last.
+        for (int l = line + dy; l >= 0 && l < app->line_count; l += dy) {
+            const LibLine *to = &app->lines[l];
+            if (to->first < 0)
+                continue;
+            c = to->first + (column < to->count ? column : to->count - 1);
+            break;
+        }
     }
     if (c != app->cursor) {
         app->cursor = c;
         keepCursorVisible(app);
     }
+}
+
+static void libraryButtons(App *app, uint64_t pressed, uint64_t now_ns)
+{
+    if (pressed & HidNpadButton_Y) {
+        quickStep(app, SETTING_SORT, 1, now_ns);
+        keepCursorVisible(app);
+        return;
+    }
+    if (app->order_count == 0)
+        return;
+    if (pressed & BUTTONS_LEFT)
+        libraryMove(app, -1, 0);
+    else if (pressed & BUTTONS_RIGHT)
+        libraryMove(app, 1, 0);
+    else if (pressed & BUTTONS_UP)
+        libraryMove(app, 0, -1);
+    else if (pressed & BUTTONS_DOWN)
+        libraryMove(app, 0, 1);
+    else if (pressed & HidNpadButton_A)
+        appOpenBook(app, app->cursor, now_ns);
 }
 
 static void turnPage(App *app, int dir, uint64_t now_ns)
@@ -583,48 +762,81 @@ static void turnPage(App *app, int dir, uint64_t now_ns)
     app->page = to;
 }
 
-#define BUTTONS_NEXT (BUTTONS_RIGHT | HidNpadButton_R | HidNpadButton_ZR | HidNpadButton_A)
-#define BUTTONS_PREV (BUTTONS_LEFT | HidNpadButton_L | HidNpadButton_ZL)
-
 static void readerButtons(App *app, uint64_t pressed, uint64_t now_ns)
 {
+    // Upright, every direction turns the page (down and right forward); lying
+    // down, up and down change the text size.
+    bool upright = gfxTurn() != GFX_TURN_NONE;
+    uint64_t next = BUTTONS_RIGHT | HidNpadButton_R | HidNpadButton_ZR | HidNpadButton_A;
+    uint64_t prev = BUTTONS_LEFT | HidNpadButton_L | HidNpadButton_ZL;
+    if (upright) {
+        next |= BUTTONS_DOWN;
+        prev |= BUTTONS_UP;
+    }
     if (pressed & HidNpadButton_B) {
         if (app->bars)
             app->bars = false;
         else
             appCloseBook(app);
-    } else if (pressed & BUTTONS_NEXT) {
+    } else if (pressed & next) {
         turnPage(app, 1, now_ns);
-    } else if (pressed & BUTTONS_PREV) {
+    } else if (pressed & prev) {
         turnPage(app, -1, now_ns);
     } else if (pressed & HidNpadButton_X) {
         openContents(app, now_ns);
     } else if (pressed & HidNpadButton_Y) {
-        stepTheme(app, 1, now_ns);
+        quickStep(app, SETTING_COLORS, 1, now_ns);
     } else if (pressed & HidNpadButton_Minus) {
         app->bars = !app->bars;
     } else if (pressed & BUTTONS_UP) {
-        stepTextSize(app, 1, now_ns);
+        quickStep(app, SETTING_TEXT_SIZE, 1, now_ns);
     } else if (pressed & BUTTONS_DOWN) {
-        stepTextSize(app, -1, now_ns);
+        quickStep(app, SETTING_TEXT_SIZE, -1, now_ns);
     }
+}
+
+// The d-pad and both sticks, turned with the screen: "up" is up as the
+// console is held. The right stick moves like the d-pad (KaiReader has
+// nothing else for it).
+static uint64_t turnDirections(uint64_t pressed)
+{
+    static const uint64_t UP[3] = {HidNpadButton_Up, HidNpadButton_StickLUp, HidNpadButton_StickRUp};
+    static const uint64_t RIGHT[3] = {HidNpadButton_Right, HidNpadButton_StickLRight, HidNpadButton_StickRRight};
+    static const uint64_t DOWN[3] = {HidNpadButton_Down, HidNpadButton_StickLDown, HidNpadButton_StickRDown};
+    static const uint64_t LEFT[3] = {HidNpadButton_Left, HidNpadButton_StickLLeft, HidNpadButton_StickRLeft};
+    uint64_t out = pressed;
+    for (int s = 0; s < 3; s++)
+        out &= ~(UP[s] | RIGHT[s] | DOWN[s] | LEFT[s]);
+    for (int s = 0; s < 3; s++) {
+        int d = s == 2 ? 0 : s;  // The right stick lands on the d-pad.
+        bool up = pressed & UP[s], right = pressed & RIGHT[s], down = pressed & DOWN[s], left = pressed & LEFT[s];
+        if (gfxTurn() == GFX_TURN_RIGHT) {  // Turned clockwise: the console's up points right.
+            bool t = up;
+            up = left, left = down, down = right, right = t;
+        } else if (gfxTurn() == GFX_TURN_LEFT) {
+            bool t = up;
+            up = right, right = down, down = left, left = t;
+        }
+        out |= (up ? UP[d] : 0) | (right ? RIGHT[d] : 0) | (down ? DOWN[d] : 0) | (left ? LEFT[d] : 0);
+    }
+    return out;
 }
 
 void appHandleButtons(App *app, uint64_t pressed, uint64_t now_ns)
 {
     if (!pressed)
         return;
-    if (app->panel == PANEL_ABOUT) {
-        if (pressed & (HidNpadButton_A | HidNpadButton_B | HidNpadButton_Plus))
-            app->panel = PANEL_MENU;
-        return;
-    }
+    pressed = turnDirections(pressed);
     if (app->panel == PANEL_MENU) {
         menuButtons(app, pressed, now_ns);
         return;
     }
+    if (app->panel == PANEL_SETTINGS) {
+        settingsButtons(app, pressed, now_ns);
+        return;
+    }
     if (app->panel == PANEL_CONTENTS) {
-        contentsButtons(app, pressed, now_ns);
+        contentsButtons(app, pressed);
         return;
     }
     if (pressed & HidNpadButton_Plus) {
@@ -642,7 +854,7 @@ void appHandleButtons(App *app, uint64_t pressed, uint64_t now_ns)
 
 static void sliderTo(App *app, int x)
 {
-    int left = MARGIN + 140, width = GFX_WIDTH - 2 * left;
+    int left = UI_SLIDER_LEFT, width = gfxLayoutWidth() - 2 * left;
     if (app->pages <= 1 || width <= 0)
         return;
     int page = (int)((double)(x - left) / width * (app->pages - 1) + 0.5);
@@ -656,8 +868,7 @@ static void sliderTo(App *app, int x)
 static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
 {
     if (!hit) {
-        if (app->panel != PANEL_NONE)
-            app->panel = PANEL_NONE;
+        app->panel = PANEL_NONE;
         return;
     }
     switch (hit->kind) {
@@ -674,35 +885,36 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
     case HIT_RESCAN:
         appRescan(app, now_ns);
         break;
+    case HIT_SORT:
+        quickStep(app, SETTING_SORT, 1, now_ns);
+        break;
     case HIT_BOOK:
         app->cursor = hit->arg;
         appOpenBook(app, hit->arg, now_ns);
         break;
     case HIT_OVERLAY_OUT:
-        app->panel = app->panel == PANEL_ABOUT ? PANEL_MENU : PANEL_NONE;
+        app->panel = PANEL_NONE;
         break;
     case HIT_MENU_ITEM: {
         MenuItem rows[MENU_COUNT];
         int n = appMenuRows(app, rows);
         if (hit->arg >= 0 && hit->arg < n) {
             app->menu_cursor = hit->arg;
-            if (!isValueRow(rows[hit->arg]))
-                app->panel = PANEL_NONE;
-            menuPick(app, rows[hit->arg], 0, now_ns);
+            menuPick(app, rows[hit->arg], now_ns);
         }
         break;
     }
-    case HIT_MENU_STEP: {
-        MenuItem rows[MENU_COUNT];
-        int n = appMenuRows(app, rows), row = hit->arg / 2;
-        if (row >= 0 && row < n) {
-            app->menu_cursor = row;
-            menuPick(app, rows[row], hit->arg % 2 ? 1 : -1, now_ns);
-        }
+    case HIT_SETTING:
+        settingsPick(app, hit->arg, 0, now_ns);
         break;
-    }
+    case HIT_SETTING_STEP:
+        settingsPick(app, hit->arg / 2, hit->arg % 2 ? 1 : -1, now_ns);
+        break;
+    case HIT_SETTINGS_BACK:
+        settingsBack(app);
+        break;
     case HIT_CHAPTER:
-        contentsGo(app, hit->arg, now_ns);
+        contentsGo(app, hit->arg);
         break;
     case HIT_BACK:
         appCloseBook(app);
@@ -713,21 +925,37 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
     case HIT_SLIDER:
         sliderTo(app, x);
         break;
-    case HIT_PAGE:
-        if (x < GFX_WIDTH / 3)
+    case HIT_PAGE: {
+        int w = gfxLayoutWidth();
+        if (x < w / 3)
             turnPage(app, -1, now_ns);
-        else if (x > GFX_WIDTH * 2 / 3)
+        else if (x > w * 2 / 3)
             turnPage(app, 1, now_ns);
         else
             app->bars = !app->bars;
         break;
-    default:
+    }
+    default:  // Panels' backgrounds, the grid: nothing.
         break;
+    }
+}
+
+// The panel's 1280 x 720 point, as the screen is turned.
+static void turnPoint(int *x, int *y)
+{
+    int px = *x, py = *y;
+    if (gfxTurn() == GFX_TURN_RIGHT) {
+        *x = GFX_HEIGHT - py;
+        *y = px;
+    } else if (gfxTurn() == GFX_TURN_LEFT) {
+        *x = py;
+        *y = GFX_WIDTH - px;
     }
 }
 
 void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
 {
+    turnPoint(&x, &y);
     TouchEvent e = touchUpdate(&app->touch, touching, x, y, now_ns);
     switch (e.type) {
     case TOUCH_PRESS:
@@ -741,37 +969,31 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
         if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE) {
             app->scroll -= e.dy;
             kineticDrag(&app->kinetic, -e.dy, now_ns);
-            int rows = (app->order_count + LIB_COLUMNS - 1) / LIB_COLUMNS;
-            int max = rows * LIB_CELL_H - (FOOTER_Y - LIB_TOP);
-            max = max < 0 ? 0 : max;
-            app->scroll = app->scroll < 0 ? 0 : app->scroll > max ? max : app->scroll;
-        } else if (app->view == VIEW_READER && start && start->kind == HIT_SLIDER) {
+            app->scroll = app->scroll < 0 ? 0 : app->scroll > maxScroll(app) ? maxScroll(app) : app->scroll;
+        } else if (app->view == VIEW_READER && app->panel == PANEL_NONE && start && start->kind == HIT_SLIDER) {
             sliderTo(app, e.x);
-        } else if (app->panel == PANEL_CONTENTS && e.dy) {
-            app->drag_dx += e.dy;  // Rows move by whole rows.
-            while (app->drag_dx <= -48) {
-                app->drag_dx += 48;
-                if (app->contents_first + CONTENTS_ROWS < app->chapter_count)
-                    app->contents_first++;
-            }
-            while (app->drag_dx >= 48) {
-                app->drag_dx -= 48;
-                if (app->contents_first > 0)
-                    app->contents_first--;
-            }
+        } else if (app->panel == PANEL_CONTENTS) {
+            // Rows follow the finger, a whole row at a time.
+            int rows = (e.start_y - e.y) / CONTENTS_ROW_H;
+            int moved = rows - app->drag_rows;
+            app->drag_rows = rows;
+            int max = app->chapter_count - appContentsRows();
+            max = max < 0 ? 0 : max;
+            int first = app->contents_first + moved;
+            app->contents_first = first < 0 ? 0 : first > max ? max : first;
         }
         break;
     }
     case TOUCH_DRAG_END:
-        if (app->view == VIEW_LIBRARY)
+        if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE) {
             kineticRelease(&app->kinetic, now_ns);
-        else if (app->view == VIEW_READER && app->panel == PANEL_NONE) {
+        } else if (app->view == VIEW_READER && app->panel == PANEL_NONE) {
             const HitRegion *start = uiHitFind(e.start_x, e.start_y);
             int dx = e.x - e.start_x, dy = e.y - e.start_y;
             if (start && start->kind == HIT_PAGE && abs(dx) > SWIPE_MIN && abs(dx) > abs(dy))
                 turnPage(app, dx < 0 ? 1 : -1, now_ns);  // Swiped left: the next page, as on paper.
         }
-        app->drag_dx = 0;
+        app->drag_rows = 0;
         break;
     default:
         break;

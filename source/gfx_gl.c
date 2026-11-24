@@ -31,10 +31,14 @@ static const char *const VERTEX_SHADER =
     "layout(location = 2) in vec4 color;\n"
     "layout(location = 3) in vec4 a;\n"
     "layout(location = 4) in vec4 b;\n"
+    "uniform int turn;\n"  // gfx.h's GFX_TURN_*: the framebuffer is 1080 x 1920 when turned.
     "out vec2 v_pos; out vec2 v_uv; out vec4 v_color; flat out vec4 v_a; flat out vec4 v_b;\n"
     "void main() {\n"
     "    v_pos = position; v_uv = uv; v_color = color; v_a = a; v_b = b;\n"
-    "    gl_Position = vec4(position.x / 960.0 - 1.0, 1.0 - position.y / 540.0, 0.0, 1.0);\n"
+    "    vec2 n = vec2(position.x / 960.0 - 1.0, 1.0 - position.y / 540.0);\n"
+    "    if (turn == 1) n = vec2(position.y / 960.0 - 1.0, position.x / 540.0 - 1.0);\n"  // Clockwise.
+    "    if (turn == 2) n = vec2(1.0 - position.y / 960.0, 1.0 - position.x / 540.0);\n"
+    "    gl_Position = vec4(n, 0.0, 1.0);\n"
     "}\n";
 
 // Coverage as gfx.c works it out: the distance inside the edge plus half a
@@ -115,6 +119,7 @@ typedef struct {
 
 static GLuint g_program, g_vao, g_vbo, g_atlas;
 static GLint g_u_clip, g_u_clip_radius, g_u_px;
+static GLint g_u_turn;  // The screen turned (gfx.h).
 static float g_detail = 1.0f;
 static float *g_vertices;
 static int g_count;               // Vertices batched.
@@ -402,7 +407,7 @@ bool gfxCanReadBack(void)
 
 void gfxClear(Color color)
 {
-    solidFb(0, 0, GFX_FB_WIDTH, GFX_FB_HEIGHT, color, 255);
+    solidFb(0, 0, gfxFbWidth(), gfxFbHeight(), color, 255);
 }
 
 void gfxFillRect(int x, int y, int w, int h, Color color)
@@ -567,7 +572,7 @@ void gfxSetClipRound(int x, int y, int w, int h, int radius)
 
 void gfxResetClip(void)
 {
-    setClip(0, 0, GFX_FB_WIDTH, GFX_FB_HEIGHT, 0.0f);
+    setClip(0, 0, (float)gfxFbWidth(), (float)gfxFbHeight(), 0.0f);
 }
 
 // --- Setup and frames ---
@@ -608,6 +613,7 @@ bool gfxGlSetup(void)
     g_u_clip = glGetUniformLocation(g_program, "clip_rect");
     g_u_clip_radius = glGetUniformLocation(g_program, "clip_radius");
     g_u_px = glGetUniformLocation(g_program, "px");
+    g_u_turn = glGetUniformLocation(g_program, "turn");
 
     glGenVertexArrays(1, &g_vao);
     glBindVertexArray(g_vao);
@@ -672,6 +678,7 @@ void gfxGlBeginFrame(int width, int height)
         gfxForgetMasks();  // Glyphs come at a new size now.
     }
     glUniform1f(g_u_px, (float)height / GFX_FB_HEIGHT);
+    glUniform1i(g_u_turn, gfxTurn());
     glBindVertexArray(g_vao);
     g_bound = NULL;
     g_count = 0;

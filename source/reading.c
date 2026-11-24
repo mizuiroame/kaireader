@@ -183,7 +183,15 @@ static void makeCover(const CoverAsk *ask)
     if (d) {
         docTitle(d, c->title, sizeof(c->title));
         docAuthor(d, c->author, sizeof(c->author));
-        c->ok = docEpubCover(ask->path, ask->w, ask->h, &c->image);
+        DocEpubInfo info;
+        if (docEpubInfo(ask->path, ask->w, ask->h, &info)) {
+            c->image = info.cover;
+            c->ok = info.cover.pixels != NULL;
+            snprintf(c->genre, sizeof(c->genre), "%s", info.genre);
+            snprintf(c->author_sort, sizeof(c->author_sort), "%s", info.author_sort);
+        } else {
+            docSubject(d, c->genre, sizeof(c->genre));
+        }
         float w, h;
         if (!c->ok)  // No cover picture: the first page, laid out like a paperback's.
             docLayout(d, COVER_PAGE_W, COVER_PAGE_H, COVER_EM);

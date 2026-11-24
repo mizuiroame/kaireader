@@ -19,6 +19,8 @@ typedef struct {
     char path[SHELF_PATH_MAX];
     char title[SHELF_TEXT_MAX];   // What the book says, once opened; empty before.
     char author[SHELF_TEXT_MAX];
+    char author_sort[SHELF_TEXT_MAX];  // "Example, Ana", when the book says it; else empty.
+    char genre[SHELF_TEXT_MAX];        // The book's subject (an EPUB's first, a PDF's); empty if none.
     int64_t size;                 // Of the file, when last seen.
     DocPlace place;               // Where it was left.
     int percent;                  // How far in, 0-100; -1 if never opened.
@@ -48,9 +50,19 @@ ShelfBook *shelfFind(Shelf *s, const char *path);
 // Adds a book by path (present), or returns the one there. NULL if the shelf is full.
 ShelfBook *shelfAdd(Shelf *s, const char *path);
 
-// The present books in the order the library shows them: the ones being read,
-// most recent first, then the rest by name. Fills order with indexes; how many.
-int shelfOrder(const Shelf *s, int *order, int max);
+typedef enum {
+    SHELF_SORT_RECENT,  // The ones being read, most recent first, then the rest by title.
+    SHELF_SORT_TITLE,
+    SHELF_SORT_AUTHOR,  // By surname when the book gives it ("Example, Ana"), then by title.
+    SHELF_SORT_GENRE,   // By genre, then author, then title; books without one at the end.
+    SHELF_SORT_COUNT,
+} ShelfSort;
+
+// The present books in the library's order. Fills order with indexes; how many.
+int shelfOrder(const Shelf *s, ShelfSort sort, int *order, int max);
+// The group a book is in for a sort (its author or genre, to show above it): empty for
+// the sorts without groups, and for books without an author or genre.
+void shelfGroupOf(const ShelfBook *b, ShelfSort sort, char *out, size_t size);
 
 // The name to show: the book's title, or its file's name without the extension.
 void shelfDisplayName(const ShelfBook *b, char *out, size_t size);
@@ -59,3 +71,5 @@ void shelfDisplayName(const ShelfBook *b, char *out, size_t size);
 void shelfMarkRead(ShelfBook *b, DocPlace place, int percent, int64_t now);
 // The title and author the book gives (on opening it).
 void shelfSetInfo(ShelfBook *b, const char *title, const char *author);
+// Its genre and the author's sort name (from its cover's read): empty ones leave what's kept.
+void shelfSetDetails(ShelfBook *b, const char *genre, const char *author_sort);

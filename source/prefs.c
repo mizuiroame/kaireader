@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "gfx.h"
 #include "lang.h"
 
 static const float EMS[PREFS_TEXT_SIZES] = {15, 17, 19, 21, 23, 25, 28, 31, 35, 40};
@@ -14,6 +15,19 @@ static const char *const THEME_NAMES[THEME_COUNT] = {
     N_("Sepia"),
     N_("Dark"),
     N_("Black"),
+};
+
+static const char *const SORT_NAMES[SHELF_SORT_COUNT] = {
+    N_("Recently read"),
+    N_("Title"),
+    N_("Author"),
+    N_("Genre"),
+};
+
+static const char *const TURN_NAMES[3] = {
+    N_("Lying down"),
+    N_("Upright, right side down"),
+    N_("Upright, left side down"),
 };
 
 // Ink and paper, 0xRRGGBB: soft contrast, never pure black on pure white.
@@ -29,6 +43,8 @@ void prefsDefaults(Prefs *p)
     p->text_size = PREFS_TEXT_DEFAULT;
     p->theme = THEME_LIGHT;
     p->clock_24h = true;
+    p->sort = SHELF_SORT_RECENT;
+    p->turn = GFX_TURN_NONE;
 }
 
 static char *trim(char *s)
@@ -71,6 +87,10 @@ bool prefsLoad(Prefs *p, const char *file)
             p->theme = v;
         else if (!strcmp(key, "clock_24h") && number(value, 0, 1, &v))
             p->clock_24h = v != 0;
+        else if (!strcmp(key, "sort") && number(value, 0, SHELF_SORT_COUNT - 1, &v))
+            p->sort = v;
+        else if (!strcmp(key, "turn") && number(value, 0, GFX_TURN_LEFT, &v))
+            p->turn = v;
     }
     bool ok = !ferror(f);
     fclose(f);
@@ -85,8 +105,8 @@ bool prefsSave(const Prefs *p, const char *file)
     FILE *f = fopen(tmp, "w");
     if (!f)
         return false;
-    fprintf(f, "# KaiReader settings\ntext_size = %d\ntheme = %d\nclock_24h = %d\n", p->text_size, p->theme,
-            p->clock_24h ? 1 : 0);
+    fprintf(f, "# KaiReader settings\ntext_size = %d\ntheme = %d\nclock_24h = %d\nsort = %d\nturn = %d\n",
+            p->text_size, p->theme, p->clock_24h ? 1 : 0, p->sort, p->turn);
     bool ok = !ferror(f);
     ok = fclose(f) == 0 && ok;
     if (!ok) {
@@ -109,6 +129,16 @@ float prefsEm(int text_size)
 const char *prefsThemeName(int theme)
 {
     return theme >= 0 && theme < THEME_COUNT ? THEME_NAMES[theme] : THEME_NAMES[0];
+}
+
+const char *prefsSortName(int sort)
+{
+    return sort >= 0 && sort < SHELF_SORT_COUNT ? SORT_NAMES[sort] : SORT_NAMES[0];
+}
+
+const char *prefsTurnName(int turn)
+{
+    return turn >= 0 && turn <= GFX_TURN_LEFT ? TURN_NAMES[turn] : TURN_NAMES[0];
 }
 
 DocColors prefsColors(int theme)

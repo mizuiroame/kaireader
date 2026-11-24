@@ -8,9 +8,21 @@ A **book reader** for **Switch 2** running
 the SD card, as on an e-reader: **EPUB**, **PDF**, comics (**CBZ**), **FB2**,
 **MOBI**, **TXT** and **XPS**, drawn with [MuPDF](https://mupdf.com/).
 
-> **Version 0.1: a first test.** Only books on the SD card for now; network
-> folders, book servers (OPDS, Calibre-Web, Kavita, Komga) and public-domain
-> catalogs come next.
+![Library](docs/screenshots/library.png)
+
+| Reading | Upright, like a book | Sorted by author |
+|---------|----------------------|------------------|
+| ![A page](docs/screenshots/epub-light.png) | ![Upright](docs/screenshots/upright-epub.png) | ![By author](docs/screenshots/library-author.png) |
+
+| Sepia, bigger text | Contents | Settings |
+|--------------------|----------|----------|
+| ![Sepia](docs/screenshots/epub-sepia-big.png) | ![Contents](docs/screenshots/contents.png) | ![Settings](docs/screenshots/settings-display.png) |
+
+The screenshots show made-up books.
+
+> **Version 0.2: still young.** Only books on the SD card for now, and only in
+> English; network folders, book servers (OPDS, Calibre-Web, Kavita, Komga),
+> public-domain catalogs and the other languages come next.
 
 > KaiReader is an independent project. It is not affiliated with, endorsed by
 > or sponsored by Nintendo or Amazon. See the [legal notice](docs/legal.md).
@@ -18,10 +30,15 @@ the SD card, as on an e-reader: **EPUB**, **PDF**, comics (**CBZ**), **FB2**,
 ## What it can do
 
 - **Library**: every book in `sdmc:/books` (and its folders), with its cover,
-  title, author and how far you've read; the ones you're reading come first.
+  title, author and how far you've read. Sorted by **recently read**, **title**,
+  **author** (by surname, when the book gives it) or **genre** (the book's
+  subject), with the author or genre above each group.
 - **Reading**: books that flow (EPUB, FB2, MOBI, TXT) are laid out for the
   screen, with **ten text sizes** and four **colors** (light, sepia, dark and
   black). PDFs and comics show their own pages, fitted to the screen.
+- **Upright, like a book**: hold the console with its right or left side down
+  (Settings > Display > Screen); the whole app turns, and the buttons and the
+  touch screen with it.
 - Picks up **where you left off**, even after changing the text size.
 - **Contents**: the book's table of contents, to jump to a chapter; a slider
   to jump anywhere.
@@ -34,12 +51,15 @@ the SD card, as on an e-reader: **EPUB**, **PDF**, comics (**CBZ**), **FB2**,
 |---|---|---|
 | **A** | Read the book selected | Next page |
 | **Right**, **R**, **ZR** / **Left**, **L**, **ZL** | Move | Next / previous page |
-| **Up** / **Down** | Move | Bigger / smaller text |
+| **Up** / **Down** | Move | Bigger / smaller text (upright: previous / next page) |
 | **X** | | Contents |
-| **Y** | Look for books again | Colors |
+| **Y** | Sort by: recent, title, author, genre | Colors |
 | **−** | | Show or hide the bars |
 | **B** | | Back to the library |
-| **+** | Menu | Menu |
+| **+** | Menu: Settings, Look for books again, Exit | Menu: Contents, Library, Settings, Exit |
+
+The right stick moves like the D-pad. Upright, every direction turns with the
+console: up is up as you hold it.
 
 On the touch screen: tap the right or left side of the page to turn it, or
 swipe; tap the middle for the bars.
