@@ -518,6 +518,18 @@ static void stepSetting(App *app, SettingRow row, int dir, uint64_t now_ns)
     applyChange(app, settingsStep(&app->prefs, row, dir), now_ns);
 }
 
+// The right stick's press, or the turn button on the reading bar: the screen
+// upright (on the side used last) or lying down, and how to come back.
+static void quickTurn(App *app, uint64_t now_ns)
+{
+    bool upright = prefsToggleTurn(&app->prefs) != GFX_TURN_NONE;
+    applyChange(app, SETTINGS_CHANGED_SCREEN | SETTINGS_CHANGED_LAYOUT, now_ns);
+    appNotify(app, NOTICE_INFO,
+              upright ? T("Upright. Press the right stick (or the turn button) to lay it down again.")
+                      : T("Lying down. Press the right stick (or the turn button) to stand it up."),
+              now_ns);
+}
+
 // A quick button (Y, up, down) changes a setting and says to what.
 static void quickStep(App *app, SettingRow row, int dir, uint64_t now_ns)
 {
@@ -864,6 +876,10 @@ void appHandleButtons(App *app, uint64_t pressed, uint64_t now_ns)
         app->menu_cursor = 0;
         return;
     }
+    if (pressed & HidNpadButton_StickR) {  // Pressed in: stand up or lay down, in the library and reading.
+        quickTurn(app, now_ns);
+        return;
+    }
     if (app->view == VIEW_LIBRARY)
         libraryButtons(app, pressed, now_ns);
     else
@@ -941,6 +957,9 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
         break;
     case HIT_CONTENTS:
         openContents(app, now_ns);
+        break;
+    case HIT_TURN:
+        quickTurn(app, now_ns);
         break;
     case HIT_SLIDER:
         sliderTo(app, x);

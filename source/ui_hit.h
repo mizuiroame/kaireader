@@ -23,6 +23,7 @@ typedef enum {
     HIT_BACK,         // The reader's back arrow: to the library.
     HIT_SLIDER,       // The reader's page slider: a tap or drag goes there.
     HIT_CONTENTS,     // The reader's contents button.
+    HIT_TURN,         // The reader's turn button: upright or lying down.
     HIT_CHAPTER,      // arg: an entry of the contents. A tap goes there.
     HIT_RESCAN,       // Looks for books again.
 } HitKind;

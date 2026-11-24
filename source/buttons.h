@@ -20,6 +20,8 @@ enum {
     HidNpadButton_Up = BIT(13),
     HidNpadButton_Right = BIT(14),
     HidNpadButton_Down = BIT(15),
+    HidNpadButton_StickL = BIT(4),  // Pressed in.
+    HidNpadButton_StickR = BIT(5),
     HidNpadButton_StickLLeft = BIT(16),
     HidNpadButton_StickLUp = BIT(17),
     HidNpadButton_StickLRight = BIT(18),

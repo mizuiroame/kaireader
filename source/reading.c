@@ -101,9 +101,19 @@ static void runCommand(Command cmd, const char *path, const ReadingLayout *layou
     }
     if (cmd == CMD_OPEN)
         g_doc = docOpen(path, &layout->colors, error, sizeof(error));
+    int kept = -1;  // A relayout of the book still open: the page holding the text read, exactly.
     if (g_doc) {
         g_layout = *layout;
-        if (!docLayout(g_doc, layout->box_w, layout->box_h, layout->em) && !error[0])
+        bool laid;
+        if (cmd == CMD_RELAYOUT) {
+            pthread_mutex_lock(&g_lock);
+            kept = g_status.current_page;
+            pthread_mutex_unlock(&g_lock);
+            laid = docLayoutKeeping(g_doc, layout->box_w, layout->box_h, layout->em, &kept);
+        } else {
+            laid = docLayout(g_doc, layout->box_w, layout->box_h, layout->em);
+        }
+        if (!laid && !error[0])
             snprintf(error, sizeof(error), "The book couldn't be laid out.");
         if (!error[0] && docPageCount(g_doc) <= 0)
             snprintf(error, sizeof(error), "The book has no pages.");
@@ -121,7 +131,7 @@ static void runCommand(Command cmd, const char *path, const ReadingLayout *layou
         st.state = READING_OPEN;
         st.reflowable = docReflowable(g_doc);
         st.pages = docPageCount(g_doc);
-        st.start_page = docPageOfPlace(g_doc, place);
+        st.start_page = kept >= 0 ? kept : docPageOfPlace(g_doc, place);
         st.current_page = st.start_page;
         st.current_place = docPlaceOf(g_doc, st.start_page);
         st.current_percent = percentOf(st.start_page, st.pages);

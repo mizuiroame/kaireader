@@ -200,6 +200,98 @@ bool docLayout(Doc *d, float w, float h, float em)
     return ok;
 }
 
+bool docLayoutKeeping(Doc *d, float w, float h, float em, int *page)
+{
+    if (!d->reflowable)
+        return true;
+    fz_bookmark mark = 0;
+    bool marked = false;
+    fz_var(mark);
+    fz_var(marked);
+    if (*page >= 0 && *page < docPageCount(d)) {
+        fz_try(d->ctx)
+        {
+            mark = fz_make_bookmark(d->ctx, d->doc, fz_location_from_page_number(d->ctx, d->doc, *page));
+            marked = true;
+        }
+        fz_catch(d->ctx)
+        {
+            marked = false;
+        }
+    }
+    if (!docLayout(d, w, h, em))
+        return false;
+    if (!marked)
+        return true;
+    int found = -1;
+    fz_var(found);
+    fz_try(d->ctx)
+    {
+        found = fz_page_number_from_location(d->ctx, d->doc, fz_lookup_bookmark(d->ctx, d->doc, mark));
+    }
+    fz_catch(d->ctx)
+    {
+        found = -1;
+    }
+    int pages = docPageCount(d);
+    if (found >= 0 && found < pages)
+        *page = found;
+    else if (*page >= pages)
+        *page = pages > 0 ? pages - 1 : 0;
+    return true;
+}
+
+// Appends one character (UTF-8) if it fits whole; false when out is full.
+static bool appendRune(char *out, size_t size, size_t *used, int c)
+{
+    char utf8[FZ_UTFMAX];
+    int n = fz_runetochar(utf8, c);
+    if (*used + (size_t)n + 1 > size)
+        return false;
+    memcpy(out + *used, utf8, (size_t)n);
+    *used += (size_t)n;
+    out[*used] = '\0';
+    return true;
+}
+
+bool docPageText(Doc *d, int page, char *out, size_t size)
+{
+    if (!out || size == 0)
+        return false;
+    out[0] = '\0';
+    if (page < 0 || page >= docPageCount(d))
+        return false;
+    fz_stext_page *text = NULL;
+    bool ok = true;
+    fz_var(text);
+    fz_var(ok);
+    fz_try(d->ctx)
+    {
+        text = fz_new_stext_page_from_page_number(d->ctx, d->doc, page, NULL);
+        size_t used = 0;
+        bool full = false;
+        for (fz_stext_block *b = text->first_block; b && !full; b = b->next) {
+            if (b->type != FZ_STEXT_BLOCK_TEXT)
+                continue;
+            for (fz_stext_line *l = b->u.t.first_line; l && !full; l = l->next) {
+                if (used > 0 && out[used - 1] != ' ')
+                    full = !appendRune(out, size, &used, ' ');
+                for (fz_stext_char *ch = l->first_char; ch && !full; ch = ch->next)
+                    full = !appendRune(out, size, &used, ch->c);
+            }
+        }
+    }
+    fz_always(d->ctx)
+    {
+        fz_drop_stext_page(d->ctx, text);
+    }
+    fz_catch(d->ctx)
+    {
+        ok = false;
+    }
+    return ok;
+}
+
 int docPageCount(Doc *d)
 {
     if (d->pages >= 0)

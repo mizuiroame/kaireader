@@ -54,6 +54,24 @@ static void testEpub(void)
     }
     CHECK(docChapters(d, ch, 1) == 1);
 
+    // Bigger letters keep the reader's place exactly: the text that began the
+    // page read is on the page shown after (not a page before or after it).
+    CHECK(docLayout(d, 400, 600, 12));
+    for (int p = 1; p + 1 < docPageCount(d); p += 3) {
+        char start[40], after[4096];
+        CHECK(docPageText(d, p, start, sizeof(start)) && start[0]);
+        char *cut = strrchr(start, ' ');  // Whole words only.
+        if (cut)
+            *cut = '\0';
+        int kept = p;
+        CHECK(docLayoutKeeping(d, 400, 600, 24, &kept));
+        CHECK(docPageText(d, kept, after, sizeof(after)) && strstr(after, start) != NULL);
+        CHECK(docLayout(d, 400, 600, 12));
+    }
+    char none[8];
+    CHECK(!docPageText(d, -1, none, sizeof(none)) && !none[0]);
+    CHECK(docLayout(d, 400, 600, 24));
+
     // A place in chapter 3 is still in chapter 3 after the letters change size.
     int page = n == 3 ? ch[2].page + 2 : 1;
     DocPlace place = docPlaceOf(d, page);

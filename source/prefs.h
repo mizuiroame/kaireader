@@ -24,6 +24,7 @@ typedef struct {
     bool clock_24h;
     int sort;       // ShelfSort: how the library is ordered.
     int turn;       // gfx.h's GFX_TURN_*: the console held as it is, or upright like a book.
+    int upright;    // GFX_TURN_RIGHT or _LEFT: the side the quick button stands it on (the last one used).
     bool two_pages; // Two pages side by side, like an open book (with the console lying down).
 } Prefs;
 
@@ -37,4 +38,6 @@ float prefsEm(int text_size);
 const char *prefsThemeName(int theme);  // English: shown with T().
 const char *prefsSortName(int sort);
 const char *prefsTurnName(int turn);
+// The quick button's turn: lying down if upright, else upright on the side used last.
+int prefsToggleTurn(Prefs *p);
 DocColors prefsColors(int theme);

@@ -45,6 +45,7 @@ void prefsDefaults(Prefs *p)
     p->clock_24h = true;
     p->sort = SHELF_SORT_RECENT;
     p->turn = GFX_TURN_NONE;
+    p->upright = GFX_TURN_RIGHT;
     p->two_pages = false;
 }
 
@@ -92,6 +93,8 @@ bool prefsLoad(Prefs *p, const char *file)
             p->sort = v;
         else if (!strcmp(key, "turn") && number(value, 0, GFX_TURN_LEFT, &v))
             p->turn = v;
+        else if (!strcmp(key, "upright") && number(value, GFX_TURN_RIGHT, GFX_TURN_LEFT, &v))
+            p->upright = v;
         else if (!strcmp(key, "two_pages") && number(value, 0, 1, &v))
             p->two_pages = v != 0;
     }
@@ -111,6 +114,7 @@ bool prefsSave(const Prefs *p, const char *file)
     fprintf(f, "# KaiReader settings\ntext_size = %d\ntheme = %d\nclock_24h = %d\nsort = %d\nturn = %d\n"
                "two_pages = %d\n",
             p->text_size, p->theme, p->clock_24h ? 1 : 0, p->sort, p->turn, p->two_pages ? 1 : 0);
+    fprintf(f, "upright = %d\n", p->upright);
     bool ok = !ferror(f);
     ok = fclose(f) == 0 && ok;
     if (!ok) {
@@ -138,6 +142,17 @@ const char *prefsThemeName(int theme)
 const char *prefsSortName(int sort)
 {
     return sort >= 0 && sort < SHELF_SORT_COUNT ? SORT_NAMES[sort] : SORT_NAMES[0];
+}
+
+int prefsToggleTurn(Prefs *p)
+{
+    if (p->turn != GFX_TURN_NONE) {
+        p->upright = p->turn;  // Remembered for standing it up again.
+        p->turn = GFX_TURN_NONE;
+    } else {
+        p->turn = p->upright == GFX_TURN_LEFT ? GFX_TURN_LEFT : GFX_TURN_RIGHT;
+    }
+    return p->turn;
 }
 
 const char *prefsTurnName(int turn)

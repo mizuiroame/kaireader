@@ -68,7 +68,16 @@ bool docReflowable(const Doc *d);
 // Flows a reflowable book into pages of w x h points, with text of em points (fixed ones don't change).
 // False if it failed (the layout before stays).
 bool docLayout(Doc *d, float w, float h, float em);
+// The same, keeping the reader's place exactly: *page (in the layout before)
+// becomes the page that now holds the text that started it. A DocPlace is
+// only near (chapter and fraction of its pages); this is MuPDF's own mark of
+// the spot, good while the book stays open.
+bool docLayoutKeeping(Doc *d, float w, float h, float em, int *page);
 int docPageCount(Doc *d);
+// A page's text, UTF-8, lines joined by spaces, up to size - 1 bytes (whole
+// characters). Empty for a page without text (a picture, a scanned PDF).
+// False if the page can't be read.
+bool docPageText(Doc *d, int page, char *out, size_t size);
 // A page's size in points; false if there's no such page.
 bool docPageSize(Doc *d, int page, float *w, float *h);
 // Renders a page at scale pixels per point: a reflowable one over the paper

@@ -27,6 +27,8 @@
 #define BARS_TOP_H 64
 #define BARS_BOTTOM_H 84
 #define BARS_HELP_H 40  // Upright: the button help on a line of its own.
+#define TURN_BUTTON_W 56            // The reading bar's turn button,
+#define TURN_BUTTON_FROM_RIGHT 290  // left of the clock and battery.
 
 static const Color PLACEHOLDER_COLORS[] = {
     GFX_RGB(0x3D, 0x5A, 0xA8), GFX_RGB(0x2E, 0x7D, 0x6B), GFX_RGB(0x9C, 0x3D, 0x5A),
@@ -297,6 +299,19 @@ static void drawShown(const App *app, int first, int offset)
         drawPage(app, first + 1, offset);
 }
 
+// The reading bar's turn button: a phone-shaped outline with an arrow going
+// round it. A tap stands the screen up or lays it down (as the right stick's press).
+static void drawTurnButton(int x, int y)
+{
+    gfxFillRoundRect(x, y, TURN_BUTTON_W, 44, 22, COLOR_SURFACE_HI);
+    float cx = x + TURN_BUTTON_W / 2.0f, cy = y + 22.0f;
+    gfxFillRoundRect((int)cx - 6, (int)cy - 10, 12, 20, 3, COLOR_TEXT);
+    gfxFillRoundRect((int)cx - 4, (int)cy - 8, 8, 16, 2, COLOR_SURFACE_HI);
+    gfxArc(cx, cy, 15.0f, 2.2f, 3.6f, 5.6f, COLOR_ACCENT);
+    gfxTriangle(cx + 9.0f, cy - 15.0f, cx + 15.5f, cy - 9.5f, cx + 7.0f, cy - 7.0f, COLOR_ACCENT);
+    uiHitAdd(x - 4, 0, TURN_BUTTON_W + 8, BARS_TOP_H, HIT_TURN, 0);
+}
+
 static void drawBars(const App *app)
 {
     int w = gfxLayoutWidth(), h = gfxLayoutHeight();
@@ -309,11 +324,12 @@ static void drawBars(const App *app)
     uiHitAdd(0, 0, MARGIN + 40, BARS_TOP_H, HIT_BACK, 0);
     char name[SHELF_TEXT_MAX];
     shelfDisplayName(b, name, sizeof(name));
-    int title_w = w - 2 * MARGIN - 300;
+    int title_w = w - 2 * MARGIN - TURN_BUTTON_FROM_RIGHT - 60;  // Clear of the turn button.
     fontDrawClipped(FONT_BOLD, 22, MARGIN + 40, 10, title_w, name, COLOR_TEXT);
     if (b->author[0])
         fontDrawClipped(FONT_REGULAR, 15, MARGIN + 40, 38, title_w, b->author, COLOR_DIM);
     uiDrawStatus(&app->sys, app->prefs.clock_24h, w - MARGIN, 18, COLOR_TEXT, COLOR_DIM);
+    drawTurnButton(w - MARGIN - TURN_BUTTON_FROM_RIGHT, 8);
 
     bool upright = gfxTurn() != GFX_TURN_NONE;
     int top = h - BARS_BOTTOM_H - (upright ? BARS_HELP_H : 0);
@@ -341,7 +357,7 @@ static void drawBars(const App *app)
     int ch = appChapterOf(app, app->page);
     if (ch >= 0)
         fontDrawClipped(FONT_REGULAR, 16, left, top + 50, width / 2, app->chapters[ch].title, COLOR_DIM);
-    const char *help = T("[Y] Colors  [^v] Text size  [-] Hide  [B] Library");
+    const char *help = T("[Y] Colors  [^v] Text size  [RS] Turn  [-] Hide  [B] Library");
     if (upright)  // No room beside the chapter: a line of its own, under it.
         uiDrawHelp(MARGIN, top + BARS_BOTTOM_H + 12.0f, w - 2 * MARGIN, help);
     else

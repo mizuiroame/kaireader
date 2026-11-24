@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 
 #include "check.h"
+#include "gfx.h"
 #include "prefs.h"
 
 void testPrefs(void)
@@ -36,6 +37,17 @@ void testPrefs(void)
     CHECK(q.text_size == PREFS_TEXT_DEFAULT && q.theme == THEME_DARK && q.clock_24h && q.sort == 0 && q.turn == 0);
     CHECK(!strcmp(prefsSortName(SHELF_SORT_AUTHOR), "Author") && !strcmp(prefsSortName(99), "Recently read"));
     CHECK(!strcmp(prefsTurnName(1), "Upright, right side down") && !strcmp(prefsTurnName(7), "Lying down"));
+
+    // The quick turn: upright on the side used last (right at first), and lying down again.
+    Prefs t;
+    prefsDefaults(&t);
+    CHECK(prefsToggleTurn(&t) == GFX_TURN_RIGHT && prefsToggleTurn(&t) == GFX_TURN_NONE);
+    t.turn = GFX_TURN_LEFT;  // Chosen in Settings,
+    CHECK(prefsToggleTurn(&t) == GFX_TURN_NONE && t.upright == GFX_TURN_LEFT);
+    CHECK(prefsToggleTurn(&t) == GFX_TURN_LEFT);  // and the quick turn comes back to it.
+    CHECK(prefsSave(&t, TMP_ROOT "/turn.txt"));
+    prefsDefaults(&q);
+    CHECK(prefsLoad(&q, TMP_ROOT "/turn.txt") && q.upright == GFX_TURN_LEFT);
 
     CHECK(prefsEm(-5) == prefsEm(0) && prefsEm(99) == prefsEm(PREFS_TEXT_SIZES - 1));
     for (int i = 1; i < PREFS_TEXT_SIZES; i++)
