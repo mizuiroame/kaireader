@@ -231,6 +231,32 @@ int main(int argc, char **argv)
     setSort(&app, SHELF_SORT_RECENT);
     render(&app, dir, "library");
     networkShots(&app, dir);
+    // Favorites (a star on the cover) and the list view.
+    for (int i = 0; i < 2; i++) {
+        int b = indexOfBook(&app, i ? "library4.epub" : "quiet.epub");
+        if (b >= 0)
+            app.shelf.items[app.order[b]].favorite = true;
+    }
+    render(&app, dir, "library-favorites-stars");
+    app.prefs.list_view = true;
+    appRescan(&app, 0);  // Laid out again.
+    setSort(&app, SHELF_SORT_RECENT);
+    render(&app, dir, "library-list");
+    app.panel = PANEL_MENU;
+    app.menu_cursor = 0;
+    render(&app, dir, "library-list-menu");
+    app.panel = PANEL_NONE;
+    setSort(&app, SHELF_SORT_FAVORITES);
+    render(&app, dir, "library-list-favorites");
+    app.prefs.list_view = false;
+    appRescan(&app, 0);
+    render(&app, dir, "library-favorites");
+    for (int i = 0; i < app.shelf.count; i++)
+        app.shelf.items[i].favorite = false;
+    setSort(&app, SHELF_SORT_FAVORITES);
+    appRescan(&app, 0);
+    render(&app, dir, "library-favorites-none");
+    setSort(&app, SHELF_SORT_RECENT);
     setSort(&app, SHELF_SORT_AUTHOR);
     render(&app, dir, "library-author");
     setSort(&app, SHELF_SORT_GENRE);

@@ -7,6 +7,7 @@
 
 #define TOUCH_TAP_SLOP 18           // Pixels a tap may move.
 #define TOUCH_TAP_MAX_NS 700000000ull
+#define TOUCH_LONG_NS 550000000ull  // Held this long without moving: a long touch.
 
 typedef enum {
     TOUCH_NONE,
@@ -14,6 +15,7 @@ typedef enum {
     TOUCH_DRAG,  // Moving: dy since the last frame; start_x/start_y where it began.
     TOUCH_DRAG_END,  // Released after a drag, at x, y.
     TOUCH_PRESS,     // A finger came down at x, y (a tap or a drag may follow): it stops a list gliding.
+    TOUCH_LONG,      // Held still TOUCH_LONG_NS at x, y: once; no tap follows when it's lifted.
 } TouchEventType;
 
 typedef struct {
@@ -27,6 +29,7 @@ typedef struct {
 typedef struct {
     bool down;
     bool dragging;
+    bool long_sent;
     int start_x, start_y;
     int last_x, last_y;
     uint64_t start_ns;

@@ -62,6 +62,8 @@ int appLibraryViewH(void)
 
 int appLibraryLeft(const App *app)
 {
+    if (app->prefs.list_view)
+        return MARGIN + 6;
     return (gfxLayoutWidth() - app->columns * LIB_CELL_W) / 2 + (LIB_CELL_W - LIB_COVER_W) / 2;
 }
 
@@ -86,7 +88,8 @@ static void useTurnSetting(App *app);
 static void layoutLibrary(App *app)
 {
     int columns = (gfxLayoutWidth() - 2 * LIB_SIDE) / LIB_CELL_W;
-    app->columns = columns < 2 ? 2 : columns;
+    app->columns = app->prefs.list_view ? 1 : columns < 2 ? 2 : columns;
+    int line_h = app->prefs.list_view ? LIB_ROW_H : LIB_CELL_H;
     free(app->lines);
     app->lines = malloc((size_t)(2 * app->order_count + 1) * sizeof(*app->lines));
     app->line_count = 0;
@@ -113,8 +116,8 @@ static void layoutLibrary(App *app)
             }
             n++;
         }
-        app->lines[app->line_count++] = (LibLine){y, LIB_CELL_H, i, n, -1};
-        y += LIB_CELL_H;
+        app->lines[app->line_count++] = (LibLine){y, line_h, i, n, -1};
+        y += line_h;
         i += n;
     }
     if (app->scroll > maxScroll(app))
@@ -191,6 +194,33 @@ void appInit(App *app, const char *folder)
     app->book = -1;
     app->turn_from = -1;
     appNetworkStart(app);
+}
+
+const ShelfBook *appSelectedBook(const App *app)
+{
+    if (app->view != VIEW_LIBRARY || app->lib_tab != 0 || app->cursor < 0 || app->cursor >= app->order_count)
+        return NULL;
+    return &app->shelf.items[app->order[app->cursor]];
+}
+
+void appToggleFavorite(App *app, int order_index, uint64_t now_ns)
+{
+    if (order_index < 0 || order_index >= app->order_count)
+        return;
+    ShelfBook *b = &app->shelf.items[app->order[order_index]];
+    b->favorite = !b->favorite;
+    char name[SHELF_TEXT_MAX], text[SHELF_TEXT_MAX + 64];
+    shelfDisplayName(b, name, sizeof(name));
+    snprintf(text, sizeof(text), b->favorite ? T("%s: added to your favorites.") : T("%s: no longer a favorite."), name);
+    appNotify(app, b->favorite ? NOTICE_DONE : NOTICE_INFO, text, now_ns);
+    saveShelf(app);
+    if (app->prefs.sort == SHELF_SORT_FAVORITES) {  // It leaves the list (or comes in): the cursor where it was.
+        int at = order_index;
+        sortShelf(app);
+        app->cursor = at < app->order_count ? at : app->order_count - 1;
+        app->cursor = app->cursor < 0 ? 0 : app->cursor;
+        keepCursorVisible(app);
+    }
 }
 
 void appOpenPath(App *app, const char *path, uint64_t now_ns)
@@ -761,6 +791,10 @@ int appMenuRows(const App *app, MenuItem *out)
         out[n++] = MENU_LIBRARY;
     }
     if (app->view == VIEW_LIBRARY) {
+        if (appSelectedBook(app))
+            out[n++] = MENU_FAVORITE;
+        if (app->lib_tab == 0)
+            out[n++] = MENU_VIEW;
         out[n++] = davConfigured() ? MENU_SOURCE : MENU_NET_SETUP;
         out[n++] = MENU_RESCAN;
     }
@@ -853,6 +887,13 @@ static void menuPick(App *app, MenuItem item, uint64_t now_ns)
         break;
     case MENU_SETTINGS:
         openSettings(app);
+        break;
+    case MENU_FAVORITE:
+        appToggleFavorite(app, app->cursor, now_ns);
+        break;
+    case MENU_VIEW:
+        quickStep(app, SETTING_VIEW, 1, now_ns);
+        keepCursorVisible(app);
         break;
     case MENU_SOURCE:
         appSwitchSource(app, now_ns);
@@ -1058,7 +1099,12 @@ static void libraryButtons(App *app, uint64_t pressed, uint64_t now_ns)
     }
     if (app->order_count == 0)
         return;
-    if (pressed & BUTTONS_LEFT)
+    int page = appLibraryViewH() / LIB_ROW_H;
+    if ((pressed & BUTTONS_LEFT) && app->prefs.list_view)
+        libraryMove(app, -(page > 1 ? page : 1), 0);
+    else if ((pressed & BUTTONS_RIGHT) && app->prefs.list_view)
+        libraryMove(app, page > 1 ? page : 1, 0);
+    else if (pressed & BUTTONS_LEFT)
         libraryMove(app, -1, 0);
     else if (pressed & BUTTONS_RIGHT)
         libraryMove(app, 1, 0);
@@ -1330,6 +1376,14 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
     case TOUCH_TAP:
         tap(app, uiHitFind(e.x, e.y), e.x, now_ns);
         break;
+    case TOUCH_LONG: {  // Held on a cover: a favorite, or not any more.
+        const HitRegion *hit = uiHitFind(e.x, e.y);
+        if (hit && hit->kind == HIT_BOOK && app->panel == PANEL_NONE) {
+            app->cursor = hit->arg;
+            appToggleFavorite(app, hit->arg, now_ns);
+        }
+        break;
+    }
     case TOUCH_DRAG: {
         const HitRegion *start = uiHitFind(e.start_x, e.start_y);
         if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE && app->lib_tab == 1) {

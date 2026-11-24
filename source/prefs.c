@@ -22,6 +22,7 @@ static const char *const SORT_NAMES[SHELF_SORT_COUNT] = {
     N_("Title"),
     N_("Author"),
     N_("Genre"),
+    N_("Favorites"),
 };
 
 static const char *const TURN_NAMES[4] = {
@@ -48,6 +49,7 @@ void prefsDefaults(Prefs *p)
     p->turn = GFX_TURN_NONE;
     p->upright = GFX_TURN_RIGHT;
     p->two_pages = false;
+    p->list_view = false;
 }
 
 static char *trim(char *s)
@@ -98,6 +100,8 @@ bool prefsLoad(Prefs *p, const char *file)
             p->upright = v;
         else if (!strcmp(key, "two_pages") && number(value, 0, 1, &v))
             p->two_pages = v != 0;
+        else if (!strcmp(key, "list_view") && number(value, 0, 1, &v))
+            p->list_view = v != 0;
     }
     bool ok = !ferror(f);
     fclose(f);
@@ -115,7 +119,7 @@ bool prefsSave(const Prefs *p, const char *file)
     fprintf(f, "# KaiReader settings\ntext_size = %d\ntheme = %d\nclock_24h = %d\nsort = %d\nturn = %d\n"
                "two_pages = %d\n",
             p->text_size, p->theme, p->clock_24h ? 1 : 0, p->sort, p->turn, p->two_pages ? 1 : 0);
-    fprintf(f, "upright = %d\n", p->upright);
+    fprintf(f, "upright = %d\nlist_view = %d\n", p->upright, p->list_view ? 1 : 0);
     bool ok = !ferror(f);
     ok = fclose(f) == 0 && ok;
     if (!ok) {

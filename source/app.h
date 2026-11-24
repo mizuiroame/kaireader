@@ -27,6 +27,9 @@
 #define LIB_CELL_W 196
 #define LIB_CELL_H 318
 #define LIB_GROUP_H 46       // A group's name (an author, a genre) above its books.
+#define LIB_ROW_H 104        // A book's row in the list view, and its small cover.
+#define LIB_ROW_COVER_W 60
+#define LIB_ROW_COVER_H 90
 #define LIB_TOP 116
 #define LIB_SIDE 24          // Room at each side of the grid, at least.
 #define FOOTER_H 56          // The help line at the bottom.
@@ -53,6 +56,8 @@ typedef enum {
     MENU_CONTENTS,
     MENU_BOOKMARK,    // Bookmark the page shown, or remove its bookmark.
     MENU_LIBRARY,     // Back to the library.
+    MENU_FAVORITE,    // The book selected in the library: a favorite, or not any more.
+    MENU_VIEW,        // The library as a list, or as a grid.
     MENU_SOURCE,      // The library: the SD card's books, or the network folder's.
     MENU_NET_SETUP,   // No network folder yet: its Settings page.
     MENU_SETTINGS,
@@ -179,6 +184,10 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns);
 void appNotify(App *app, NoticeKind kind, const char *text, uint64_t now_ns);
 // Looks for books again.
 void appRescan(App *app, uint64_t now_ns);
+// The book at a place in the library's order: a favorite, or not any more (with a notice).
+void appToggleFavorite(App *app, int order_index, uint64_t now_ns);
+// The book selected in the library, if there's one (the card's books shown).
+const ShelfBook *appSelectedBook(const App *app);
 // Opens a book by its path on the card (adding it to the library if it's new).
 void appOpenPath(App *app, const char *path, uint64_t now_ns);
 

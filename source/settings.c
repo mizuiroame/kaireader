@@ -23,6 +23,7 @@ static const char *const LABELS[SETTING_COUNT] = {
     N_("Colors"),
     N_("Pages"),
     N_("Sort books by"),
+    N_("Show books as"),
     N_("Look for books again"),
     N_("Screen"),
     N_("Clock"),
@@ -43,7 +44,8 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading."),
     N_("Light, sepia, dark or black paper, for books that flow. Y changes it while reading."),
     N_("Two pages side by side, like an open book, with the console lying down. Upright, always one."),
-    N_("Recently read, by title, by author or by genre (from the book's subject). Y changes it in the library."),
+    N_("Recently read, your favorites, by title, by author or by genre (from the book's subject). Y changes it in the library."),
+    N_("A grid of covers, or a list with more of each book. The + menu changes it too."),
     N_("Looks in sdmc:/books again for books added or removed."),
     N_("Vertical: hold the console like a book. Automatic: it turns as you turn the console (handheld). The right stick pressed in switches horizontal and vertical. The buttons and the touch screen turn with it."),
     N_("21:47 or 9:47 PM."),
@@ -96,6 +98,7 @@ int settingsRows(SettingsPage page, SettingRow *out)
         break;
     case SETTINGS_PAGE_LIBRARY:
         out[n++] = SETTING_SORT;
+        out[n++] = SETTING_VIEW;
         out[n++] = SETTING_RESCAN;
         break;
     case SETTINGS_PAGE_DISPLAY:
@@ -152,6 +155,7 @@ SettingsPage settingsOpens(SettingRow row)
 bool settingsHasValue(SettingRow row)
 {
     return row == SETTING_TEXT_SIZE || row == SETTING_COLORS || row == SETTING_PAGES || row == SETTING_SORT ||
+           row == SETTING_VIEW ||
            row == SETTING_SCREEN || row == SETTING_CLOCK || row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED ||
            settingsPickedValue(row);
 }
@@ -172,6 +176,9 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
         break;
     case SETTING_SORT:
         snprintf(out, size, "%s", prefsSortName(p->sort));
+        break;
+    case SETTING_VIEW:
+        snprintf(out, size, "%s", p->list_view ? N_("A list") : N_("A grid"));
         break;
     case SETTING_SCREEN:
         snprintf(out, size, "%s", prefsTurnName(p->turn));
@@ -202,6 +209,19 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
     }
 }
 
+// The sorts in the order Y and the arrows go through them: Favorites after Recent.
+static const int SORT_STEPS[SHELF_SORT_COUNT] = {SHELF_SORT_RECENT, SHELF_SORT_FAVORITES, SHELF_SORT_TITLE,
+                                                 SHELF_SORT_AUTHOR, SHELF_SORT_GENRE};
+
+static int stepSort(int sort, int dir)
+{
+    int at = 0;
+    for (int i = 0; i < SHELF_SORT_COUNT; i++)
+        if (SORT_STEPS[i] == sort)
+            at = i;
+    return SORT_STEPS[((at + dir) % SHELF_SORT_COUNT + SHELF_SORT_COUNT) % SHELF_SORT_COUNT];
+}
+
 // value + dir, around in 0..count-1.
 static int around(int value, int dir, int count)
 {
@@ -225,8 +245,11 @@ int settingsStep(Prefs *p, SettingRow row, int dir)
         p->two_pages = !p->two_pages;
         return SETTINGS_CHANGED_LAYOUT;
     case SETTING_SORT:
-        p->sort = around(p->sort, dir ? dir : 1, SHELF_SORT_COUNT);
+        p->sort = stepSort(p->sort, dir ? dir : 1);
         return SETTINGS_CHANGED_ORDER;
+    case SETTING_VIEW:
+        p->list_view = !p->list_view;
+        return SETTINGS_CHANGED_ORDER;  // Laid out again.
     case SETTING_SCREEN:
         prefsStepTurn(p, dir ? dir : 1);
         return SETTINGS_CHANGED_SCREEN | SETTINGS_CHANGED_LAYOUT;

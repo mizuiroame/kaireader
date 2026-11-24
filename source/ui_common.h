@@ -36,5 +36,7 @@ void uiDrawStatus(const SysInfo *sys, bool clock_24h, int right, int y, Color te
 // The X (quits) and the title (opens the menu) at the top left.
 void uiDrawHeader(const char *title);
 
+// A five-pointed star (a favorite) of outer radius r around (cx, cy).
+void uiDrawStar(float cx, float cy, float r, Color color);
 // A spinner: dots around (cx, cy) going round.
 void uiDrawSpinner(float cx, float cy, float r, uint64_t now_ns, Color color);

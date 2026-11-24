@@ -196,9 +196,45 @@ static void testSorts(void)
     shelfFree(&s);
 }
 
+// Favorites: kept in the file (even a book not found now), and the only ones the Favorites sort shows.
+static void testFavorites(void)
+{
+    makeTree();
+    Shelf s = {0};
+    shelfScan(&s, ROOT "/books");
+    int z = indexOf(&s, "zebra_tales.epub"), a = indexOf(&s, "Atlas.PDF");
+    CHECK(z >= 0 && a >= 0 && !s.items[z].favorite);
+    if (z < 0 || a < 0) {
+        shelfFree(&s);
+        return;
+    }
+    s.items[z].favorite = s.items[a].favorite = true;
+    int order[16];
+    int n = shelfOrder(&s, SHELF_SORT_FAVORITES, order, 16);
+    CHECK(n == 2 && order[0] == a && order[1] == z);  // By title: Atlas, then zebra.
+    CHECK(shelfOrder(&s, SHELF_SORT_TITLE, order, 16) == 4);
+    s.items[a].present = false;  // Gone from the card for now: still a favorite in the file.
+    int one = indexOf(&s, "one.cbz");
+    if (one >= 0)
+        s.items[one].present = false;  // Gone, never opened, not a favorite: not kept.
+    CHECK(shelfSave(&s, ROOT "/fav.txt"));
+    shelfFree(&s);
+    Shelf t = {0};
+    CHECK(shelfLoad(&t, ROOT "/fav.txt"));
+    int z2 = indexOf(&t, "zebra_tales.epub"), a2 = indexOf(&t, "Atlas.PDF");
+    CHECK(z2 >= 0 && a2 >= 0 && t.items[z2].favorite && t.items[a2].favorite);
+    CHECK(indexOf(&t, "one.cbz") < 0);
+    shelfFree(&t);
+    // A file of before favorites (ten fields): no favorite, nothing else lost.
+    writeFile(ROOT "/old.txt", ROOT "/books/x.epub\t5\t1\t0.5\t40\t99\tT\tA\tG\tA, S\n");
+    CHECK(shelfLoad(&t, ROOT "/old.txt") && t.count == 1 && !t.items[0].favorite && t.items[0].percent == 40);
+    shelfFree(&t);
+}
+
 void testShelf(void)
 {
     testSorts();
+    testFavorites();
     testScan();
     testBadFile();
 }

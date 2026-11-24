@@ -102,8 +102,8 @@ static void readLine(Shelf *s, char *line)
     line[strcspn(line, "\r\n")] = 0;
     if (!line[0] || line[0] == '#')
         return;
-    char *f[10] = {0};
-    if (split(line, f, 10) < 6 || shelfFind(s, f[0]))
+    char *f[11] = {0};
+    if (split(line, f, 11) < 6 || shelfFind(s, f[0]))
         return;
     ShelfBook *b = shelfAdd(s, f[0]);
     if (!b)
@@ -124,6 +124,7 @@ static void readLine(Shelf *s, char *line)
     copyField(b->author, sizeof(b->author), f[7]);
     copyField(b->genre, sizeof(b->genre), f[8]);
     copyField(b->author_sort, sizeof(b->author_sort), f[9]);
+    b->favorite = f[10] && f[10][0] == '1';
 }
 
 bool shelfLoad(Shelf *s, const char *file)
@@ -156,14 +157,14 @@ bool shelfSave(const Shelf *s, const char *file)
     if (!f)
         return false;
     fprintf(f, "# KaiReader: path, size, chapter, fraction, percent, last read, title, author, genre, "
-               "author sorted\n");
+               "author sorted, favorite\n");
     for (int i = 0; i < s->count; i++) {
         const ShelfBook *b = &s->items[i];
-        if (!b->present && b->percent < 0)
+        if (!b->present && b->percent < 0 && !b->favorite)
             continue;
-        fprintf(f, "%s\t%lld\t%d\t%.6f\t%d\t%lld\t%s\t%s\t%s\t%s\n", b->path, (long long)b->size,
+        fprintf(f, "%s\t%lld\t%d\t%.6f\t%d\t%lld\t%s\t%s\t%s\t%s\t%d\n", b->path, (long long)b->size,
                 b->place.chapter, b->place.fraction, b->percent, (long long)b->last_read, b->title, b->author,
-                b->genre, b->author_sort);
+                b->genre, b->author_sort, b->favorite ? 1 : 0);
     }
     bool ok = !ferror(f);
     ok = fclose(f) == 0 && ok;
@@ -278,7 +279,7 @@ int shelfOrder(const Shelf *s, ShelfSort sort, int *order, int max)
 {
     int n = 0;
     for (int i = 0; i < s->count && n < max; i++)
-        if (s->items[i].present)
+        if (s->items[i].present && (sort != SHELF_SORT_FAVORITES || s->items[i].favorite))
             order[n++] = i;
     g_sorting = s;
     g_sort = sort >= 0 && sort < SHELF_SORT_COUNT ? sort : SHELF_SORT_RECENT;

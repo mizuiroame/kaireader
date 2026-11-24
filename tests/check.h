@@ -30,3 +30,4 @@ void testBookmarks(void);
 void testDav(void);
 void testFolderList(void);
 void testNetList(void);
+void testTouch(void);

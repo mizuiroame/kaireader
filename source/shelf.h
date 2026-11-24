@@ -26,6 +26,7 @@ typedef struct {
     int percent;                  // How far in, 0-100; -1 if never opened.
     int64_t last_read;            // Seconds since 1970; 0 if never opened.
     bool present;                 // Found by the last scan.
+    bool favorite;                // Marked (+ menu, or a long touch on its cover).
 } ShelfBook;
 
 typedef struct {
@@ -55,10 +56,11 @@ typedef enum {
     SHELF_SORT_TITLE,
     SHELF_SORT_AUTHOR,  // By surname when the book gives it ("Example, Ana"), then by title.
     SHELF_SORT_GENRE,   // By genre, then author, then title; books without one at the end.
+    SHELF_SORT_FAVORITES,  // Only the favorites, by title. (Last: settings.txt keeps the number.)
     SHELF_SORT_COUNT,
 } ShelfSort;
 
-// The present books in the library's order. Fills order with indexes; how many.
+// The present books in the library's order (Favorites: only those). Fills order with indexes; how many.
 int shelfOrder(const Shelf *s, ShelfSort sort, int *order, int max);
 // The group a book is in for a sort (its author or genre, to show above it): empty for
 // the sorts without groups, and for books without an author or genre.

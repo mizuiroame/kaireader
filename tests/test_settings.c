@@ -11,6 +11,22 @@ void testSettings(void)
     CHECK(settingsRows(SETTINGS_PAGE_MAIN, rows) == 5 && rows[0] == SETTING_OPEN_READING);
     CHECK(settingsOpens(rows[2]) == SETTINGS_PAGE_NETWORK && settingsOpens(rows[4]) == SETTINGS_PAGE_ABOUT);
     CHECK(settingsOpens(SETTING_CLOCK) == SETTINGS_PAGE_MAIN);
+    // Library: the sort, the view (a grid or a list), looking again.
+    CHECK(settingsRows(SETTINGS_PAGE_LIBRARY, rows) == 3 && rows[1] == SETTING_VIEW && settingsHasValue(SETTING_VIEW));
+    {
+        Prefs v;
+        prefsDefaults(&v);
+        CHECK(!v.list_view && settingsStep(&v, SETTING_VIEW, 1) == SETTINGS_CHANGED_ORDER && v.list_view);
+        // Y goes Recent, Favorites, Title, Author, Genre, and round.
+        v.sort = SHELF_SORT_RECENT;
+        settingsStep(&v, SETTING_SORT, 1);
+        CHECK(v.sort == SHELF_SORT_FAVORITES);
+        settingsStep(&v, SETTING_SORT, 1);
+        CHECK(v.sort == SHELF_SORT_TITLE);
+        settingsStep(&v, SETTING_SORT, -1);
+        settingsStep(&v, SETTING_SORT, -1);
+        CHECK(v.sort == SHELF_SORT_RECENT);
+    }
     // The network folder's page: its rows are the app's, the address shown as set.
     CHECK(settingsRows(SETTINGS_PAGE_NETWORK, rows) == 6 && rows[0] == SETTING_NET_ADDRESS && rows[5] == SETTING_NET_FORGET);
     CHECK(settingsIsNetwork(SETTING_NET_TEST) && !settingsIsNetwork(SETTING_OPEN_NETWORK) && !settingsIsNetwork(SETTING_CLOCK));

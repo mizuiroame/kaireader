@@ -157,6 +157,10 @@ static void drawBook(App *app, int index, int x, int y, bool selected)
         drawPlaceholder(x, y, b, name);
     }
     uiHitAdd(x - 6, y - 6, LIB_COVER_W + 12, LIB_CELL_H - 12, HIT_BOOK, index);
+    if (b->favorite) {  // A star in a dark disc at the cover's top right.
+        gfxFillRoundRect(x + LIB_COVER_W - 38, y + 6, 32, 32, 16, gfxMix(COLOR_BG, COLOR_SURFACE, 128));
+        uiDrawStar(x + LIB_COVER_W - 22.0f, y + 22.5f, 11.0f, COLOR_ACCENT);
+    }
 
     int ty = y + LIB_COVER_H + 12;
     if (b->percent >= 0) {
@@ -176,6 +180,59 @@ static void drawBook(App *app, int index, int x, int y, bool selected)
     else
         snprintf(line, sizeof(line), "%s", author[0] ? author : formatOf(b->path));
     fontDrawClipped(FONT_REGULAR, 15, x, ty + 34, LIB_COVER_W, line, COLOR_DIM);
+}
+
+// A book's row in the list view: a small cover, the title, the author, the
+// kind and size of progress, and a star for a favorite.
+static void drawRow(App *app, int index, int y, bool selected)
+{
+    const ShelfBook *b = &app->shelf.items[app->order[index]];
+    int w = gfxLayoutWidth(), x = MARGIN, rw = w - 2 * MARGIN, rh = LIB_ROW_H - 8;
+    char name[SHELF_TEXT_MAX];
+    shelfDisplayName(b, name, sizeof(name));
+    if (selected) {
+        gfxFillRoundRect(x - 8, y, rw + 16, rh, 12, COLOR_SURFACE_HI);
+        gfxFillRect(x - 8, y + 16, 3, rh - 32, COLOR_ACCENT);
+    }
+    int cx = x + 10, cy = y + (rh - LIB_ROW_COVER_H) / 2, cw, ch;
+    coverSize(&cw, &ch);
+    bool failed;
+    const Cover *cv = coversGet(&app->covers, b->path, b->size, cw, ch, &failed);
+    if (cv) {
+        drawFitted(cx, cy, LIB_ROW_COVER_W, LIB_ROW_COVER_H, cv->pixels, cv->width, cv->height);
+    } else {
+        Color bg = PLACEHOLDER_COLORS[nameHash(b->path) % (sizeof(PLACEHOLDER_COLORS) / sizeof(PLACEHOLDER_COLORS[0]))];
+        gfxFillRoundRect(cx, cy, LIB_ROW_COVER_W, LIB_ROW_COVER_H, 5, bg);
+        gfxFillRect(cx + 6, cy, 2, LIB_ROW_COVER_H, gfxMix(bg, COLOR_BG, 90));
+    }
+    int tx = cx + LIB_ROW_COVER_W + 22, right = x + rw - 10;
+    // At the right: how far in (a bar and its number), or Finished.
+    int bar_w = 140, bar_x = right - bar_w;
+    if (b->percent >= 0 && b->percent < 100) {
+        char pct[16];
+        snprintf(pct, sizeof(pct), "%d%%", b->percent);
+        int pw = fontTextWidth(FONT_BOLD, 15, pct);
+        fontDraw(FONT_BOLD, 15, right - pw, y + rh / 2 - 26, pct, COLOR_DIM);
+        gfxFillRoundRect(bar_x, y + rh / 2 + 2, bar_w, 4, 2, selected ? COLOR_BG : COLOR_SURFACE_HI);
+        int done = bar_w * b->percent / 100;
+        if (done > 0)
+            gfxFillRoundRect(bar_x, y + rh / 2 + 2, done < 4 ? 4 : done, 4, 2, COLOR_ACCENT);
+    } else if (b->percent >= 100) {
+        int fw = fontTextWidth(FONT_BOLD, 15, T("Finished"));
+        fontDrawMiddle(FONT_BOLD, 15, right - fw, y + rh / 2.0f, T("Finished"), COLOR_DIM);
+    }
+    int text_w = bar_x - 24 - tx;
+    if (b->favorite) {
+        uiDrawStar(tx + 9.0f, y + 30.0f, 9.0f, COLOR_ACCENT);
+        fontDrawClipped(FONT_BOLD, 20, tx + 24, y + 17, text_w - 24, name, selected ? COLOR_ACCENT : COLOR_TEXT);
+    } else {
+        fontDrawClipped(FONT_BOLD, 20, tx, y + 17, text_w, name, selected ? COLOR_ACCENT : COLOR_TEXT);
+    }
+    fontDrawClipped(FONT_REGULAR, 17, tx, y + 47, text_w, b->author[0] ? b->author : T("Unknown author"), COLOR_DIM);
+    char kind[SHELF_TEXT_MAX + 16];
+    snprintf(kind, sizeof(kind), "%s%s%s", formatOf(b->path), b->genre[0] ? " \xC2\xB7 " : "", b->genre);
+    fontDrawClipped(FONT_REGULAR, 14, tx, y + 72, text_w, kind, COLOR_FAINT);
+    uiHitAdd(x - 8, y, rw + 16, rh, HIT_BOOK, index);
 }
 
 static void drawGroup(const App *app, const LibLine *line, int y)
@@ -241,7 +298,7 @@ static void drawLibrary(App *app)
     snprintf(sub, sizeof(sub), app->order_count == 1 ? T("1 book") : T("%d books"), app->order_count);
     int tw = fontDraw(FONT_BOLD, 22, MARGIN, 74, T("Library"), COLOR_TEXT);
     fontDraw(FONT_REGULAR, 18, MARGIN + tw + 14, 77, sub, COLOR_DIM);
-    if (app->order_count) {  // The sort, at the right: a tap (or Y) changes it.
+    if (app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES) {  // The sort, at the right: a tap (or Y) changes it.
         char sort[64];
         snprintf(sort, sizeof(sort), "%s", T(prefsSortName(app->prefs.sort)));
         int sw = fontTextWidth(FONT_REGULAR, 17, sort), bw = uiButtonWidth("Y");
@@ -251,7 +308,12 @@ static void drawLibrary(App *app)
         uiHitAdd(x - bw - 16, 64, sw + bw + 24, 44, HIT_SORT, 0);
     }
 
-    if (app->order_count == 0) {
+    if (app->order_count == 0 && app->prefs.sort == SHELF_SORT_FAVORITES) {
+        fontDrawCentered(FONT_BOLD, 26, w / 2.0f, 250.0f, T("No favorites yet."), COLOR_TEXT);
+        fontDrawCentered(FONT_REGULAR, 19, w / 2.0f, 296.0f,
+                         T("Hold your finger on a cover, or choose \"Add to favorites\" in the + menu."), COLOR_DIM);
+        fontDrawCentered(FONT_REGULAR, 19, w / 2.0f, 330.0f, T("Y shows the other books."), COLOR_DIM);
+    } else if (app->order_count == 0) {
         drawEmpty(w);
     } else {
         int view = appLibraryViewH();
@@ -272,7 +334,11 @@ static void drawLibrary(App *app)
             }
             for (int i = 0; i < ln->count; i++) {
                 int book = ln->first + i;
-                drawBook(app, book, left + i * LIB_CELL_W, y + 8, book == app->cursor && app->panel == PANEL_NONE);
+                bool selected = book == app->cursor && app->panel == PANEL_NONE;
+                if (app->prefs.list_view)
+                    drawRow(app, book, y + 4, selected);
+                else
+                    drawBook(app, book, left + i * LIB_CELL_W, y + 8, selected);
             }
         }
         // The next lines' covers are asked for before they show.
@@ -284,7 +350,9 @@ static void drawLibrary(App *app)
         uiHitClip(0, h);
         gfxResetClip();
     }
-    if (davConfigured())  // X goes to the other source.
+    if (app->order_count == 0 && app->prefs.sort == SHELF_SORT_FAVORITES)  // Y back to the other books.
+        drawFooter(davConfigured() ? T("[Y] Sort  [X] Network folder  [+] Menu") : T("[Y] Sort  [+] Menu"));
+    else if (davConfigured())  // X goes to the other source.
         drawFooter(app->order_count ? T("[A] Read  [Y] Sort  [X] Network folder  [+] Menu") : T("[X] Network folder  [+] Menu"));
     else
         drawFooter(app->order_count ? T("[A] Read  [Y] Sort  [+] Menu") : T("[+] Menu"));
@@ -447,6 +515,12 @@ static const char *menuLabel(const App *app, MenuItem item)
         return appShownMarked(app) ? T("Remove this page's bookmark") : T("Bookmark this page");
     case MENU_LIBRARY:
         return T("Back to the library");
+    case MENU_FAVORITE: {
+        const ShelfBook *b = appSelectedBook(app);
+        return b && b->favorite ? T("Remove from favorites") : T("Add to favorites");
+    }
+    case MENU_VIEW:
+        return app->prefs.list_view ? T("Show as a grid") : T("Show as a list");
     case MENU_SOURCE:
         return app->lib_tab == 1 ? T("Go to the SD card library") : T("Go to the network folder");
     case MENU_NET_SETUP:

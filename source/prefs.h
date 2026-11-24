@@ -27,6 +27,7 @@ typedef struct {
     int turn;       // gfx.h's GFX_TURN_*: the console held as it is, or upright like a book; or PREFS_TURN_AUTO.
     int upright;    // GFX_TURN_RIGHT or _LEFT: the side the quick button stands it on (the last one used).
     bool two_pages; // Two pages side by side, like an open book (with the console lying down).
+    bool list_view; // The library as a list (small covers, more words) instead of a grid.
 } Prefs;
 
 void prefsDefaults(Prefs *p);

@@ -56,6 +56,19 @@ void uiDrawHeader(const char *title)
     uiHitAdd(MARGIN + 34, 0, title_w + 12, HEADER_H, HIT_MENU_BUTTON, 0);  // As + does: the menu.
 }
 
+void uiDrawStar(float cx, float cy, float r, Color color)
+{
+    float px[10], py[10];
+    for (int i = 0; i < 10; i++) {  // Points and the notches between them, from the top.
+        double a = -M_PI / 2 + i * M_PI / 5;
+        float d = i % 2 ? r * 0.42f : r;
+        px[i] = cx + (float)cos(a) * d;
+        py[i] = cy + (float)sin(a) * d;
+    }
+    for (int i = 0; i < 10; i++)
+        gfxTriangle(cx, cy, px[i], py[i], px[(i + 1) % 10], py[(i + 1) % 10], color);
+}
+
 void uiDrawSpinner(float cx, float cy, float r, uint64_t now_ns, Color color)
 {
     const int dots = 8;

@@ -20,6 +20,9 @@ TouchEvent touchUpdate(TouchTracker *t, bool touching, int x, int y, uint64_t no
             t->dragging = true;
         if (t->dragging) {
             e = (TouchEvent){TOUCH_DRAG, x, y, t->start_x, t->start_y, y - t->last_y, x - t->last_x};
+        } else if (!t->long_sent && now_ns - t->start_ns >= TOUCH_LONG_NS) {
+            t->long_sent = true;
+            e = (TouchEvent){TOUCH_LONG, t->start_x, t->start_y, t->start_x, t->start_y, 0, 0};
         }
         t->last_x = x;
         t->last_y = y;
@@ -27,7 +30,7 @@ TouchEvent touchUpdate(TouchTracker *t, bool touching, int x, int y, uint64_t no
     }
     if (t->down && t->dragging)
         e = (TouchEvent){TOUCH_DRAG_END, t->last_x, t->last_y, t->start_x, t->start_y, 0, 0};
-    else if (t->down && now_ns - t->start_ns <= TOUCH_TAP_MAX_NS)
+    else if (t->down && !t->long_sent && now_ns - t->start_ns <= TOUCH_TAP_MAX_NS)
         e = (TouchEvent){TOUCH_TAP, t->start_x, t->start_y, t->start_x, t->start_y, 0, 0};
     touchReset(t);
     return e;
