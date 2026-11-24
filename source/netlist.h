@@ -19,9 +19,9 @@ size_t netListBooks(DavEntry *entries, size_t count);
 // names don't become one; a file keeps its extension.
 void netPlainName(const char *name, bool is_dir, char *out, size_t size);
 
-// Where a book of the folder is kept: books_folder, "/Network/", then its
+// Where a book of the folder is kept: books_folder, "/.network/" (hidden: not one of the card's books), then its
 // path, each part a plain name ("dav:/Café/Mon livre.epub" ->
-// "sdmc:/books/Network/Cafe/Mon livre.epub"). False if it isn't a location
+// "sdmc:/books/.network/Cafe/Mon livre.epub"). False if it isn't a location
 // of a book, or is too long.
 bool netLocalPath(const char *books_folder, const char *location, char *out, size_t size);
 

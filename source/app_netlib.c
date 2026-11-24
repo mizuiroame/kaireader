@@ -1,6 +1,6 @@
 // The library's network folder view (X switches to it): its folders and books (listed
 // off the screen's thread, netjob.c), and a book chosen copied to the card
-// (sdmc:/books/Network/..., in plain names), then opened from there. A book
+// (sdmc:/books/.network/..., hidden from the card's library, in plain names), then opened from there. A book
 // copied before, of the same size, opens at once.
 #include "app.h"
 

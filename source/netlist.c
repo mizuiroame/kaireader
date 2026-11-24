@@ -152,7 +152,7 @@ bool netLocalPath(const char *books_folder, const char *location, char *out, siz
     if (!davIsLocation(location))
         return false;
     const char *rest = location + strlen(DAV_PREFIX);
-    int n = snprintf(out, size, "%s/Network", books_folder);
+    int n = snprintf(out, size, "%s/.network", books_folder);
     if (n < 0 || (size_t)n >= size || !*rest)
         return false;
     while (*rest) {

@@ -181,7 +181,7 @@ void uiDrawNetwork(App *app, uint64_t now_ns)
         const char *lines[] = {
             T("No network folder yet."),
             T("Read the books of a shared folder, a NAS (WebDAV), or an FTP or SFTP server on your network."),
-            T("A book opened is copied to sdmc:/books/Network, and stays in the library."),
+            T("A book you open is copied to the card first, so it opens fast the next time."),
         };
         drawMessage(lines, 3, T("Set it up"), HIT_NET_SETUP);
         gfxFillRect(0, h - FOOTER_H, w, FOOTER_H, COLOR_BG);

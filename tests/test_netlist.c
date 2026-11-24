@@ -55,7 +55,7 @@ static void testPaths(void)
 {
     char out[256];
     CHECK(netLocalPath("sdmc:/books", "dav:/Caf\xC3\xA9/Mon livre.epub", out, sizeof(out)));
-    CHECK_STR(out, "sdmc:/books/Network/Cafe/Mon livre.epub");
+    CHECK_STR(out, "sdmc:/books/.network/Cafe/Mon livre.epub");
     CHECK(!netLocalPath("sdmc:/books", "dav:/", out, sizeof(out)));
     CHECK(!netLocalPath("sdmc:/books", "dav:/a/../b.epub", out, sizeof(out)));
     CHECK(!netLocalPath("sdmc:/books", "/books/a.epub", out, sizeof(out)));
