@@ -40,6 +40,9 @@ static unsigned g_next_generation;
 static unsigned g_want_generation;
 static int g_want[READING_WANT_MAX];
 static int g_want_count;
+static unsigned g_parts_generation;
+static ReadingPartAsk g_parts[READING_PARTS_MAX];
+static int g_part_count;
 static unsigned g_current_generation;
 static int g_current_page = -1;
 static bool g_current_new;
@@ -164,7 +167,7 @@ static void runCommand(Command cmd, const char *path, const ReadingLayout *layou
 static bool queued(unsigned generation, int page)
 {
     for (int i = 0; i < g_page_count; i++)
-        if (g_pages[i].generation == generation && g_pages[i].page == page)
+        if (g_pages[i].generation == generation && g_pages[i].page == page && !g_pages[i].part)
             return true;
     return false;
 }
@@ -182,18 +185,41 @@ static void dropOldPages(unsigned generation)
     g_page_count = kept;
 }
 
-static void renderPage(unsigned generation, int page)
+// Hands a page (or part) to the app, or drops it if its generation has gone.
+static void givePage(ReadingPage out)
 {
-    ReadingPage out = {generation, page, {0}};
-    if (!docRender(g_doc, page, fitScale(g_doc, page, &g_layout), &out.image))
-        out.image = (DocImage){0};
     pthread_mutex_lock(&g_lock);
-    if (generation == g_status.generation && g_page_count < PAGE_QUEUE) {
+    if (out.generation == g_status.generation && g_page_count < PAGE_QUEUE) {
         g_pages[g_page_count++] = out;
         out.image.pixels = NULL;
     }
     pthread_mutex_unlock(&g_lock);
     docImageFree(&out.image);
+}
+
+static void renderPage(unsigned generation, int page)
+{
+    ReadingPage out = {generation, page, {0}, 1.0f, false, 0, 0, 0, 0};
+    float scale = fitScale(g_doc, page, &g_layout);
+    if (!docReflowable(g_doc))
+        out.zoom = (g_layout.zoom > 1.0f ? g_layout.zoom : 1.0f) * docRenderScale(g_doc, page, scale) / scale;
+    if (!docRender(g_doc, page, scale, &out.image))
+        out.image = (DocImage){0};
+    givePage(out);
+}
+
+static void renderPart(unsigned generation, ReadingPartAsk ask)
+{
+    ReadingLayout fitted = g_layout;
+    fitted.zoom = 1.0f;
+    float scale = fitScale(g_doc, ask.page, &fitted) * ask.zoom, pw, ph;
+    ReadingPage out = {generation, ask.page, {0}, ask.zoom, true, ask.x, ask.y, 0, 0};
+    if (docReflowable(g_doc) || !docPageSize(g_doc, ask.page, &pw, &ph) ||
+        !docRenderPart(g_doc, ask.page, scale, ask.x, ask.y, ask.w, ask.h, &out.image))
+        return;
+    out.full_w = (int)(pw * scale + 0.5f);
+    out.full_h = (int)(ph * scale + 0.5f);
+    givePage(out);
 }
 
 static void makeCover(const CoverAsk *ask)
@@ -315,6 +341,14 @@ static void *worker(void *arg)
             pthread_mutex_lock(&g_lock);
             continue;
         }
+        if (open && g_parts_generation == generation && g_part_count > 0 && g_page_count < PAGE_QUEUE) {
+            ReadingPartAsk ask = g_parts[0];
+            memmove(g_parts, g_parts + 1, (size_t)(--g_part_count) * sizeof(*g_parts));
+            pthread_mutex_unlock(&g_lock);
+            renderPart(generation, ask);
+            pthread_mutex_lock(&g_lock);
+            continue;
+        }
         if (g_cover_ask_count > 0 && g_cover_count < COVER_QUEUE) {
             CoverAsk ask = g_cover_asks[--g_cover_ask_count];
             pthread_mutex_unlock(&g_lock);
@@ -409,6 +443,17 @@ void readingWant(unsigned generation, const int *pages, int count)
     g_want_count = count < READING_WANT_MAX ? count : READING_WANT_MAX;
     memcpy(g_want, pages, (size_t)g_want_count * sizeof(*g_want));
     if (g_want_count)
+        pthread_cond_signal(&g_wake);
+    pthread_mutex_unlock(&g_lock);
+}
+
+void readingWantParts(unsigned generation, const ReadingPartAsk *asks, int count)
+{
+    pthread_mutex_lock(&g_lock);
+    g_parts_generation = generation;
+    g_part_count = count < 0 ? 0 : count < READING_PARTS_MAX ? count : READING_PARTS_MAX;
+    memcpy(g_parts, asks, (size_t)g_part_count * sizeof(*asks));
+    if (g_part_count)
         pthread_cond_signal(&g_wake);
     pthread_mutex_unlock(&g_lock);
 }

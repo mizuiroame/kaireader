@@ -278,6 +278,36 @@ static void testCovers(void)
     CHECK(!docEpubInfo(FIX "broken.epub", 10, 10, &info) && !info.cover.pixels);
 }
 
+// Part of a page, for zoom past what a whole page can be: the same pixels as the whole one.
+static void testRenderPart(void)
+{
+    Doc *d = openOk(FIX "plain.pdf");  // 612 x 792 points.
+    if (!d)
+        return;
+    CHECK(docRenderScale(d, 0, 2.0f) == 2.0f);
+    CHECK(docRenderScale(d, 0, 10.0f) < 10.0f && (int)(792 * docRenderScale(d, 0, 10.0f)) <= DOC_RENDER_MAX);
+    DocImage whole, part;
+    CHECK(docRender(d, 0, 2.0f, &whole) && docRenderPart(d, 0, 2.0f, 100, 150, 300, 200, &part));
+    CHECK(part.width == 300 && part.height == 200);
+    if (whole.pixels && part.pixels) {
+        int differ = 0;
+        for (int y = 0; y < part.height; y++)
+            for (int x = 0; x < part.width; x++)
+                differ += part.pixels[y * part.width + x] != whole.pixels[(y + 150) * whole.width + x + 100];
+        CHECK(differ == 0);
+    }
+    docImageFree(&part);
+    CHECK(docRenderPart(d, 0, 2.0f, whole.width - 50, 0, 300, 100, &part) && part.width == 50);  // Cut at the edge.
+    docImageFree(&part);
+    CHECK(!docRenderPart(d, 0, 2.0f, whole.width + 10, 0, 100, 100, &part) && !part.pixels);  // Off the page.
+    CHECK(!docRenderPart(d, 0, 2.0f, 0, 0, DOC_RENDER_MAX + 1, 10, &part));
+    // Far bigger than a whole page can be: still a part of it.
+    CHECK(docRenderPart(d, 0, 10.0f, 3000, 4000, 640, 360, &part) && part.width == 640 && part.height == 360);
+    docImageFree(&part);
+    docImageFree(&whole);
+    docClose(d);
+}
+
 void testDoc(void)
 {
     testCovers();
@@ -287,5 +317,6 @@ void testDoc(void)
     testPictureColors();
     testFixed();
     testComicArchives();
+    testRenderPart();
     testOthers();
 }

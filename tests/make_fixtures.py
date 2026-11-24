@@ -11,6 +11,7 @@ notes.txt     plain text
 broken.epub   a ZIP with nothing of an EPUB in it
 empty.pdf     zero bytes
 picture.epub  a page with a red picture, its text black by its own style
+wide.pdf      with --library: a wide page (1584 x 612 points), to zoom past a whole page
 library*.epub with --library: eight more, with drawn covers, several authors and genres (previews)
 """
 
@@ -194,18 +195,19 @@ def epub(path: str, version3: bool) -> None:
                    f'<spine toc="ncx">{"".join(spine)}</spine></package>')
 
 
-def pdf(path: str) -> None:
+def pdf(path: str, size: tuple[int, int] = (612, 792), title: str = "Made-up Ledger", pages: int = 3) -> None:
     objects: list[bytes] = []
-    pages = 3
     page_ids = [4 + i * 2 for i in range(pages)]
     objects.append(b"<< /Type /Catalog /Pages 2 0 R >>")
     objects.append(b"<< /Type /Pages /Kids [" + b" ".join(b"%d 0 R" % p for p in page_ids)
                    + b"] /Count %d >>" % pages)
     objects.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
     for i in range(pages):
-        text = f"BT /F1 24 Tf 72 700 Td (Made-up page {i + 1}) Tj ET".encode()
-        objects.append(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> "
-                       b"/Contents %d 0 R >>" % (page_ids[i] + 1))
+        text = f"BT /F1 24 Tf 72 {size[1] - 92} Td (Made-up page {i + 1}) Tj ET".encode()
+        if size[0] > size[1]:  # Wide: small print along it, to zoom into.
+            text += b" BT /F1 6 Tf 72 300 Td (small print: the tide comes in at nine and the boats come home) Tj ET"
+        objects.append(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 %d %d] /Resources << /Font << /F1 3 0 R >> >> "
+                       b"/Contents %d 0 R >>" % (size[0], size[1], page_ids[i] + 1))
         objects.append(b"<< /Length %d >>\nstream\n" % len(text) + text + b"\nendstream")
     out = bytearray(b"%PDF-1.4\n")
     offsets = []
@@ -216,8 +218,8 @@ def pdf(path: str) -> None:
     out += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objects) + 1)
     for off in offsets:
         out += b"%010d 00000 n \n" % off
-    out += b"trailer\n<< /Size %d /Root 1 0 R /Info << /Title (Made-up Ledger) /Author (Bo Sample) >> >>\n" % (
-        len(objects) + 1)
+    out += b"trailer\n<< /Size %d /Root 1 0 R /Info << /Title (%s) /Author (Bo Sample) >> >>\n" % (
+        len(objects) + 1, title.encode())
     out += b"startxref\n%d\n%%%%EOF\n" % xref
     with open(path, "wb") as f:
         f.write(out)
@@ -289,6 +291,7 @@ def main() -> None:
     if "--library" in sys.argv:  # More books, with drawn covers, for the previews' library.
         for i in range(len(LIBRARY)):
             library_epub(os.path.join(folder, f"library{i + 1}.epub"), i)
+        pdf(os.path.join(folder, "wide.pdf"), (1584, 612), "Made-up Chart", 1)
 
 
 if __name__ == "__main__":

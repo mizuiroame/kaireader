@@ -450,6 +450,57 @@ bool docRender(Doc *d, int page, float scale, DocImage *out)
     return ok;
 }
 
+float docRenderScale(Doc *d, int page, float scale)
+{
+    float pw, ph;
+    if (!(scale > 0) || !docPageSize(d, page, &pw, &ph))
+        return scale;
+    float biggest = pw > ph ? pw : ph;
+    return biggest * scale > DOC_RENDER_MAX ? DOC_RENDER_MAX / biggest : scale;
+}
+
+bool docRenderPart(Doc *d, int page, float scale, int x, int y, int w, int h, DocImage *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!(scale > 0) || d->reflowable || w <= 0 || h <= 0 || w > DOC_RENDER_MAX || h > DOC_RENDER_MAX)
+        return false;
+    bool ok = true;
+    fz_pixmap *pix = NULL;
+    fz_page *p = NULL;
+    fz_device *dev = NULL;
+    fz_var(pix);
+    fz_var(p);
+    fz_var(dev);
+    fz_var(ok);
+    fz_try(d->ctx)
+    {
+        p = fz_load_page(d->ctx, d->doc, page);
+        fz_matrix ctm = fz_scale(scale, scale);
+        fz_irect whole = fz_round_rect(fz_transform_rect(fz_bound_page(d->ctx, p), ctm));  // As docRender's.
+        fz_irect box = fz_intersect_irect(fz_make_irect(whole.x0 + x, whole.y0 + y, whole.x0 + x + w, whole.y0 + y + h),
+                                          whole);
+        if (fz_is_empty_irect(box))
+            fz_throw(d->ctx, FZ_ERROR_ARGUMENT, "the part is off the page");
+        pix = fz_new_pixmap_with_bbox(d->ctx, fz_device_rgb(d->ctx), box, NULL, 0);
+        fz_clear_pixmap_with_value(d->ctx, pix, 0xFF);
+        dev = fz_new_draw_device(d->ctx, fz_identity, pix);
+        fz_run_page(d->ctx, p, dev, ctm, NULL);
+        fz_close_device(d->ctx, dev);
+        ok = toImage(pix, out);
+    }
+    fz_always(d->ctx)
+    {
+        fz_drop_device(d->ctx, dev);
+        fz_drop_page(d->ctx, p);
+        fz_drop_pixmap(d->ctx, pix);
+    }
+    fz_catch(d->ctx)
+    {
+        ok = false;
+    }
+    return ok;
+}
+
 void docImageFree(DocImage *image)
 {
     free(image->pixels);

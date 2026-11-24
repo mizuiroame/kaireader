@@ -216,6 +216,63 @@ static void freeSlots(App *app)
 {
     for (int i = 0; i < PAGE_SLOTS; i++)
         freeSlot(&app->slots[i]);
+    appForgetParts(app);
+}
+
+static void freePart(PagePart *p)
+{
+    if (p->image.pixels)
+        gfxImageChanged(p->image.pixels);
+    docImageFree(&p->image);
+    p->page = -1;
+}
+
+void appForgetParts(App *app)
+{
+    for (int i = 0; i < READING_PARTS_MAX; i++)
+        freePart(&app->parts[i]);
+    app->parts_asked_count = 0;
+}
+
+const PagePart *appPagePart(const App *app, int page)
+{
+    float iw, ih, made;
+    if (!appPageImageZoom(app, page, &iw, &ih, &made))
+        return NULL;
+    for (int i = 0; i < READING_PARTS_MAX; i++) {
+        const PagePart *p = &app->parts[i];
+        if (p->page == page && p->image.pixels && p->zoom > made + 0.01f)
+            return p;
+    }
+    return NULL;
+}
+
+// A part come: in the place of one for the same page, or of one not shown.
+static void keepPart(App *app, ReadingPage *p)
+{
+    if (p->generation != app->generation || !p->image.pixels) {
+        docImageFree(&p->image);
+        return;
+    }
+    for (int i = 0; i < app->parts_asked_count; i++)  // Not waited for any more.
+        if (app->parts_asked[i].page == p->page) {
+            app->parts_asked[i] = app->parts_asked[--app->parts_asked_count];
+            break;
+        }
+    PagePart *best = &app->parts[0];
+    for (int i = 0; i < READING_PARTS_MAX; i++) {
+        PagePart *s = &app->parts[i];
+        bool shown = s->page == app->page || (appTwoPages(app) && s->page == app->page + 1);
+        if (s->page == p->page || s->page < 0) {
+            best = s;
+            break;
+        }
+        if (!shown)
+            best = s;
+    }
+    freePart(best);
+    *best = (PagePart){p->page, p->zoom, p->x, p->y, p->full_w, p->full_h, p->image};
+    p->image.pixels = NULL;
 }
 
 // Where the book open was left, kept in the shelf.
@@ -383,7 +440,7 @@ bool appPageImageZoom(const App *app, int page, float *w, float *h, float *zoom)
         return false;
     *w = (float)s->image.width;
     *h = (float)s->image.height;
-    *zoom = s->zoom > 1.0f ? s->zoom : 1.0f;
+    *zoom = s->zoom > 0 ? s->zoom : 1.0f;
     return true;
 }
 
@@ -450,6 +507,10 @@ int appContentsRows(void)
 // Keeps a rendered page; the slot of the page farthest from the one read goes.
 static void keepPage(App *app, ReadingPage *p)
 {
+    if (p->part) {
+        keepPart(app, p);
+        return;
+    }
     if (p->generation != app->generation || slotOf(app, p->page, false)) {
         docImageFree(&p->image);
         return;
@@ -467,9 +528,12 @@ static void keepPage(App *app, ReadingPage *p)
     freeSlot(best);
     best->generation = p->generation;
     best->page = p->page;
-    best->zoom = app->render_zoom;
+    best->zoom = p->zoom;
     best->image = p->image;
     p->image.pixels = NULL;
+    for (int i = 0; i < PAGE_SLOTS; i++)  // The same page of a layout gone isn't needed now (zoomed, they're big).
+        if (&app->slots[i] != best && app->slots[i].page == best->page && app->slots[i].generation != app->generation)
+            freeSlot(&app->slots[i]);
 }
 
 static void followBook(App *app, uint64_t now_ns)
@@ -520,6 +584,7 @@ static void followBook(App *app, uint64_t now_ns)
         if (around[i] >= 0 && around[i] < app->pages && !slotOf(app, around[i], false))  // Not one scaled from before.
             want[n++] = around[i];
     readingWant(app->generation, want, n);
+    appAskParts(app, now_ns);
     readingSetCurrent(app->generation, app->page);
 }
 
@@ -958,7 +1023,7 @@ static void readerButtons(App *app, uint64_t pressed, uint64_t now_ns)
         int dx = (pressed & HidNpadButton_StickLRight) ? 1 : (pressed & HidNpadButton_StickLLeft) ? -1 : 0;
         int dy = (pressed & HidNpadButton_StickLDown) ? 1 : (pressed & HidNpadButton_StickLUp) ? -1 : 0;
         if (dx || dy)
-            appZoomPanStep(app, dx, dy);
+            appZoomPanStep(app, dx, dy, now_ns);
         pressed &= ~(uint64_t)(HidNpadButton_StickLLeft | HidNpadButton_StickLRight | HidNpadButton_StickLUp |
                                HidNpadButton_StickLDown);
     }
@@ -1191,7 +1256,7 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
             sliderTo(app, e.x);
         } else if (app->view == VIEW_READER && app->panel == PANEL_NONE && appZoomed(app) && start &&
                    start->kind == HIT_PAGE) {
-            appZoomPan(app, (float)e.dx, (float)e.dy);  // The zoomed page follows the finger.
+            appZoomPan(app, (float)e.dx, (float)e.dy, now_ns);  // The zoomed page follows the finger.
         } else if (app->panel == PANEL_CONTENTS) {
             // Rows follow the finger, a whole row at a time.
             int rows = (e.start_y - e.y) / CONTENTS_ROW_H;

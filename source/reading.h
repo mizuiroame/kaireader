@@ -53,7 +53,18 @@ typedef struct {
     unsigned generation;
     int page;
     DocImage image;  // The caller frees it (docImageFree) after it's taken.
+    float zoom;      // A fixed page: how much bigger than fitted it came (less than asked if it'd be too big).
+    bool part;       // Only part of the page (readingWantParts): from x, y of the whole, full_w x full_h.
+    int x, y, full_w, full_h;
 } ReadingPage;
+
+// Part of a fixed page wanted at a zoom: its pixels x, y, w x h at that zoom.
+typedef struct {
+    int page;
+    float zoom;
+    int x, y, w, h;
+} ReadingPartAsk;
+#define READING_PARTS_MAX 2
 
 // A bookmark in the layout of the moment: its page, and the words that start it.
 typedef struct {
@@ -83,6 +94,9 @@ void readingClose(void);
 // The pages wanted now, most wanted first (the screen's page, then the next...);
 // only ones of the current generation are rendered. Replaces the ones before.
 void readingWant(unsigned generation, const int *pages, int count);
+// Parts of the pages shown wanted sharp at a zoom their whole pages can't come at
+// (after the pages wanted). Replaces the ones before.
+void readingWantParts(unsigned generation, const ReadingPartAsk *asks, int count);
 // The page shown now: the thread works out its place and how far in it is.
 void readingSetCurrent(unsigned generation, int page);
 // The open book's bookmarks (their places, in reading order), replacing the ones before.

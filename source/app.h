@@ -62,6 +62,15 @@ typedef struct {
     DocImage image;  // NULL pixels: free slot.
 } PageSlot;
 
+// The part of a zoomed page on screen, rendered sharp on its own (the whole page
+// can't be that big): from x, y of the page at its zoom, full_w x full_h.
+typedef struct {
+    int page;  // -1: free.
+    float zoom;
+    int x, y, full_w, full_h;
+    DocImage image;
+} PagePart;
+
 // One line of the library's grid: a group's name, or up to a row of books.
 typedef struct {
     int y, h;        // Where, from the grid's top, in layout units.
@@ -115,6 +124,11 @@ typedef struct {
     bool reflowable;
     int page, pages;
     PageSlot slots[PAGE_SLOTS];
+    PagePart parts[READING_PARTS_MAX];
+    ReadingPartAsk parts_asked[READING_PARTS_MAX];  // Asked and not come yet, of parts_generation.
+    int parts_asked_count;
+    unsigned parts_generation;
+    uint64_t view_moved_ns;  // The zoomed view last moved (zoom or pan).
     bool bars;                // The bars over the page (title, slider) are shown.
     int turn_from;            // A page turn's animation: the page before, or -1.
     int turn_dir;             // +1 forward, -1 back.
@@ -166,8 +180,8 @@ bool appZoomable(const App *app);
 bool appZoomed(const App *app);
 void appZoomTo(App *app, float zoom, float cx, float cy, uint64_t now_ns);
 void appZoomStep(App *app, int dir, uint64_t now_ns);  // Up (+1) or down (-1) a step.
-void appZoomPan(App *app, float dx, float dy);         // A finger's move.
-void appZoomPanStep(App *app, int dx, int dy);         // A stick's push.
+void appZoomPan(App *app, float dx, float dy, uint64_t now_ns);         // A finger's move.
+void appZoomPanStep(App *app, int dx, int dy, uint64_t now_ns);         // A stick's push.
 void appZoomToStart(App *app);   // A new page: its top left, as it's read.
 void appZoomReset(App *app);
 void appZoomTick(App *app, uint64_t now_ns);  // Each frame: sharp once it rests.
@@ -176,6 +190,12 @@ void appZoomTick(App *app, uint64_t now_ns);  // Each frame: sharp once it rests
 bool appZoomTouches(App *app, int count, float x0, float y0, float x1, float y1, uint64_t now_ns);
 // The page rendered again at the zoom, keeping the pages shown until the sharp ones come.
 void appRenderAgain(App *app);
+// The sharp part of a zoomed page to draw over it, if there is one finer than the page.
+const PagePart *appPagePart(const App *app, int page);
+// Asks for the parts on screen of the zoomed pages shown, once the view rests (app_zoom.c).
+void appAskParts(App *app, uint64_t now_ns);
+// Drops the parts kept (a new book, or closed).
+void appForgetParts(App *app);
 // Where a fixed page fits on screen at zoom 1 (layout units); false if it isn't here.
 bool appFitRect(const App *app, int page, int *x, int *y, int *w, int *h);
 // A page's image, of this layout or (a fixed page) one before, its size in pixels and the zoom it was made at.

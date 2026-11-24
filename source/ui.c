@@ -293,6 +293,12 @@ static void drawPage(const App *app, int page, int offset)
     const DocImage *img = appPageImage(app, page);
     if (img)
         gfxDrawImageScaledFb(fb(x + offset), fb(y), fb(w), fb(h), img->width, img->height, img->pixels);
+    const PagePart *part = appPagePart(app, page);  // Zoomed past what a whole page can be: the part shown, sharp.
+    if (part) {
+        float sx = fb(w) / part->full_w, sy = fb(h) / part->full_h;
+        gfxDrawImageScaledFb(fb(x + offset) + part->x * sx, fb(y) + part->y * sy, part->image.width * sx,
+                             part->image.height * sy, part->image.width, part->image.height, part->image.pixels);
+    }
 }
 
 // The page shown at first, and the next one beside it when two show.

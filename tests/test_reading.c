@@ -109,6 +109,14 @@ void testReading(void)
     readingWant(g, want, 1);
     CHECK(takePage(&p) && p.page == 1 && p.image.width == 800 && p.image.height >= 1034 && p.image.height <= 1036);
     docImageFree(&p.image);
+    CHECK(!p.part && p.zoom == 1.0f);
+
+    // Part of it at 8x (6400 pixels wide whole: too big for one image).
+    ReadingPartAsk ask = {1, 8.0f, 2000, 3000, 640, 360};
+    readingWantParts(g, &ask, 1);
+    CHECK(takePage(&p) && p.part && p.page == 1 && p.zoom == 8.0f && p.x == 2000 && p.y == 3000);
+    CHECK(p.image.width == 640 && p.image.height == 360 && p.full_w == 6400 && p.full_h >= 8270);
+    docImageFree(&p.image);
 
     g = readingOpen(FIX "missing.epub", &layout, (DocPlace){0, 0});
     CHECK(waitFor(g, &st) && st.state == READING_FAILED && st.error[0]);

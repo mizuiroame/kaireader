@@ -4,6 +4,7 @@
 // under another). Problems make it fail.
 //   run from tests/preview/build: ./preview <out folder>
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -288,6 +289,26 @@ int main(int argc, char **argv)
     app.bars = true;
     render(&app, dir, "pdf-zoom-bars");
     app.bars = false;
+    appCloseBook(&app);
+
+    // A wide page at 3x is past what a whole page can be: the part on screen comes sharp on its own.
+    appOpenBook(&app, indexOfBook(&app, "wide.pdf"), 40);
+    settle(&app);
+    for (int i = 0; i < 5; i++)
+        appHandleButtons(&app, HidNpadButton_Up, 41 + i);
+    appZoomToStart(&app);  // Its top left, where the text is.
+    settle(&app);
+    {
+        uint64_t now = 9000000000ull;
+        for (int i = 0; i < 2000 && !appPagePart(&app, app.page); i++, now += 16000000ull) {
+            appUpdate(&app, now);
+            draw(&app, now);
+            usleep(2000);
+        }
+    }
+    if (!appPagePart(&app, app.page))
+        printf("ZOOM: no sharp part of the wide page at %.2f\n", app.zoom);
+    render(&app, dir, "pdf-wide-zoom");
     appCloseBook(&app);
     appOpenBook(&app, indexOfBook(&app, "strip.cbz"), 8);
     settle(&app);

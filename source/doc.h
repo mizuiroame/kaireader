@@ -85,6 +85,12 @@ bool docPageSize(Doc *d, int page, float *w, float *h);
 // docImageFree. False if it failed.
 bool docRender(Doc *d, int page, float scale, DocImage *out);
 void docImageFree(DocImage *image);
+// The scale docRender really renders a page at when asked scale: smaller when the
+// page would be over DOC_RENDER_MAX pixels a side.
+float docRenderScale(Doc *d, int page, float scale);
+// Part of a fixed page at scale, not capped: its pixels x, y (from the whole
+// page's top left), w x h (each DOC_RENDER_MAX at most). False if it fails.
+bool docRenderPart(Doc *d, int page, float scale, int x, int y, int w, int h, DocImage *out);
 
 // What an EPUB's package says beyond the title: its cover picture (EPUB 3's
 // cover-image, or EPUB 2's <meta name="cover">) fitted into max_w x max_h,
