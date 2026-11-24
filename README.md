@@ -7,8 +7,9 @@ A **book reader** for **Switch 2** running
 [KaiPlayer](https://github.com/mizuiroame/kaiplayer),
 [KaiRadio](https://github.com/mizuiroame/kairadio) and
 [KaiVideo](https://github.com/mizuiroame/kaivideo). Your DRM-free books from
-the SD card, as on an e-reader: **EPUB**, **PDF**, comics (**CBZ**), **FB2**,
-**MOBI**, **TXT** and **XPS**, drawn with [MuPDF](https://mupdf.com/).
+the SD card or a folder on your network, as on an e-reader: **EPUB**, **PDF**,
+comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
+**XPS**, drawn with [MuPDF](https://mupdf.com/).
 
 ![Library](docs/screenshots/library.png)
 
@@ -22,9 +23,9 @@ the SD card, as on an e-reader: **EPUB**, **PDF**, comics (**CBZ**), **FB2**,
 
 The screenshots show made-up books.
 
-> **Version 0.2: still young.** Only books on the SD card for now, and only in
-> English; network folders, book servers (OPDS, Calibre-Web, Kavita, Komga),
-> public-domain catalogs and the other languages come next.
+> **Version 0.3, a pre-release: still young.** Only in English for now; book
+> servers (OPDS, Calibre-Web, Kavita, Komga), public-domain catalogs and the
+> other languages come next.
 
 > KaiReader is an independent project. It is not affiliated with, endorsed by
 > or sponsored by Nintendo or Amazon. See the [legal notice](docs/legal.md).
@@ -39,11 +40,20 @@ The screenshots show made-up books.
   screen, with **ten text sizes** and four **colors** (light, sepia, dark and
   black: the text and the paper change, pictures keep their colors). PDFs and
   comics show their own pages, fitted to the screen.
+- **Network folders**: a Windows shared folder (SMB), a NAS or Nextcloud
+  (WebDAV), or an FTP or SFTP server (Settings > Network folder). Its books
+  show in the library's **Network** tab (ZL/ZR); one you open is copied to
+  `sdmc:/books/Network/` and stays in your library, to read without the network.
+- **Zoom** on PDFs and comics: up and down, or two fingers, up to 3×; the left
+  stick or a finger moves the page, drawn sharp at the screen's resolution.
+- **Bookmarks**: the left stick pressed in marks the page; the Contents panel
+  (X) lists them in its Bookmarks tab, with the first words of each page.
 - **Two pages side by side**, like an open book (Settings > Reading > Pages),
   with the console lying down.
 - **Upright, like a book**: hold the console with its right or left side down
-  (Settings > Display > Screen); the whole app turns, and the buttons and the
-  touch screen with it.
+  (Settings > Display > Screen), or let it turn as you turn the console
+  (Automatic). The right stick pressed in switches. The whole app turns, and
+  the buttons and the touch screen with it.
 - Picks up **where you left off**, even after changing the text size.
 - **Contents**: the book's table of contents, to jump to a chapter; a slider
   to jump anywhere.
@@ -55,9 +65,11 @@ The screenshots show made-up books.
 | | Library | Reading |
 |---|---|---|
 | **A** | Read the book selected | Next page |
-| **Right**, **R**, **ZR** / **Left**, **L**, **ZL** | Move | Next / previous page |
-| **Up** / **Down** | Move | Bigger / smaller text (upright: previous / next page) |
-| **X** | | Contents |
+| **Right**, **R**, **ZR** / **Left**, **L**, **ZL** | Move (**ZL** / **ZR**: Library and Network tabs) | Next / previous page |
+| **Up** / **Down** | Move | Bigger / smaller text; PDFs and comics: zoom |
+| **X** | | Contents and bookmarks |
+| **Left stick** pressed | | Bookmark the page |
+| **Right stick** pressed | Upright or lying down | Upright or lying down |
 | **Y** | Sort by: recent, title, author, genre | Colors |
 | **−** | | Show or hide the bars |
 | **B** | | Back to the library |
@@ -95,6 +107,8 @@ With Docker:
 
 ```
 docker build -t kaireader-devkit mupdf
+docker tag kaireader-devkit kaireader-devkit:before-smb
+docker build -t kaireader-devkit smb
 docker build -t kaireader-host -f tests/Dockerfile.host tests
 .\build.ps1            # KaiReader.nro
 .\build.ps1 test       # host tests with sanitizers
