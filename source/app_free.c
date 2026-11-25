@@ -6,7 +6,8 @@
 // list shown, and the next page comes as the end nears. A
 // book chosen is downloaded to the card's books folder (sdmc:/books/Free/,
 // "Title - Author.epub"), then opened there: it's one of the card's books from
-// then on. Nothing is asked of the catalogs until Free books is opened.
+// then on, marked in the list as on the card, and A opens it there. Nothing is
+// asked of the catalogs until Free books is opened.
 #include "app.h"
 
 #include <stdio.h>
@@ -20,13 +21,33 @@
 #include "netjob.h"
 #include "opdsnet.h"
 
-#define FREE_FOLDER "Free"
 #define MORE_LINES 2  // The next page is asked for when the cursor is this many lines from the end.
 
 // The Free books' shelf: the one shown, or kept aside while another library is.
 static Shelf *freeShelf(App *app)
 {
     return app->lib_tab == LIB_FREE ? &app->shelf : &app->stash[LIB_FREE];
+}
+
+// The card's library: the one shown, or kept aside while another is.
+static Shelf *cardShelf(App *app)
+{
+    return app->lib_tab == LIB_CARD ? &app->shelf : &app->stash[LIB_CARD];
+}
+
+// The card's books folder: where a free book goes, by its title and author.
+static bool localOf(const App *app, const ShelfBook *b, char *out, size_t size)
+{
+    return catalogLocalPath(app->books_folder, b->title, b->author, b->path, out, size);
+}
+
+// Whether a free book was downloaded before: the card's library says (as last looked
+// through, and with the books downloaded since), so the list never asks the card itself.
+static void markOnCard(App *app, ShelfBook *b)
+{
+    char local[NET_LOCAL_MAX];
+    const ShelfBook *own = localOf(app, b, local, sizeof(local)) ? shelfFind(cardShelf(app), local) : NULL;
+    b->on_card = own && own->present;
 }
 
 // No books shown: a new list's first page is on its way (or the list couldn't be read).
@@ -157,6 +178,7 @@ static void takePage(App *app, uint64_t now_ns)
         shelfSetInfo(b, books[i].title, books[i].author);
         shelfSetDetails(b, books[i].genre, books[i].author_sort);
         opdsRememberCover(path, books[i].cover);
+        markOnCard(app, b);
     }
     free(books);
     snprintf(app->free_next, sizeof(app->free_next), "%s", next);
@@ -176,6 +198,9 @@ void appFreeUpdate(App *app, uint64_t now_ns)
 
 void appFreeEntered(App *app, uint64_t now_ns)
 {
+    Shelf *s = freeShelf(app);  // A book downloaded meanwhile is one of the card's now.
+    for (int i = 0; i < s->count; i++)
+        markOnCard(app, &s->items[i]);
     if (!app->free_asked[0])  // The first time: the most popular.
         appFreeShow(app, CATALOG_POPULAR, now_ns);
 }
@@ -188,21 +213,6 @@ void appFreeLookAgain(App *app, uint64_t now_ns)
 bool appFreeLoading(void)
 {
     return netJobCatalogLoading();
-}
-
-// The card's books folder: where a free book goes, by its title and author.
-static bool localOf(const App *app, const ShelfBook *b, char *out, size_t size)
-{
-    OpdsBook named;
-    memset(&named, 0, sizeof(named));
-    snprintf(named.title, sizeof(named.title), "%s", b->title);
-    snprintf(named.author, sizeof(named.author), "%s", b->author);
-    const char *hash = strrchr(b->path, '#');
-    snprintf(named.ext, sizeof(named.ext), "%s", hash && hash[1] == '.' ? hash + 1 : ".epub");
-    char file[256];
-    catalogFileName(&named, file, sizeof(file));
-    int n = snprintf(out, size, "%s/%s/%s", app->books_folder, FREE_FOLDER, file);
-    return n > 0 && (size_t)n < size;
 }
 
 void appFreeOpen(App *app, int order_index, uint64_t now_ns)

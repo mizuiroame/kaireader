@@ -55,3 +55,9 @@ bool catalogAuthorAsWritten(const char *author, char *out, size_t size);
 int catalogBooks(const OpdsFeed *page, OpdsBook **out);
 // The name a downloaded book gets in the card's books folder: "Title - Author.epub", plain.
 void catalogFileName(const OpdsBook *b, char *out, size_t size);
+
+#define CATALOG_FOLDER "Free"  // In the card's books folder: where free books are downloaded.
+// Where a free book of the list (its title, author, and library path ending "#.ext", ".epub"
+// if none) is kept on the card: "folder/Free/Title - Author.ext". False if it doesn't fit.
+bool catalogLocalPath(const char *folder, const char *title, const char *author, const char *entry, char *out,
+                      size_t size);

@@ -1,4 +1,5 @@
 // catalogs.c: the free catalogs' lists, and their pages' books (feeds made up, in their formats).
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -355,6 +356,30 @@ static void testAuthors(void)
     CHECK(!catalogAuthorAsWritten("Hugo, Victor", out, 6));  // Doesn't fit.
 }
 
+// Where a list's book is kept on the card, to know it's there already: the name it's downloaded under.
+static void testLocalPath(void)
+{
+    char path[512];
+    CHECK(catalogLocalPath("sdmc:/books", "Cafe Stories", "Lio Arden", "opds:https://x.example/1.epub#.epub", path,
+                           sizeof(path)));
+    CHECK_STR(path, "sdmc:/books/Free/Cafe Stories - Lio Arden.epub");
+    CHECK(catalogLocalPath("books", "Fog Stair", "", "opds:https://x.example/f#.fb2", path, sizeof(path)));
+    CHECK_STR(path, "books/Free/Fog Stair.fb2");  // No author: the title alone, and the entry's kind.
+    CHECK(catalogLocalPath("books", "", "Ana Example", "opds:https://x.example/a", path, sizeof(path)));
+    CHECK_STR(path, "books/Free/Book - Ana Example.epub");  // No title, no kind: EPUB.
+    OpdsBook b;
+    memset(&b, 0, sizeof(b));
+    snprintf(b.title, sizeof(b.title), "%s", "Le Phare: tranquille?");
+    snprintf(b.author, sizeof(b.author), "%s", "Ana Exemple");
+    snprintf(b.ext, sizeof(b.ext), "%s", ".epub");
+    char name[128], want[256];
+    catalogFileName(&b, name, sizeof(name));  // The same name as the download's, made plain.
+    snprintf(want, sizeof(want), "books/Free/%s", name);
+    CHECK(catalogLocalPath("books", b.title, b.author, "opds:https://x.example/p#.epub", path, sizeof(path)));
+    CHECK_STR(path, want);
+    CHECK(!catalogLocalPath("sdmc:/books", "Cafe Stories", "Lio Arden", "opds:x#.epub", path, 20));  // Too long.
+}
+
 void testCatalogs(void)
 {
     testUrls();
@@ -362,4 +387,5 @@ void testCatalogs(void)
     testRealAnswers();
     testOtherLanguages();
     testAuthors();
+    testLocalPath();
 }

@@ -206,6 +206,9 @@ Finding your bookmarks…
 Finished
 已读完
 
+On the card
+SD卡上
+
 For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading.
 适用于流式排版的书（EPUB、FB2、MOBI、TXT）。阅读时按上下更改。
 

@@ -240,3 +240,18 @@ void catalogFileName(const OpdsBook *b, char *out, size_t size)
              b->ext[0] ? b->ext : ".epub");
     netPlainName(name, false, out, size);
 }
+
+bool catalogLocalPath(const char *folder, const char *title, const char *author, const char *entry, char *out,
+                      size_t size)
+{
+    OpdsBook named;
+    memset(&named, 0, sizeof(named));
+    snprintf(named.title, sizeof(named.title), "%s", title);
+    snprintf(named.author, sizeof(named.author), "%s", author);
+    const char *hash = strrchr(entry, '#');
+    snprintf(named.ext, sizeof(named.ext), "%s", hash && hash[1] == '.' ? hash + 1 : ".epub");
+    char file[256];
+    catalogFileName(&named, file, sizeof(file));
+    int n = snprintf(out, size, "%s/%s/%s", folder, CATALOG_FOLDER, file);
+    return n > 0 && (size_t)n < size;
+}

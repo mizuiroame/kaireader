@@ -207,6 +207,9 @@ Deine Lesezeichen werden gesucht…
 Finished
 Fertig gelesen
 
+On the card
+Auf der Karte
+
 For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading.
 Für Bücher mit fließendem Text (EPUB, FB2, MOBI, TXT). Oben und unten ändern sie beim Lesen.
 

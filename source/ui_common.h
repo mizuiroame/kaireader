@@ -42,5 +42,8 @@ void uiDrawHeader(const char *title);
 
 // A five-pointed star (a favorite) of outer radius r around (cx, cy).
 void uiDrawStar(float cx, float cy, float r, Color color);
+// On the card (a free book downloaded already), as KaiVideo marks a download: an SD card
+// in a filled circle of the accent, radius r around (cx, cy).
+void uiDrawOnCard(float cx, float cy, float r);
 // A spinner: dots around (cx, cy) going round.
 void uiDrawSpinner(float cx, float cy, float r, uint64_t now_ns, Color color);

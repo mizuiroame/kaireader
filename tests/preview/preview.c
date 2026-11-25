@@ -223,9 +223,20 @@ static void freeMenus(App *app, const char *dir)
 // The Network tab: no folder yet; then a made-up one, its list, a copy, and its Settings page.
 static void networkShots(App *app, const char *dir)
 {
-    // Free books, always there: X goes to it with no folder or server.
+    // Free books, always there: X goes to it with no folder or server. One of its books was
+    // downloaded before (in the card's library, without a file): marked as on the card.
+    char local[512];
+    catalogLocalPath(app->books_folder, "The Salt Ledger", "Mara Fennick", "#.epub", local, sizeof(local));
+    ShelfBook *downloaded = shelfAdd(&app->shelf, local);
     appSwitchSource(app, 50);
     settle(app);
+    int marked = 0;
+    for (int i = 0; i < app->shelf.count; i++)
+        marked += app->shelf.items[i].on_card ? (strcmp(app->shelf.items[i].title, "The Salt Ledger") ? 100 : 1) : 0;
+    if (!downloaded || marked != 1) {
+        printf("PREVIEW: Free books marks %d books as on the card, not The Salt Ledger alone\n", marked);
+        g_problems++;
+    }
     render(app, dir, "free");
     app->panel = PANEL_MENU;
     app->menu_cursor = 0;
@@ -255,6 +266,10 @@ static void networkShots(App *app, const char *dir)
     appFreeShow(app, CATALOG_POPULAR, 50);
     settle(app);
     appLibTab(app, LIB_CARD, 51);
+    ShelfBook *gone = shelfFind(&app->shelf, local);  // The made-up download leaves the card's library.
+    if (gone)
+        gone->present = false;
+    appResort(app);
 
     g_preview_net_configured = true;
     appNetworkFeedSettings();

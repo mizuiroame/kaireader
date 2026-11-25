@@ -206,6 +206,9 @@ Finding your bookmarks…
 Finished
 다 읽음
 
+On the card
+SD 카드에 있음
+
 For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading.
 흐르는 글 책(EPUB, FB2, MOBI, TXT)에 적용돼요. 읽는 중에 위아래로 바꿔요.
 

@@ -207,6 +207,9 @@ Recherche de vos signets…
 Finished
 Terminé
 
+On the card
+Sur la carte
+
 For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading.
 Pour les livres à texte fluide (EPUB, FB2, MOBI, TXT). Haut et bas la changent pendant la lecture.
 

@@ -27,6 +27,7 @@ typedef struct {
     int64_t last_read;            // Seconds since 1970; 0 if never opened.
     bool present;                 // Found by the last scan.
     bool favorite;                // Marked (+ menu, or a long touch on its cover).
+    bool on_card;                 // Free books: downloaded to the card already (never saved).
 } ShelfBook;
 
 typedef struct {

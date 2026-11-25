@@ -207,6 +207,9 @@ Buscando tus marcadores…
 Finished
 Terminado
 
+On the card
+En la tarjeta
+
 For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading.
 Para libros que fluyen (EPUB, FB2, MOBI, TXT). Arriba y abajo lo cambian mientras lees.
 

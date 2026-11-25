@@ -207,6 +207,9 @@ Ricerca dei segnalibri…
 Finished
 Finito
 
+On the card
+Sulla scheda
+
 For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading.
 Per i libri a testo scorrevole (EPUB, FB2, MOBI, TXT). Su e giù la cambiano durante la lettura.
 

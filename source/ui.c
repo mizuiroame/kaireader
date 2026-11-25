@@ -179,6 +179,10 @@ static void drawBook(App *app, int index, int x, int y, bool selected)
         gfxFillRoundRect(x + LIB_COVER_W - 38, y + 6, 32, 32, 16, gfxMix(COLOR_BG, COLOR_SURFACE, 128));
         uiDrawStar(x + LIB_COVER_W - 22.0f, y + 22.5f, 11.0f, COLOR_ACCENT);
     }
+    if (b->on_card) {  // A free book downloaded already: the card's mark at the top left, as KaiVideo's.
+        gfxFillRoundRect(x + 6, y + 6, 32, 32, 16, gfxMix(COLOR_BG, COLOR_SURFACE, 128));
+        uiDrawOnCard(x + 22.0f, y + 22.0f, 12.0f);
+    }
 
     int ty = y + LIB_COVER_H + 12;
     if (b->percent >= 0) {
@@ -238,6 +242,10 @@ static void drawRow(App *app, int index, int y, bool selected)
     } else if (b->percent >= 100) {
         int fw = fontTextWidth(FONT_BOLD, 15, T("Finished"));
         fontDrawMiddle(FONT_BOLD, 15, right - fw, y + rh / 2.0f, T("Finished"), COLOR_DIM);
+    } else if (b->on_card) {  // A free book downloaded already: A opens it there.
+        int ow = fontTextWidth(FONT_BOLD, 15, T("On the card"));
+        fontDrawMiddle(FONT_BOLD, 15, right - ow, y + rh / 2.0f, T("On the card"), COLOR_DIM);
+        uiDrawOnCard(right - ow - 20.0f, y + rh / 2.0f, 11.0f);
     }
     int text_w = bar_x - 24 - tx;
     if (b->favorite) {

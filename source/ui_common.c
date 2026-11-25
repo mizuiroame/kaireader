@@ -70,6 +70,19 @@ void uiDrawStar(float cx, float cy, float r, Color color)
         gfxTriangle(cx, cy, px[i], py[i], px[(i + 1) % 10], py[(i + 1) % 10], color);
 }
 
+void uiDrawOnCard(float cx, float cy, float r)
+{
+    gfxFillCircle((int)cx, (int)cy, (int)r, COLOR_ACCENT);
+    // The card, upright: its corner cut at the top right, its contacts' gaps at the top.
+    float w = r * 0.9f, h = r * 1.15f, x0 = cx - w / 2, y0 = cy - h / 2, cut = w * 0.32f;
+    gfxFillRect((int)x0, (int)(y0 + cut), (int)w, (int)(h - cut), COLOR_BG);
+    gfxFillRect((int)x0, (int)y0, (int)(w - cut), (int)cut + 1, COLOR_BG);
+    gfxTriangle(x0 + w - cut, y0, x0 + w - cut, y0 + cut + 1, x0 + w, y0 + cut + 1, COLOR_BG);
+    for (int i = 0; i < 3; i++)
+        gfxFillRect((int)(x0 + w * (0.18f + 0.2f * i)), (int)(y0 + 1), 1 + (int)(r * 0.06f), (int)(h * 0.28f),
+                    COLOR_ACCENT);
+}
+
 void uiDrawSpinner(float cx, float cy, float r, uint64_t now_ns, Color color)
 {
     const int dots = 8;
