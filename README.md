@@ -15,27 +15,15 @@ comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
 
 ![Library](docs/screenshots/library.png)
 
-| Reading | Upright, like a book | Sorted by author |
-|---------|----------------------|------------------|
-| ![A page](docs/screenshots/epub-light.png) | ![Upright](docs/screenshots/upright-epub.png) | ![By author](docs/screenshots/library-author.png) |
+| Reading | Upright, like a book | Free books |
+|---------|----------------------|------------|
+| ![A page](docs/screenshots/epub-light.png) | ![Upright](docs/screenshots/upright-epub.png) | ![Free books](docs/screenshots/free.png) |
 
-| Two pages, like an open book | Sepia, bigger text | Settings |
-|------------------------------|--------------------|----------|
-| ![Two pages](docs/screenshots/epub-two-pages.png) | ![Sepia](docs/screenshots/epub-sepia-big.png) | ![Settings](docs/screenshots/settings-display.png) |
+| Two pages, like an open book | Your book server (OPDS) | Each source with its color |
+|------------------------------|-------------------------|----------------------------|
+| ![Two pages](docs/screenshots/epub-two-pages.png) | ![Book server](docs/screenshots/server.png) | ![Settings and sources](docs/screenshots/settings-sources.png) |
 
-| A network folder's books | As a list | Favorites |
-|--------------------------|-----------|-----------|
-| ![Network folder](docs/screenshots/network.png) | ![List](docs/screenshots/library-list.png) | ![Favorites](docs/screenshots/library-favorites-stars.png) |
-
-| Your book server (OPDS) | Free books | The + menu |
-|-------------------------|------------|------------|
-| ![Book server](docs/screenshots/server.png) | ![Free books](docs/screenshots/free.png) | ![Menu](docs/screenshots/menu.png) |
-
-| Each source with its color | Credits and licenses |
-|----------------------------|----------------------|
-| ![Settings and sources](docs/screenshots/settings-sources.png) | ![Credits](docs/screenshots/credits.png) |
-
-The screenshots show made-up books.
+The screenshots show made-up books. [More screenshots](docs/screenshots.md)
 
 > **Version 1.1.** In English, Spanish, French, Italian, Portuguese, German,
 > Japanese, Chinese and Korean; the translations haven't been reviewed by
@@ -46,84 +34,20 @@ The screenshots show made-up books.
 
 ## What it can do
 
-- **Library**: every book in `sdmc:/books` (and its folders), with its cover,
-  title, author and how far you've read. Sorted by **recently read**, your
-  **favorites**, **title**,
-  **author** (by surname, when the book gives it) or **genre** (the book's
-  subject), with the author or genre above each group.
-- **Reading**: books that flow (EPUB, FB2, MOBI, TXT) are laid out for the
-  screen, with **ten text sizes** and four **colors** (light, sepia, dark and
-  black: the text and the paper change, pictures keep their colors). PDFs and
-  comics show their own pages, fitted to the screen.
-- **Network folders**: a Windows shared folder (SMB), a NAS or Nextcloud
-  (WebDAV), or an FTP or SFTP server (Settings > Network folder). **X** in the
-  library switches between its books and the SD card's, both shown the same
-  way: KaiReader looks through the folder and its folders, and reads each
-  book's cover and title over the network (only the few parts it needs). A book
-  you open is copied to the card first, so it opens at once the next time.
-- **Your book server**: Calibre-Web, Kavita, Komga or another OPDS catalog
-  (Settings > Book server: its address, and your user and password). Its books
-  show as the card's, with the server's own covers; one you open is downloaded
-  first.
-- **Free books**: public-domain books, free to read: Project Gutenberg's most
-  popular and its search (**Y**), and Standard Ebooks' newest (**L**/**R**
-  change the list). A book you choose is downloaded to `sdmc:/books/Free/` and
-  stays in your library.
-- **X** goes round your libraries: the SD card, the network folder and the
-  book server (the ones set up), and Free books.
-- **In nine languages** (Settings > Display > Language), with more as files in
-  the `lang` folder.
-- **A welcome** the first time, when there are no books yet: where yours are,
-  or straight to Free books.
-- **Favorites**: hold your finger on a cover, or choose "Add to favorites" in
-  the + menu; Favorites is one of the sorts (Y).
-- **A grid or a list**: covers, or a list with more of each book (the + menu,
-  or Settings > Library).
-- **Zoom** on PDFs and comics: up and down, or two fingers, up to 3×; the left
-  stick or a finger moves the page, drawn sharp at the screen's resolution.
-- **Bookmarks**: the left stick pressed in marks the page; the Contents panel
-  (X) lists them in its Bookmarks tab, with the first words of each page.
-- **Two pages side by side**, like an open book (Settings > Reading > Pages),
-  with the console lying down.
-- **Upright, like a book**: hold the console with its right or left side down
-  (Settings > Display > Screen), or let it turn as you turn the console
-  (Automatic). The right stick pressed in switches. The whole app turns, and
-  the buttons and the touch screen with it.
-- Picks up **where you left off**, even after changing the text size, and
-  opens the book you were reading when KaiReader starts (Settings > Reading).
-- **Your colors and a picture**: an accent color, and a photo of yours behind
-  the library, as soft as you like (Settings > Display; JPEG or PNG files in
-  the `Backgrounds` folder of KaiReader's config folder).
-- **Updates**: once a day KaiReader looks on GitHub for a new version and says
-  so; from `sdmc:/switch` it installs it (Settings > About), from Brewstore,
-  Brewstore does.
-- **Contents**: the book's table of contents, to jump to a chapter; a slider
-  to jump anywhere.
-- Japanese, Chinese and Korean books use the console's own fonts.
-- **Touch and buttons**: tap or swipe to turn the page.
-
-## Controls
-
-| | Library | Reading |
-|---|---|---|
-| **A** | Read the book selected | Next page |
-| **Right**, **R**, **ZR** / **Left**, **L**, **ZL** | Move | Next / previous page |
-| **Up** / **Down** | Move | Bigger / smaller text; PDFs and comics: zoom |
-| **X** | The next library: SD card, network folder, book server, Free books | Contents and bookmarks |
-| **L** / **R** | Free books: the other lists | Previous / next page |
-| **Left stick** pressed | | Bookmark the page |
-| **Right stick** pressed | Upright or lying down | Upright or lying down |
-| **Y** | Sort by: recent, favorites, title, author, genre (Free books: search) | Colors |
-| **−** | | Show or hide the bars |
-| **B** | | Back to the library |
-| **+** | Menu: favorite, SD card or network folder, grid or list, look again, Settings, Exit | Menu: Contents, Bookmark, Library, Settings, Exit |
-
-The right stick moves like the D-pad. Upright, every direction turns with the
-console: up is up as you hold it.
-
-On the touch screen: tap the right or left side of the page to turn it, or
-swipe; tap the middle for the bars. In the library, hold a cover to make it a
-favorite.
+- **Your library** from `sdmc:/books`, with covers, sorted by recently read,
+  favorites, title, author or genre, as a grid or a list.
+  [More](docs/features.md#library)
+- **Reading** with ten text sizes and four colors, zoom on PDFs and comics,
+  bookmarks, contents, two pages side by side, and upright like a book.
+  [More](docs/features.md#reading)
+- **Books from your network** (SMB, WebDAV, FTP, SFTP) and **your book server**
+  (Calibre-Web, Kavita, Komga), as libraries of their own.
+  [More](docs/features.md#where-the-books-come-from)
+- **Free books**: Project Gutenberg and Standard Ebooks, downloaded to your
+  library. [More](docs/features.md#where-the-books-come-from)
+- **Nine languages**, your accent color and a background picture, and updates
+  from GitHub. [More](docs/features.md#looks-languages-and-updates)
+- **Touch and buttons** for everything. [Controls](docs/controls.md)
 
 ## Install
 
@@ -135,38 +59,22 @@ server, for example).
 2. Put your books in `sdmc:/books/` (folders inside it are fine).
 3. Open KaiReader from hbmenu.
 
-**Names with accents.** The console hides files and folders whose names have
-accents, ñ, curly quotes or Japanese, Chinese or Korean in them: they are on
-the card, but no app can list them. Copy your books with
-[KaiDrop](https://github.com/mizuiroame/kaidrop), which gives them plain names
-on the console and leaves your files on the PC as they are, or rename them
-first. KaiReader shows each book's real title, from inside the book.
+**Names with accents** are hidden by the console: copy your books with
+[KaiDrop](https://github.com/mizuiroame/kaidrop), or rename them first.
+[Installing](docs/install.md) has the details, and where KaiReader keeps its
+files.
 
-KaiReader keeps its files in its config folder, next to the NRO
-(`sdmc:/switch/kaireader/config/`): `shelf.txt` and `shelf-network.txt`
-(where you left each book, and your favorites), `settings.txt`,
-`bookmarks.txt`, `network.txt` and `server.txt` (the accounts), `shelf-server.txt`,
-`server-covers.txt`, `covers/`, and the `lang` and `Backgrounds` folders.
-Books opened from the network folder are copied to `sdmc:/books/.network/`, and
-from the book server to `sdmc:/books/.opds/`; free books go to `sdmc:/books/Free/`.
+## Documentation
 
-## Build
-
-With Docker:
-
-```
-docker build -t kaireader-devkit mupdf
-docker tag kaireader-devkit kaireader-devkit:before-smb
-docker build -t kaireader-devkit smb
-docker build -t kaireader-host -f tests/Dockerfile.host tests
-.\build.ps1            # KaiReader.nro
-.\build.ps1 test       # host tests with sanitizers
-.\build.ps1 preview    # the screens, drawn on the PC
-```
-
-The `kaireader-devkit` image starts from KaiRadio's image (the Switch 2
-devkit with libounce). The tests open made-up books written by
-`tests/make_fixtures.py`.
+- [What it can do](docs/features.md): the library, reading, network folders,
+  the book server, Free books, looks and updates
+- [Controls](docs/controls.md): buttons and the touch screen
+- [Installing](docs/install.md): names with accents, KaiReader's files, updating
+- [Screenshots](docs/screenshots.md)
+- [Security](docs/security.md): how the accounts are kept on the card, and the
+  risks that remain
+- [Building](docs/building.md): from source, with Docker
+- [Legal notice and licenses](docs/legal.md)
 
 ## License
 

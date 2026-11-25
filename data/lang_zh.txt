@@ -449,8 +449,8 @@ Remove this page's bookmark
 Saved until KaiReader closes: the password isn't kept on the card.
 保存至 KaiReader 关闭：密码不保存在存储卡上。
 
-Saved: the card keeps the password's hash, not the password.
-已保存：卡上存的是密码的哈希，而不是密码。
+Saved: the card keeps the password's hash, which opens this share as the password does. Use a user that can only read the books.
+已保存：卡上存的是密码的哈希，它和密码一样能打开这个共享文件夹。请使用只能读取书籍的用户。
 
 Saved: the password is only encoded on the card. Use a user that can only read the books.
 已保存：密码在存储卡上只是编码存储。请使用只能读取书籍的用户。

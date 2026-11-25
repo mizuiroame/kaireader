@@ -449,8 +449,8 @@ Remove this page's bookmark
 Saved until KaiReader closes: the password isn't kept on the card.
 KaiReader를 닫을 때까지 저장: 비밀번호는 카드에 저장되지 않아요.
 
-Saved: the card keeps the password's hash, not the password.
-저장했습니다. 카드에는 비밀번호가 아니라 그 해시가 저장됩니다.
+Saved: the card keeps the password's hash, which opens this share as the password does. Use a user that can only read the books.
+저장했어요: 카드에는 비밀번호의 해시가 저장되며, 이 해시로도 비밀번호처럼 이 공유 폴더를 열 수 있어요. 책 읽기만 가능한 사용자를 쓰세요.
 
 Saved: the password is only encoded on the card. Use a user that can only read the books.
 저장했어요: 비밀번호는 카드에 인코딩만 돼요. 책 읽기만 가능한 사용자를 쓰세요.

@@ -450,8 +450,8 @@ Remover o marcador desta página
 Saved until KaiReader closes: the password isn't kept on the card.
 Salva até o KaiReader fechar: a senha não fica no cartão.
 
-Saved: the card keeps the password's hash, not the password.
-Salva: o cartão guarda o hash da senha, não a senha.
+Saved: the card keeps the password's hash, which opens this share as the password does. Use a user that can only read the books.
+Salva: o cartão guarda o hash da senha, que abre este compartilhamento como a senha. Use um usuário que só possa ler os livros.
 
 Saved: the password is only encoded on the card. Use a user that can only read the books.
 Salva: a senha só fica codificada no cartão. Use um usuário que só possa ler os livros.

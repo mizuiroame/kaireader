@@ -450,8 +450,8 @@ Retirer le signet de cette page
 Saved until KaiReader closes: the password isn't kept on the card.
 Enregistré jusqu'à la fermeture de KaiReader : le mot de passe n'est pas gardé sur la carte.
 
-Saved: the card keeps the password's hash, not the password.
-Enregistré : la carte garde l'empreinte (hash) du mot de passe, pas le mot de passe.
+Saved: the card keeps the password's hash, which opens this share as the password does. Use a user that can only read the books.
+Enregistré : la carte garde l'empreinte (hash) du mot de passe, qui ouvre ce partage comme le mot de passe. Utilisez un utilisateur qui ne peut que lire les livres.
 
 Saved: the password is only encoded on the card. Use a user that can only read the books.
 Enregistré : le mot de passe est seulement encodé sur la carte. Utilisez un utilisateur qui ne peut que lire les livres.
