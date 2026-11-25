@@ -34,8 +34,8 @@
 #define BARS_TOP_H 64
 #define BARS_BOTTOM_H 84
 #define BARS_HELP_H 40  // Upright: the button help on a line of its own.
-#define ABOUT_GAP 8        // About: Mizuiro's mark this far under the text,
-#define ABOUT_BRAND_H 104  // the seal this tall.
+#define ABOUT_BRAND_H 64   // About: Mizuiro's seal this tall (as in the other Kai apps),
+#define ABOUT_ICON 84      // and KaiReader's icon, beside its name.
 #define TURN_BUTTON_W 56            // The reading bar's turn button,
 #define TURN_BUTTON_FROM_RIGHT 290  // left of the clock and battery.
 
@@ -630,7 +630,7 @@ static int drawAboutText(int x, int y, int w, bool draw)
         T("Text: Noto Sans (SIL OFL 1.1) and the console's own fonts. Also stb, libnx, libounce and Mesa. Every license, in full, is in docs/legal.md on GitHub."),
         T("Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened."),
     };
-    for (int p = 0; p < 6; p++) {
+    for (int p = 1; p < 6; p++) {  // The first (the name and version) is the page's header.
         char lines[6][160];
         int n = wrapLines(p ? FONT_REGULAR : FONT_BOLD, p ? 17 : 22, paragraphs[p], w, lines, 6);
         for (int i = 0; i < n; i++, y += p ? 25 : 32)
@@ -650,7 +650,7 @@ static void drawSettings(const App *app)
     bool about = app->settings_page == SETTINGS_PAGE_CREDITS;
     int w = minInt(SETTINGS_W_MAX, gfxLayoutWidth() - 40);
     int about_text = about ? drawAboutText(0, 0, w - 64, false) : 0;  // Its height, to fit the page to it.
-    int h = about ? 90 + about_text + ABOUT_GAP + ABOUT_BRAND_H + 64 : 84 + n * SETTINGS_ROW_H + 110;
+    int h = about ? 84 + ABOUT_ICON + 20 + about_text + ABOUT_BRAND_H + 40 : 84 + n * SETTINGS_ROW_H + 110;
     int x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
     gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
     uiHitAdd(x, y, w, h, HIT_SETTING, -1);
@@ -665,8 +665,11 @@ static void drawSettings(const App *app)
     }
     fontDrawMiddle(FONT_BOLD, 22, tx, y + 40.0f, T(settingsPageTitle(app->settings_page)), COLOR_TEXT);
     if (about) {
-        int end = drawAboutText(x + 32, y + 90, w - 64, true);
-        uiDrawBrand(x + 32, end + ABOUT_GAP, ABOUT_BRAND_H);  // Mizuiro's seal and name, right under it.
+        uiDrawAppIcon(x + 32, y + 84, ABOUT_ICON);  // KaiReader's icon, its name and version beside it.
+        fontDraw(FONT_BOLD, 30, x + 32 + ABOUT_ICON + 22, y + 92, "KaiReader", COLOR_TEXT);
+        fontDraw(FONT_REGULAR, 18, x + 32 + ABOUT_ICON + 22, y + 134, KAIREADER_VERSION, COLOR_DIM);
+        drawAboutText(x + 32, y + 84 + ABOUT_ICON + 20, w - 64, true);
+        uiDrawBrandRight(x + w - 32, y + h - 24 - ABOUT_BRAND_H, ABOUT_BRAND_H);  // Mizuiro's mark, at the bottom right.
         uiDrawHelp(x + 28, y + h - 30.0f, w - 56, T("[B] Back"));
         return;
     }

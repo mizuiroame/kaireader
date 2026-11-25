@@ -4,6 +4,7 @@
 
 #include "brand_seal_png.h"
 #include "brand_word_png.h"
+#include "about_icon_png.h"
 #include "font.h"
 #include "gfx.h"
 #include "image_config.h"
@@ -28,9 +29,29 @@ static const BrandImage *decoded(BrandImage *img, const unsigned char *png, size
     return img->pixels ? img : NULL;
 }
 
+static BrandImage seal, word, icon;
+
+void uiDrawAppIcon(int x, int y, int size)
+{
+    const BrandImage *i = decoded(&icon, about_icon_png, about_icon_png_size);
+    if (i)
+        gfxDrawImageScaledFb(x * GFX_SCALE, y * GFX_SCALE, size * GFX_SCALE, size * GFX_SCALE, i->w, i->h, i->pixels);
+}
+
+int uiDrawBrandRight(int right, int y, int seal_h)
+{
+    const BrandImage *s = decoded(&seal, brand_seal_png, brand_seal_png_size);
+    const BrandImage *w = decoded(&word, brand_word_png, brand_word_png_size);
+    if (!s || !w)
+        return 0;
+    float word_h = seal_h * 0.2f;
+    int text_w = fontTextWidth(FONT_REGULAR, 16, T("Made by")), word_w = (int)(word_h * w->w / w->h);
+    int width = (int)((float)seal_h * s->w / s->h) + 22 + (text_w > word_w ? text_w : word_w);
+    return uiDrawBrand(right - width, y, seal_h);
+}
+
 int uiDrawBrand(int x, int y, int seal_h)
 {
-    static BrandImage seal, word;
     const BrandImage *s = decoded(&seal, brand_seal_png, brand_seal_png_size);
     const BrandImage *w = decoded(&word, brand_word_png, brand_word_png_size);
     if (!s || !w)

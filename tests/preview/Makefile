@@ -24,13 +24,16 @@ $(OUT)/font_regular_ttf.c: ../../data/font_regular.ttf embed.py
 $(OUT)/font_bold_ttf.c: ../../data/font_bold.ttf embed.py
 	python3 embed.py $< $(OUT) font_bold_ttf
 
+$(OUT)/about_icon_png.c: ../../data/about_icon.png embed.py
+	python3 embed.py $< $(OUT) about_icon_png
+
 $(OUT)/brand_seal_png.c: ../../data/brand_seal.png embed.py
 	python3 embed.py $< $(OUT) brand_seal_png
 
 $(OUT)/brand_word_png.c: ../../data/brand_word.png embed.py
 	python3 embed.py $< $(OUT) brand_word_png
 
-BRAND   := $(OUT)/brand_seal_png.c $(OUT)/brand_word_png.c
+BRAND   := $(OUT)/about_icon_png.c $(OUT)/brand_seal_png.c $(OUT)/brand_word_png.c
 
 LANGS   := de es fr it ja ko pt zh
 LANG_C  := $(foreach l,$(LANGS),$(OUT)/lang_$(l)_txt.c)
