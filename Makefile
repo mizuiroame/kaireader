@@ -45,7 +45,7 @@ DATA		:=	data
 INCLUDES	:=	include third_party
 APP_TITLE	:=	KaiReader
 APP_AUTHOR	:=	Mizuiro
-APP_VERSION	:=	0.6.0
+APP_VERSION	:=	1.0.0
 #ROMFS	:=	romfs
 
 #---------------------------------------------------------------------------------

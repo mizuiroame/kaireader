@@ -33,9 +33,9 @@ comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
 
 The screenshots show made-up books.
 
-> **Version 0.6, a pre-release: still young.** In English, Spanish, French,
-> Italian, Portuguese, German, Japanese, Chinese and Korean; the translations
-> haven't been reviewed by native speakers yet, and corrections are welcome.
+> **Version 1.0.** In English, Spanish, French, Italian, Portuguese, German,
+> Japanese, Chinese and Korean; the translations haven't been reviewed by
+> native speakers yet, and corrections are welcome.
 
 > KaiReader is an independent project. It is not affiliated with, endorsed by
 > or sponsored by Nintendo or Amazon. See the [legal notice](docs/legal.md).
@@ -85,7 +85,14 @@ The screenshots show made-up books.
   (Settings > Display > Screen), or let it turn as you turn the console
   (Automatic). The right stick pressed in switches. The whole app turns, and
   the buttons and the touch screen with it.
-- Picks up **where you left off**, even after changing the text size.
+- Picks up **where you left off**, even after changing the text size, and
+  opens the book you were reading when KaiReader starts (Settings > Reading).
+- **Your colors and a picture**: an accent color, and a photo of yours behind
+  the library, as soft as you like (Settings > Display; JPEG or PNG files in
+  the `Backgrounds` folder of KaiReader's config folder).
+- **Updates**: once a day KaiReader looks on GitHub for a new version and says
+  so; from `sdmc:/switch` it installs it (Settings > About), from Brewstore,
+  Brewstore does.
 - **Contents**: the book's table of contents, to jump to a chapter; a slider
   to jump anywhere.
 - Japanese, Chinese and Korean books use the console's own fonts.
@@ -131,10 +138,11 @@ the card, but no app can list them. Copy your books with
 on the console and leaves your files on the PC as they are, or rename them
 first. KaiReader shows each book's real title, from inside the book.
 
-KaiReader keeps its files next to the NRO: `shelf.txt` and `shelf-network.txt`
+KaiReader keeps its files in its config folder, next to the NRO
+(`sdmc:/switch/kaireader/config/`): `shelf.txt` and `shelf-network.txt`
 (where you left each book, and your favorites), `settings.txt`,
 `bookmarks.txt`, `network.txt` and `server.txt` (the accounts), `shelf-server.txt`,
-`server-covers.txt` and `covers/`.
+`server-covers.txt`, `covers/`, and the `lang` and `Backgrounds` folders.
 Books opened from the network folder are copied to `sdmc:/books/.network/`, and
 from the book server to `sdmc:/books/.opds/`; free books go to `sdmc:/books/Free/`.
 
