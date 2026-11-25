@@ -998,3 +998,9 @@ Neueste von Ebooks libres et gratuits zeigen, auf Französisch
 
 Show your last search
 Deine letzte Suche zeigen
+
+The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
+Dem Zertifikat des Servers wird nicht vertraut. Hat der Server ein eigenes Zertifikat, schalte Zertifikatsprüfung aus.
+
+Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's sign-in still only goes to it.
+Nur für einen eigenen WebDAV-Ordner mit selbst erstelltem Zertifikat (https) ausschalten. Die Anmeldung geht weiterhin nur an ihn.

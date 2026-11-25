@@ -113,6 +113,15 @@ static DavProtocol protocolInUse(void)
     return p;
 }
 
+bool davAnyCertificate(void)
+{
+    DavAccount a;
+    davGetAccount(&a);
+    bool any = a.any_certificate && davProtocolOf(a.address) == DAV_WEBDAV;
+    memset(&a, 0, sizeof(a));
+    return any;
+}
+
 bool davReadsFiles(void)
 {
     DavProtocol p = protocolInUse();
@@ -244,7 +253,8 @@ bool davReadWhole(const char *location, size_t max_bytes, char **data, size_t *s
             return false;
         }
         NetClient *c = netClientOpen();
-        NetRequest request = {.url = url, .authorization = auth, .stall_s = LIST_STALL_S, .timeout_s = LIST_TIMEOUT_S};
+        NetRequest request = {.url = url, .authorization = auth, .stall_s = LIST_STALL_S, .timeout_s = LIST_TIMEOUT_S,
+                              .any_certificate = davAnyCertificate()};
         NetResponse r;
         bool ok = c && netFetchText(c, &request, max_bytes, &r);
         netClientClose(c);
@@ -284,7 +294,10 @@ static void explain(const NetResponse *r, char *why, size_t size)
     case NET_NO_CONNECT: text = T("Nothing answered at that address and port. Is the server on, and is the port right?"); break;
     case NET_TIMEOUT: text = T("The server didn't answer in time. Is the console on the same network as the server?"); break;
     case NET_SECURE: text = T("The secure connection failed. Does the server use https on that port?"); break;
-    case NET_CERTIFICATE: text = T("The server's certificate isn't trusted."); break;
+    case NET_CERTIFICATE:
+        text = T("The server's certificate isn't trusted. If the server has its own certificate, turn Certificate "
+                 "check off.");
+        break;
     case NET_STATUS:
         if (r->status == HTTP_UNAUTHORIZED) {
             text = T("Wrong user name or password.");
@@ -328,7 +341,8 @@ static bool askFolder(const char *location, bool webdav, NetResponse *response, 
         strcat(url, "/");  // A folder: some servers redirect without the '/', losing the method.
     NetClient *c = netClientOpen();
     NetRequest request = {.url = url, .authorization = auth, .custom_method = webdav ? "PROPFIND" : NULL,
-                          .depth = webdav ? "1" : NULL, .stall_s = LIST_STALL_S, .timeout_s = LIST_TIMEOUT_S};
+                          .depth = webdav ? "1" : NULL, .stall_s = LIST_STALL_S, .timeout_s = LIST_TIMEOUT_S,
+                          .any_certificate = davAnyCertificate()};
     ok = c && netFetchText(c, &request, LISTING_MAX_BYTES, response);
     netClientClose(c);
     memset(auth, 0, sizeof(auth));

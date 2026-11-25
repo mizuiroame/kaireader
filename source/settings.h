@@ -57,6 +57,7 @@ typedef enum {
     SETTING_BLUR,          // How soft that image is.
     SETTING_NET_COLOR,     // The color the network folder wears: its own, or an accent.
     SETTING_SRV_COLOR,     // The book server's.
+    SETTING_NET_CERTIFICATE,  // The network folder's https certificate checked, or any taken (its own).
     SETTING_COUNT,
 } SettingRow;
 
@@ -99,7 +100,8 @@ void settingsSetLanguageName(const char *name);
 bool settingsPickedValue(SettingRow row);
 // What the network folder's rows show: its address as shown, the user, the two switches,
 // and whether it's a shared folder (SMB: signing applies).
-void settingsSetNetwork(const char *address, const char *user, bool remember, bool allow_unsigned, bool smb);
+void settingsSetNetwork(const char *address, const char *user, bool remember, bool allow_unsigned, bool smb,
+                        bool check_certificate);
 // Steps a row's value back (-1) or forward (+1), around at the ends; an
 // action row (Look for books again) is done with dir 0. What changed.
 int settingsStep(Prefs *p, SettingRow row, int dir);

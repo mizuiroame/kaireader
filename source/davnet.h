@@ -20,6 +20,8 @@ bool davSaveAccount(const char *path);
 // True when the folder's books are read by their own protocol (SMB, FTP or
 // SFTP: davFileOpen), not by HTTP ranges (davStreamRequest).
 bool davReadsFiles(void);
+// True when the folder's https certificate isn't to be checked (its Certificate check off).
+bool davAnyCertificate(void);
 // True when the folder has a user whose password isn't remembered and hasn't been
 // typed since KaiReader started: listing and reading fail at once, without the server.
 bool davPasswordMissing(void);

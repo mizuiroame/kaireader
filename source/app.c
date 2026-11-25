@@ -1243,7 +1243,7 @@ static void settingsPick(App *app, int index, int dir, uint64_t now_ns)
         return;
     }
     if (settingsIsNetwork(row)) {  // The account's rows: the keyboard, or a switch saved with the account.
-        bool toggle = row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED;
+        bool toggle = row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED || row == SETTING_NET_CERTIFICATE;
         if (!dir || toggle)
             appNetworkActivate(app, row, now_ns);
         return;

@@ -997,3 +997,9 @@ Ebooks libres et gratuits 새 책 보기(프랑스어)
 
 Show your last search
 마지막 검색 보기
+
+The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
+서버의 인증서를 신뢰할 수 없습니다. 서버가 자체 인증서를 쓴다면 인증서 확인을 끄세요.
+
+Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's sign-in still only goes to it.
+자체 인증서(https)를 쓰는 내 WebDAV 폴더일 때만 끄세요. 로그인 정보는 여전히 그 폴더로만 가요.

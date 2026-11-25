@@ -83,8 +83,13 @@ void testSettings(void)
         CHECK(v.sort == SHELF_SORT_RECENT);
     }
     // The network folder's page: its rows are the app's, the address shown as set.
-    CHECK(settingsRows(SETTINGS_PAGE_NETWORK, rows) == 7 && rows[0] == SETTING_NET_ADDRESS && rows[4] == SETTING_NET_COLOR &&
-          rows[6] == SETTING_NET_FORGET);
+    // Address, sign-in, Remember, signing, Certificate check, its color, test, forget.
+    CHECK(settingsRows(SETTINGS_PAGE_NETWORK, rows) == 8 && rows[0] == SETTING_NET_ADDRESS && rows[1] == SETTING_NET_ACCOUNT &&
+          rows[2] == SETTING_NET_REMEMBER && rows[3] == SETTING_NET_UNSIGNED && rows[4] == SETTING_NET_CERTIFICATE &&
+          rows[5] == SETTING_NET_COLOR && rows[6] == SETTING_NET_TEST && rows[7] == SETTING_NET_FORGET);
+    CHECK(settingsIsNetwork(SETTING_NET_CERTIFICATE) && settingsHasValue(SETTING_NET_CERTIFICATE) &&
+          !settingsIsServer(SETTING_NET_CERTIFICATE));
+    CHECK(!strcmp(settingsLabel(SETTING_NET_CERTIFICATE), settingsLabel(SETTING_SRV_CERTIFICATE)));
     CHECK(settingsIsNetwork(SETTING_NET_TEST) && !settingsIsNetwork(SETTING_OPEN_NETWORK) && !settingsIsNetwork(SETTING_CLOCK));
     CHECK(settingsPickedValue(SETTING_NET_ADDRESS) && !settingsPickedValue(SETTING_NET_REMEMBER));
     {
@@ -92,17 +97,22 @@ void testSettings(void)
         bool named;
         Prefs none;
         prefsDefaults(&none);
-        settingsSetNetwork("", "", true, false, false);
+        settingsSetNetwork("", "", true, false, false, true);
         settingsValue(&none, SETTING_NET_ADDRESS, v, sizeof(v), &named);
         CHECK(named && strcmp(v, "Not set") == 0);
-        settingsSetNetwork("smb://NAS/Books", "reader", false, true, true);
+        settingsValue(&none, SETTING_NET_CERTIFICATE, v, sizeof(v), &named);
+        CHECK(named && strcmp(v, "On") == 0);  // Checked unless turned off.
+        settingsSetNetwork("https://nas/dav/", "reader", true, false, false, false);
+        settingsValue(&none, SETTING_NET_CERTIFICATE, v, sizeof(v), &named);
+        CHECK(named && strcmp(v, "Off: any certificate") == 0);
+        settingsSetNetwork("smb://NAS/Books", "reader", false, true, true, true);
         settingsValue(&none, SETTING_NET_ADDRESS, v, sizeof(v), &named);
         CHECK(!named && strcmp(v, "smb://NAS/Books") == 0);
         settingsValue(&none, SETTING_NET_REMEMBER, v, sizeof(v), &named);
         CHECK(named && strncmp(v, "Off", 3) == 0);
         settingsValue(&none, SETTING_NET_UNSIGNED, v, sizeof(v), &named);
         CHECK(strcmp(v, "On: not signed") == 0);
-        settingsSetNetwork("", "", true, false, false);
+        settingsSetNetwork("", "", true, false, false, true);
     }
     CHECK(settingsRows(SETTINGS_PAGE_ABOUT, rows) == 3 && settingsOpens(rows[0]) == SETTINGS_PAGE_CREDITS);
     CHECK(rows[1] == SETTING_UPDATE_AUTO && settingsPickedValue(rows[2]) && settingsRows(SETTINGS_PAGE_CREDITS, rows) == 0);

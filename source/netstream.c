@@ -31,6 +31,7 @@ typedef struct {
     DavFile *file;  // SMB, FTP or SFTP; NULL for HTTP.
     NetClient *client;
     char url[URL_MAX], auth[AUTH_MAX];
+    bool any_certificate;  // HTTPS with the folder's Certificate check off.
     int64_t size;  // -1 until an HTTP answer says it.
     int64_t pos;   // Where the next read starts.
     unsigned tick;
@@ -62,7 +63,7 @@ static int64_t readAt(NetStream *s, int64_t start, uint8_t *to, size_t want)
     long long total = -1;
     RangeSink sink = {to, want, 0};
     NetRequest r = {.url = s->url, .authorization = s->auth, .range = range, .total_size = &total,
-                    .stall_s = RANGE_STALL_S};
+                    .stall_s = RANGE_STALL_S, .any_certificate = s->any_certificate};
     long status = 0;
     char why[NET_ERROR_MAX];
     bool ok = netFetch(s->client, &r, intoBlock, &sink, &status, why, sizeof(why));
@@ -172,6 +173,7 @@ static fz_stream *netStreamOpen(fz_context *ctx, const char *location)
         if (ok)
             s->size = davFileSize(s->file);
     } else {
+        s->any_certificate = davAnyCertificate();
         ok = davStreamRequest(location, s->url, sizeof(s->url), s->auth, sizeof(s->auth)) &&
              (s->client = netClientOpen()) != NULL && blockAt(s, 0) != NULL;  // Its first block: and its size.
         if (!ok && !why[0])

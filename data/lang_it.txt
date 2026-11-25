@@ -998,3 +998,9 @@ Mostra le novità di Ebooks libres et gratuits, in francese
 
 Show your last search
 Mostra la tua ultima ricerca
+
+The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
+Il certificato del server non è attendibile. Se il server ha un certificato proprio, disattiva Verifica certificato.
+
+Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's sign-in still only goes to it.
+Disattivalo solo per una tua cartella WebDAV con un certificato creato da sé (https). L'accesso della cartella va comunque solo a lei.

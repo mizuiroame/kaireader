@@ -53,6 +53,7 @@ static const char *const LABELS[SETTING_COUNT] = {
     N_("Background blur"),
     N_("Color"),
     N_("Color"),
+    N_("Certificate check"),
 };
 
 static const char *const HELP[SETTING_COUNT] = {
@@ -91,6 +92,8 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("How soft the background image is."),
     N_("The network folder's dot and its library's color: its own (turquoise) or one of the accents."),
     N_("The book server's dot and its library's color: its own (blue) or one of the accents."),
+    N_("Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's "
+       "sign-in still only goes to it."),
 };
 
 static char g_language_name[64] = "English";
@@ -114,20 +117,22 @@ bool settingsIsServer(SettingRow row)
 }
 
 static char g_net_address[256], g_net_user[128];
-static bool g_net_remember = true, g_net_unsigned, g_net_smb;
+static bool g_net_remember = true, g_net_unsigned, g_net_smb, g_net_check_certificate = true;
 
-void settingsSetNetwork(const char *address, const char *user, bool remember, bool allow_unsigned, bool smb)
+void settingsSetNetwork(const char *address, const char *user, bool remember, bool allow_unsigned, bool smb,
+                        bool check_certificate)
 {
     snprintf(g_net_address, sizeof(g_net_address), "%s", address);
     snprintf(g_net_user, sizeof(g_net_user), "%s", user);
     g_net_remember = remember;
     g_net_unsigned = allow_unsigned;
     g_net_smb = smb;
+    g_net_check_certificate = check_certificate;
 }
 
 bool settingsIsNetwork(SettingRow row)
 {
-    return row >= SETTING_NET_ADDRESS && row <= SETTING_NET_FORGET;
+    return (row >= SETTING_NET_ADDRESS && row <= SETTING_NET_FORGET) || row == SETTING_NET_CERTIFICATE;
 }
 
 bool settingsPickedValue(SettingRow row)
@@ -172,6 +177,7 @@ int settingsRows(SettingsPage page, SettingRow *out)
         out[n++] = SETTING_NET_ACCOUNT;
         out[n++] = SETTING_NET_REMEMBER;
         out[n++] = SETTING_NET_UNSIGNED;
+        out[n++] = SETTING_NET_CERTIFICATE;
         out[n++] = SETTING_NET_COLOR;
         out[n++] = SETTING_NET_TEST;
         out[n++] = SETTING_NET_FORGET;
@@ -238,6 +244,7 @@ bool settingsHasValue(SettingRow row)
            row == SETTING_VIEW || row == SETTING_LANGUAGE || row == SETTING_RESUME || row == SETTING_SRV_CERTIFICATE || row == SETTING_UPDATE_AUTO || row == SETTING_ACCENT ||
            row == SETTING_BACKGROUND || row == SETTING_BLUR || row == SETTING_NET_COLOR || row == SETTING_SRV_COLOR ||
            row == SETTING_SCREEN || row == SETTING_CLOCK || row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED ||
+           row == SETTING_NET_CERTIFICATE ||
            settingsPickedValue(row);
 }
 
@@ -318,6 +325,9 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
         break;
     case SETTING_NET_REMEMBER:
         snprintf(out, size, "%s", g_net_remember ? N_("On") : N_("Off: asked when the folder is used"));
+        break;
+    case SETTING_NET_CERTIFICATE:
+        snprintf(out, size, "%s", g_net_check_certificate ? N_("On") : N_("Off: any certificate"));
         break;
     case SETTING_NET_UNSIGNED:
         snprintf(out, size, "%s", !g_net_smb ? N_("Only for shared folders (SMB)") : g_net_unsigned ? N_("On: not signed") : N_("Off"));

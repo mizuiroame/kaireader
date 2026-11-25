@@ -234,6 +234,14 @@ static void testAccountChoices(void)
     CHECK(davAccountRead(&b, "address=http://pc/\nuser=u\npassword=b64:cA==\nforget_password=1\n"));
     CHECK_STR(b.password, "");
 
+    // Certificate check off: kept with the account, and only when off.
+    DavAccount own = {.address = "https://nas/dav/", .user = "kai", .any_certificate = true};
+    CHECK(davAccountWrite(&own, text, sizeof(text)) && strstr(text, "any_certificate=1\n"));
+    CHECK(!davAccountRead(&b, text) && b.any_certificate && !b.allow_unsigned);
+    own.any_certificate = false;
+    CHECK(davAccountWrite(&own, text, sizeof(text)) && !strstr(text, "any_certificate"));
+    CHECK(!davAccountRead(&b, text) && !b.any_certificate);
+
     DavAccount web = {.address = "http://pc/", .user = "kai"};
     CHECK(davSetPassword(&web, "as typed") && strcmp(web.password, "as typed") == 0);  // Basic needs it.
     CHECK(!davSetPassword(&a, "bad \xC3"));

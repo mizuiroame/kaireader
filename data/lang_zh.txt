@@ -997,3 +997,9 @@ Show Ebooks libres et gratuits' newest, in French
 
 Show your last search
 显示上次搜索
+
+The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
+服务器证书不受信任。如果服务器使用自签名证书，请关闭“证书验证”。
+
+Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's sign-in still only goes to it.
+仅对使用自签名证书（https）的自有 WebDAV 文件夹关闭。登录信息仍只发送给该文件夹。

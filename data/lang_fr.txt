@@ -998,3 +998,9 @@ Afficher les nouveautés d'Ebooks libres et gratuits, en français
 
 Show your last search
 Afficher votre dernière recherche
+
+The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
+Le certificat du serveur n'est pas reconnu. Si le serveur a son propre certificat, désactivez Vérif. certificat.
+
+Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's sign-in still only goes to it.
+À désactiver seulement pour votre propre dossier WebDAV avec un certificat qu'il a créé (https). Ses identifiants ne vont toujours qu'à lui.

@@ -163,9 +163,9 @@ void appNetworkUpdate(App *app, uint64_t now_ns)
 void appNetworkFeedSettings(void)
 {
     if (g_preview_net_configured)
-        settingsSetNetwork("\\\\NAS\\Books", "reader", true, false, true);
+        settingsSetNetwork("\\\\NAS\\Books", "reader", true, false, true, true);
     else
-        settingsSetNetwork("", "", true, false, false);
+        settingsSetNetwork("", "", true, false, false, true);
 }
 
 bool appNetworkEnsurePassword(App *app, uint64_t now_ns)

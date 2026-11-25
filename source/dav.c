@@ -479,6 +479,8 @@ bool davAccountRead(DavAccount *a, const char *text)
                 a->forget_password = value == 1 && eq[1] == '1';
             else if (isKey(line, key, "allow_unsigned"))
                 a->allow_unsigned = value == 1 && eq[1] == '1';
+            else if (isKey(line, key, "any_certificate"))
+                a->any_certificate = value == 1 && eq[1] == '1';
             else if (isKey(line, key, "host_key"))
                 readValue(a->host_key, sizeof(a->host_key), eq + 1, value);
         }
@@ -514,9 +516,10 @@ bool davAccountWrite(const DavAccount *a, char *out, size_t size)
         return false;
     else
         memcpy(kept, ENCODED_PREFIX, sizeof(ENCODED_PREFIX) - 1);
-    int n = snprintf(out, size, "address=%s\nuser=%s\npassword=%s\n%s%s%s%s%s", a->address, a->user, kept,
+    int n = snprintf(out, size, "address=%s\nuser=%s\npassword=%s\n%s%s%s%s%s%s", a->address, a->user, kept,
                      a->forget_password ? "forget_password=1\n" : "", a->allow_unsigned ? "allow_unsigned=1\n" : "",
-                     a->host_key[0] ? "host_key=" : "", a->host_key, a->host_key[0] ? "\n" : "");
+                     a->any_certificate ? "any_certificate=1\n" : "", a->host_key[0] ? "host_key=" : "",
+                     a->host_key, a->host_key[0] ? "\n" : "");
     memset(kept, 0, sizeof(kept));
     return n > 0 && (size_t)n < size;
 }

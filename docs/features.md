@@ -55,6 +55,10 @@ server (the ones set up), and Free books. Each wears its color in the
   way: KaiReader looks through the folder and its folders, and reads each
   book's cover and title over the network (only the few parts it needs). A book
   you open is copied to the card first, so it opens at once the next time.
+  The folder's page in Settings: Address, User and password, Remember the
+  password, Allow without signing (old NAS, SMB only), Certificate check
+  (https WebDAV with its own certificate: off), Color, Test the connection and
+  Forget this folder.
 - **Your book server**: Calibre-Web, Kavita, Komga or another OPDS catalog
   (Settings > Book server: its address, and your user and password). Its books
   show as the card's, with the server's own covers; one you open is downloaded

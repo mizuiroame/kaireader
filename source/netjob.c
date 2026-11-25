@@ -527,7 +527,7 @@ static bool copyByHttp(const char *location, FILE *out, char *why, size_t why_si
         snprintf(why, why_size, "%s", T("Set up the network folder in Settings first."));
         return false;
     }
-    return copyByUrl(url, auth, out, why, why_size, false);
+    return copyByUrl(url, auth, out, why, why_size, davAnyCertificate());
 }
 
 // A book server's book: its link, with the server's sign-in.

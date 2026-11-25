@@ -51,10 +51,14 @@ folder and on the book server.
 - **Only http and https** for web requests (no `file:` or other schemes, even
   through a redirect), and an `https://` address can't be redirected to plain
   `http://`. FTP uses only `ftp://` and `ftps://`.
-- **Certificates are checked** (https, and FTP over TLS), except for your book
-  server's own address when you turn its **Certificate check** off (for a
-  server with a certificate it made itself); the free catalogs and GitHub are
-  always checked.
+- **Certificates are checked** (https, and FTP over TLS), except where you turn
+  **Certificate check** off, for a server with a certificate it made itself:
+  the book server's own address (Settings > Book server), or a WebDAV network
+  folder over https (Settings > Network folder). Each switch covers only its
+  own server; the free catalogs and GitHub are always checked. With it off,
+  anyone who can get between the console and that server could pretend to be
+  it and receive the password, so use it only on your own network. A new
+  address turns the network folder's check back on.
 - **Shared folders are signed.** SMB connections require signing, so nobody on
   the network can change what's read; **Allow without signing** turns that off
   for an old NAS.

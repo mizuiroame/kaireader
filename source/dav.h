@@ -41,6 +41,7 @@ typedef struct {
     char password[DAV_TEXT_MAX];
     bool forget_password;           // Not kept on the card: only until KaiReader closes.
     bool allow_unsigned;            // SMB: a server that doesn't sign is used too (an old NAS, guests).
+    bool any_certificate;           // https (WebDAV): its own certificate is taken too (Certificate check off).
     // SFTP: the server's key's fingerprint, kept the first time it's met; another key later is refused.
     char host_key[DAV_HOST_KEY_MAX];
 } DavAccount;

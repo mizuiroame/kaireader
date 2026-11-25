@@ -55,7 +55,8 @@ void appNetworkFeedSettings(void)
     DavAccount a;
     davGetAccount(&a);
     davShownAddress(a.address, shown, sizeof(shown));
-    settingsSetNetwork(shown, a.user, !a.forget_password, a.allow_unsigned, davIsSmbAddress(a.address));
+    settingsSetNetwork(shown, a.user, !a.forget_password, a.allow_unsigned, davIsSmbAddress(a.address),
+                       !a.any_certificate);
     memset(&a, 0, sizeof(a));
 }
 
@@ -133,7 +134,8 @@ static void typeAddress(App *app, uint64_t now)
         if (!davSameServer(address, a.address)) {  // Another server: the old one's password isn't sent there.
             a.user[0] = '\0';
             memset(a.password, 0, sizeof(a.password));
-            a.host_key[0] = 0;  // And an SFTP server's key is met anew.
+            a.host_key[0] = 0;  // And an SFTP server's key is met anew,
+            a.any_certificate = false;  // and a certificate checked again.
         }
         memcpy(a.address, address, sizeof(a.address));
         save(app, &a, now);
@@ -225,6 +227,16 @@ static void toggleRemember(App *app, uint64_t now)
     memset(&a, 0, sizeof(a));
 }
 
+// Only an https folder's connections use it; the book server and the free catalogs have their own.
+static void toggleCertificate(App *app, uint64_t now)
+{
+    DavAccount a;
+    davGetAccount(&a);
+    a.any_certificate = !a.any_certificate;
+    save(app, &a, now);
+    memset(&a, 0, sizeof(a));
+}
+
 static void toggleUnsigned(App *app, uint64_t now)
 {
     DavAccount a;
@@ -293,6 +305,7 @@ bool appNetworkActivate(App *app, SettingRow row, uint64_t now)
     case SETTING_NET_FORGET: forget(app, now); return true;
     case SETTING_NET_REMEMBER: toggleRemember(app, now); return true;
     case SETTING_NET_UNSIGNED: toggleUnsigned(app, now); return true;
+    case SETTING_NET_CERTIFICATE: toggleCertificate(app, now); return true;
     default: return false;
     }
 }
