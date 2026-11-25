@@ -171,6 +171,19 @@ static void settingsShots(App *app, const char *dir, const char *prefix)
     app->panel = PANEL_NONE;
 }
 
+// Where row is on page (its cursor), so a shot stays right when a page's rows move; 0 if it isn't there.
+static int rowAt(SettingsPage page, SettingRow row)
+{
+    SettingRow rows[SETTING_COUNT];
+    int n = settingsRows(page, rows);
+    for (int i = 0; i < n; i++)
+        if (rows[i] == row)
+            return i;
+    printf("PREVIEW: setting %d isn't on page %d\n", (int)row, (int)page);
+    g_problems++;
+    return 0;
+}
+
 extern bool g_preview_net_configured;
 extern bool g_preview_free_down;
 extern bool g_preview_server_configured;
@@ -393,7 +406,7 @@ int main(int argc, char **argv)
     // Two pages side by side, as Settings > Reading > Pages does it.
     app.panel = PANEL_SETTINGS;
     app.settings_page = SETTINGS_PAGE_READING;
-    app.settings_cursor = 2;
+    app.settings_cursor = rowAt(SETTINGS_PAGE_READING, SETTING_PAGES);
     appHandleButtons(&app, HidNpadButton_A, 12);
     app.panel = PANEL_NONE;
     settle(&app);
@@ -464,8 +477,12 @@ int main(int argc, char **argv)
     // Upright: as Settings > Display > Screen does it.
     app.panel = PANEL_SETTINGS;
     app.settings_page = SETTINGS_PAGE_DISPLAY;
-    app.settings_cursor = 0;
+    app.settings_cursor = rowAt(SETTINGS_PAGE_DISPLAY, SETTING_SCREEN);
     appHandleButtons(&app, HidNpadButton_A, 9);  // Screen: Upright, right side down.
+    if (app.prefs.turn == GFX_TURN_NONE) {
+        printf("PREVIEW: the screen didn't turn upright\n");
+        g_problems++;
+    }
     app.panel = PANEL_NONE;
     settle(&app);
     render(&app, dir, "upright-library");
