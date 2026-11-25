@@ -33,7 +33,7 @@ comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
 
 The screenshots show made-up books.
 
-> **Version 1.0.** In English, Spanish, French, Italian, Portuguese, German,
+> **Version 1.1.** In English, Spanish, French, Italian, Portuguese, German,
 > Japanese, Chinese and Korean; the translations haven't been reviewed by
 > native speakers yet, and corrections are welcome.
 
