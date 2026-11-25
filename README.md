@@ -33,8 +33,9 @@ comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
 
 The screenshots show made-up books.
 
-> **Version 0.5, a pre-release: still young.** Only in English for now; the
-> other languages come next.
+> **Version 0.6, a pre-release: still young.** In English, Spanish, French,
+> Italian, Portuguese, German, Japanese, Chinese and Korean; the translations
+> haven't been reviewed by native speakers yet, and corrections are welcome.
 
 > KaiReader is an independent project. It is not affiliated with, endorsed by
 > or sponsored by Nintendo or Amazon. See the [legal notice](docs/legal.md).
@@ -66,6 +67,10 @@ The screenshots show made-up books.
   stays in your library.
 - **X** goes round your libraries: the SD card, the network folder and the
   book server (the ones set up), and Free books.
+- **In nine languages** (Settings > Display > Language), with more as files in
+  the `lang` folder.
+- **A welcome** the first time, when there are no books yet: where yours are,
+  or straight to Free books.
 - **Favorites**: hold your finger on a cover, or choose "Add to favorites" in
   the + menu; Favorites is one of the sorts (Y).
 - **A grid or a list**: covers, or a list with more of each book (the + menu,
