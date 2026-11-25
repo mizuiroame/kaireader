@@ -936,8 +936,8 @@ Livros: MuPDF (Artifex Software, AGPL 3.0), com FreeType, HarfBuzz, libjpeg, Ope
 Highlights, buttons and the selected book.
 Destaques, botões e o livro selecionado.
 
-JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader), behind the library.
-Imagens JPEG ou PNG na pasta Backgrounds da pasta do KaiReader (sdmc:/switch/kaireader), atrás da biblioteca.
+JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader/config), behind the library.
+Imagens JPEG ou PNG na pasta Backgrounds da pasta do KaiReader (sdmc:/switch/kaireader/config), atrás da biblioteca.
 
 Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore updates it.
 Procura agora. Em sdmc:/switch, A instala o que encontrou; pelo Brewstore, o Brewstore atualiza.

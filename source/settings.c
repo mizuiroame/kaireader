@@ -85,7 +85,7 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("Looks on GitHub for a new KaiReader once a day, when it opens, and says so."),
     N_("Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore updates it."),
     N_("Highlights, buttons and the selected book."),
-    N_("JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader), behind the library."),
+    N_("JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader/config), behind the library."),
     N_("How soft the background image is."),
 };
 

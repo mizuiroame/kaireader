@@ -935,8 +935,8 @@ Books: MuPDF (Artifex Software, AGPL 3.0), with FreeType, HarfBuzz, libjpeg, Ope
 Highlights, buttons and the selected book.
 ハイライト、ボタン、選択中の本。
 
-JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader), behind the library.
-KaiReader のフォルダー（sdmc:/switch/kaireader）内の Backgrounds フォルダーの JPEG・PNG 画像を、ライブラリーの背景にします。
+JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader/config), behind the library.
+KaiReader のフォルダー（sdmc:/switch/kaireader/config）内の Backgrounds フォルダーの JPEG・PNG 画像を、ライブラリーの背景にします。
 
 Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore updates it.
 今すぐ探します。sdmc:/switch にあれば A で見つけたものをインストール、Brewstore からなら Brewstore が更新します。
