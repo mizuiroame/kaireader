@@ -1,0 +1,35 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # tests/Dockerfile.host: Debian 12's gcc, libarchive, jansson and MuPDF built from its checked release (the slow part, cached by its version).
+      # The image's layers are kept in the Actions cache, so it is only
+      # rebuilt when the Dockerfile changes.
+      - name: Build the test image
+        uses: docker/build-push-action@v6
+        with:
+          context: tests
+          file: tests/Dockerfile.host
+          tags: kaireader-host
+          load: true
+          cache-from: type=gha,scope=kaireader-host
+          cache-to: type=gha,mode=max,scope=kaireader-host
+
+      # ASan/UBSan with ASLR off (setarch -R in tests/Makefile), which needs
+      # seccomp=unconfined in Docker.
+      - name: Run the tests
+        run: docker run --rm --security-opt seccomp=unconfined -v "$PWD:/w" -w /w/tests kaireader-host make coverage
