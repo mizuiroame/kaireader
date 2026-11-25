@@ -74,6 +74,10 @@ void netResponseFree(NetResponse *r);
 uint64_t netBytesReceived(void);
 // Off: https servers' certificates aren't checked (a server with its own). On at start.
 void netSetCheckCertificates(bool check);
+// Root certificates (a PEM file) trusted for the hosts ending in host_suffix
+// ("gutenberg.org": it and its subdomains), for roots the console's own list
+// lacks. Only for those hosts: the others keep the console's list.
+void netAddRoots(const char *host_suffix, const char *pem_file);
 // Whether https (and FTPS) servers' certificates are checked now.
 bool netChecksCertificates(void);
 // True for hosts whose certificate is checked even when the setting is off: plex.tv and

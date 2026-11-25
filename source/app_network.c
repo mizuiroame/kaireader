@@ -12,6 +12,7 @@
 #include "netjob.h"
 #include "netstream.h"
 #include "opdsnet.h"
+#include "roots_sslcom_pem.h"
 #include "smbnet.h"
 
 #define TEST_TEXT_MAX 256
@@ -58,8 +59,33 @@ void appNetworkFeedSettings(void)
     memset(&a, 0, sizeof(a));
 }
 
+// Project Gutenberg's certificate comes from SSL.com, whose roots the console's list lacks: those
+// two roots (from Mozilla's list, as curl publishes it) written next to KaiReader's files, for it only.
+static void addRoots(const App *app)
+{
+    char path[APP_FOLDER_MAX + 32];
+    snprintf(path, sizeof(path), "%s/roots-sslcom.pem", app->folder);
+    FILE *f = fopen(path, "rb");
+    long have = -1;
+    if (f) {
+        fseek(f, 0, SEEK_END);
+        have = ftell(f);
+        fclose(f);
+    }
+    if (have != (long)roots_sslcom_pem_size) {  // Missing, or of another version: written anew.
+        f = fopen(path, "wb");
+        if (!f)
+            return;
+        bool ok = fwrite(roots_sslcom_pem, 1, roots_sslcom_pem_size, f) == roots_sslcom_pem_size;
+        if (fclose(f) != 0 || !ok)
+            return;
+    }
+    netAddRoots("gutenberg.org", path);
+}
+
 void appNetworkStart(App *app)
 {
+    addRoots(app);
     char path[APP_FOLDER_MAX + 32];
     accountPath(app, path, sizeof(path));
     davLoadAccount(path);

@@ -154,6 +154,38 @@ static struct curl_slist *buildHeaders(const NetRequest *r)
 
 static bool g_check_certificates = true;
 
+#define ROOTS_MAX 4
+static struct {
+    char suffix[64];
+    char file[512];
+} g_roots[ROOTS_MAX];
+static int g_root_count;  // Set at start, before any request.
+
+void netAddRoots(const char *host_suffix, const char *pem_file)
+{
+    if (g_root_count == ROOTS_MAX)
+        return;
+    snprintf(g_roots[g_root_count].suffix, sizeof(g_roots[0].suffix), "%s", host_suffix);
+    snprintf(g_roots[g_root_count].file, sizeof(g_roots[0].file), "%s", pem_file);
+    g_root_count++;
+}
+
+// The roots file for url's host, or NULL for the console's own list.
+static const char *rootsFor(const char *url)
+{
+    const char *host = strstr(url, "://");
+    if (!host)
+        return NULL;
+    host += 3;
+    size_t len = strcspn(host, ":/?#");
+    for (int i = 0; i < g_root_count; i++) {
+        size_t n = strlen(g_roots[i].suffix);
+        if (len >= n && !strncasecmp(host + len - n, g_roots[i].suffix, n) && (len == n || host[len - n - 1] == '.'))
+            return g_roots[i].file;
+    }
+    return NULL;
+}
+
 void netSetCheckCertificates(bool check)
 {
     __atomic_store_n(&g_check_certificates, check, __ATOMIC_RELAXED);
@@ -214,6 +246,9 @@ static void setOptions(CURL *curl, const NetRequest *r, struct curl_slist *heade
     } else {
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
+        const char *roots = rootsFor(r->url);
+        if (roots)
+            curl_easy_setopt(curl, CURLOPT_CAINFO, roots);
     }
     curl_easy_setopt(curl, CURLOPT_URL, r->url);
     limitProtocols(curl, r->url);
