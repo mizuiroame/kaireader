@@ -771,8 +771,8 @@ Luego
 On the SD card
 En la tarjeta SD
 
-Public-domain classics: Project Gutenberg, Standard Ebooks.
-Clásicos de dominio público: Project Gutenberg, Standard Ebooks.
+Public-domain classics, in English, Spanish and French.
+Clásicos de dominio público, en inglés, español y francés.
 
 Start with an empty library; it's all in + > Settings.
 Empieza con la biblioteca vacía; todo está en + > Configuración.
@@ -942,11 +942,11 @@ Busca ahora. En sdmc:/switch, A instala lo que encontró; desde Brewstore, lo ac
 Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
 Busca en GitHub una nueva versión de KaiReader una vez al día, al abrirse, y avisa.
 
-Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg and Standard Ebooks.
-Red: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) y los certificados raíz de Mozilla (MPL 2.0). Actualizaciones: Jansson (MIT). Libros gratis: Project Gutenberg y Standard Ebooks.
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits.
+Red: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) y los certificados raíz de Mozilla (MPL 2.0). Actualizaciones: Jansson (MIT). Libros gratis: Project Gutenberg, Standard Ebooks, textos.info y Ebooks libres et gratuits.
 
-Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened.
-Sin relación con Nintendo, Amazon, Project Gutenberg ni Standard Ebooks. Los libros con DRM no se pueden abrir.
+Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened.
+Sin relación con Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info ni Ebooks libres et gratuits. Los libros con DRM no se pueden abrir.
 
 Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
 Desactívalo solo para un servidor tuyo con un certificado propio (https). El inicio de sesión del servidor sigue yendo solo a él.
@@ -989,3 +989,12 @@ El punto de la carpeta de red y el color de su biblioteca: el suyo (turquesa) o 
 
 Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
 Código abierto (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+
+Show textos.info's most popular, in Spanish
+Ver lo más popular de textos.info, en español
+
+Show Ebooks libres et gratuits' newest, in French
+Ver lo más nuevo de Ebooks libres et gratuits, en francés
+
+Show your last search
+Ver tu última búsqueda

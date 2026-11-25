@@ -1,6 +1,7 @@
 // Free books: public-domain catalogs (catalogs.h) browsed as a library, after
 // the card's, the network folder's and the server's (X). L and R change the
-// list (Project Gutenberg's most popular, Standard Ebooks' newest, a search),
+// list (Project Gutenberg's most popular, Standard Ebooks' newest, textos.info's
+// most popular in Spanish, Ebooks libres et gratuits' newest in French, a search),
 // Y searches Project Gutenberg, and the next page comes as the end nears. A
 // book chosen is downloaded to the card's books folder (sdmc:/books/Free/,
 // "Title - Author.epub"), then opened there: it's one of the card's books from
@@ -44,10 +45,21 @@ void appFreeShow(App *app, int list, uint64_t now_ns)
     ask(app, url, false);
 }
 
+// The list dir steps from the one shown: round them all, the search once there's been one.
+static int stepped(const App *app, int dir)
+{
+    int count = app->free_query[0] ? CATALOG_COUNT : CATALOG_SEARCH;
+    return ((app->free_list + dir) % count + count) % count;
+}
+
 void appFreeStepList(App *app, int dir, uint64_t now_ns)
 {
-    int count = app->free_query[0] ? CATALOG_COUNT : CATALOG_SEARCH;  // The search once there's been one.
-    appFreeShow(app, ((app->free_list + dir) % count + count) % count, now_ns);
+    appFreeShow(app, stepped(app, dir), now_ns);
+}
+
+const char *appFreeNextListLine(const App *app)
+{
+    return T(catalogShowLine((CatalogList)stepped(app, 1)));
 }
 
 void appFreeSearch(App *app, uint64_t now_ns)

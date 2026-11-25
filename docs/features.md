@@ -60,8 +60,10 @@ server (the ones set up), and Free books. Each wears its color in the
   show as the card's, with the server's own covers; one you open is downloaded
   first.
 - **Free books**: public-domain books, free to read: Project Gutenberg's most
-  popular and its search (**Y**), and Standard Ebooks' newest (**L**/**R**
-  change the list). A book you choose is downloaded to `sdmc:/books/Free/` and
+  popular and its search (**Y**), Standard Ebooks' newest, textos.info's most
+  popular (in Spanish) and Ebooks libres et gratuits' newest (in French);
+  **L**/**R** change the list. The French catalog's feed has no covers: its
+  books show their titles until you download them. A book you choose is downloaded to `sdmc:/books/Free/` and
   stays in your library. When a catalog is down for maintenance (Project
   Gutenberg was for days in November 2026), KaiReader says so, with **Try
   again**; **L**/**R** still reach the other lists.

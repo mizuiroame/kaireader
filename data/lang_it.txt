@@ -771,8 +771,8 @@ Più tardi
 On the SD card
 Sulla scheda SD
 
-Public-domain classics: Project Gutenberg, Standard Ebooks.
-Classici di pubblico dominio: Project Gutenberg, Standard Ebooks.
+Public-domain classics, in English, Spanish and French.
+Classici di pubblico dominio, in inglese, spagnolo e francese.
 
 Start with an empty library; it's all in + > Settings.
 Inizia con la libreria vuota; è tutto in + > Impostazioni.
@@ -942,11 +942,11 @@ Cerca ora. In sdmc:/switch, A installa ciò che ha trovato; da Brewstore, lo agg
 Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
 Cerca su GitHub una nuova versione di KaiReader una volta al giorno, all'apertura, e lo segnala.
 
-Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg and Standard Ebooks.
-Rete: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) e i certificati radice di Mozilla (MPL 2.0). Aggiornamenti: Jansson (MIT). Libri gratuiti: Project Gutenberg e Standard Ebooks.
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits.
+Rete: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) e i certificati radice di Mozilla (MPL 2.0). Aggiornamenti: Jansson (MIT). Libri gratuiti: Project Gutenberg, Standard Ebooks, textos.info e Ebooks libres et gratuits.
 
-Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened.
-Non affiliato a Nintendo, Amazon, Project Gutenberg o Standard Ebooks. I libri con DRM non si aprono.
+Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened.
+Non affiliato a Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info o Ebooks libres et gratuits. I libri con DRM non si aprono.
 
 Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
 Disattivalo solo per un tuo server con un certificato creato da sé (https). L'accesso del server va comunque solo a lui.
@@ -989,3 +989,12 @@ Il punto della cartella di rete e il colore della sua libreria: il suo (turchese
 
 Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
 Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+
+Show textos.info's most popular, in Spanish
+Mostra i più popolari di textos.info, in spagnolo
+
+Show Ebooks libres et gratuits' newest, in French
+Mostra le novità di Ebooks libres et gratuits, in francese
+
+Show your last search
+Mostra la tua ultima ricerca

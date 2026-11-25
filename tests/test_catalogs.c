@@ -70,6 +70,57 @@ static const char GUTENBERG_DOWN[] =
     "<p>Project Gutenberg is temporarily unavailable while we perform maintenance.</p> "
     "<p>Please check back soon. We apologize for the inconvenience.</p> </main> </body> </html>";
 
+// textos.info's most popular as it came on 2026-11-25 (trimmed, the book made up): OPDS 1, its EPUB
+// first, then MOBI and PDF; its next page joined with "&" to the address.
+static const char SPANISH_REAL[] =
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+    "<feed xmlns:thr=\"http://purl.org/syndication/thread/1.0\" xmlns:app=\"http://www.w3.org/2007/app\" "
+    "xmlns:opds=\"http://opds-spec.org/2010/catalog\" xmlns:dcterms=\"http://purl.org/dc/terms/\" "
+    "xmlns=\"http://www.w3.org/2005/Atom\" xml:lang=\"en\">\n"
+    "  <id>https://www.textos.info/populares.atom</id>\n"
+    "  <title>Textos m\xC3\xA1s populares</title>\n"
+    "<link title=\"P\xC3\xA1gina siguiente\" type=\"application/atom+xml;profile=opds-catalog;kind=acquisition\" "
+    "href=\"https://www.textos.info/populares.atom&amp;page=2\" rel=\"next\"/>\n"
+    "<entry>\n<title>El Faro Callado</title>\n<id>https://www.textos.info/ana-ejemplo/el-faro-callado</id>\n"
+    "<author>\n  <name>Ana Ejemplo</name>\n  <uri>https://www.textos.info/ana-ejemplo</uri>\n</author>\n"
+    "<content type=\"text\"></content>\n<dcterms:language>es</dcterms:language>\n"
+    "<summary>Un relato inventado.</summary>\n"
+    "<dcterms:extent>23237 palabras</dcterms:extent><category scheme=\"https://www.textos.info/etiquetas\" "
+    "term=\"novela-corta\" label=\"Novela corta\"/>\n<rights></rights>\n"
+    "<link type=\"text/html\" title=\"Ver en textos.info\" href=\"https://www.textos.info/ana-ejemplo/el-faro-callado/ebook\" rel=\"alternate\"/>\n"
+    "<link type=\"application/epub+zip\" href=\"https://www.textos.info/ana-ejemplo/el-faro-callado/epub\" rel=\"http://opds-spec.org/acquisition\"/>\n"
+    "<link type=\"application/x-mobipocket-ebook\" href=\"https://www.textos.info/ana-ejemplo/el-faro-callado/mobi\" rel=\"http://opds-spec.org/acquisition\"/>\n"
+    "<link type=\"application/pdf\" href=\"https://www.textos.info/ana-ejemplo/el-faro-callado/pdf\" rel=\"http://opds-spec.org/acquisition\"/>\n"
+    "<link type=\"image/jpeg\" href=\"https://www.textos.info/img/0/530.jpg\" rel=\"http://opds-spec.org/image\"/>\n"
+    "<link type=\"image/jpeg\" href=\"https://www.textos.info/img/0/530.jpg\" rel=\"http://opds-spec.org/image/thumbnail\"/>\n"
+    "<link type=\"application/atom+xml;type=entry;profile=opds-catalog\" title=\"Informaci\xC3\xB3n\" "
+    "href=\"https://www.textos.info/autores.atom&amp;\" rel=\"alternate\"/>\n"
+    "</entry>\n</feed>\n";
+
+// Ebooks libres et gratuits' newest as it came on 2026-11-25 (trimmed, the book made up): OPDS 1, no
+// cover, the author as "Surname, Name", a Word file zipped as application/zip after the EPUB.
+static const char FRENCH_REAL[] =
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
+    "<feed xmlns:app=\"http://www.w3.org/2007/app\" xmlns:opds=\"http://opds-spec.org/\" "
+    "xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns=\"http://www.w3.org/2005/Atom\" "
+    "xmlns:dcterms=\"http://purl.org/dc/terms/\">\r\n"
+    "  <title>Ebooks libres et gratuits - Derni\xC3\xA8res parutions</title>\r\n"
+    "  <link type=\"application/atom+xml\" href=\"https://www.ebooksgratuits.com/opds/feed.php?page=1\" rel=\"next\" title=\"Next Page\"/>\r\n"
+    "<entry>\r\n      <title>Le Phare tranquille</title>\r\n"
+    "      <id>https://www.ebooksgratuits.com/details.php?book=3538</id>\r\n"
+    "      <author>\r\n         <name>Exemple, Ana</name>\r\n"
+    "         <uri>https://www.ebooksgratuits.com/ebooks.php?auteur=Exemple_Ana</uri>\r\n      </author>\r\n"
+    "      <dcterms:language>fr</dcterms:language>\r\n"
+    "      <link type=\"text/html\" href=\"https://www.ebooksgratuits.com/details.php?book=3538\" rel=\"alternate\" title=\"Voir sur ebooksgratuits.com\" />\r\n"
+    "      <link type=\"application/atom+xml\" href=\"https://www.ebooksgratuits.com/opds/feed.php?mode=author&amp;id=411\" rel=\"related\" title=\"Du m\xC3\xAAme auteur\" />\r\n"
+    "      <category term=\"Th\xC3\xA9\xC3\xA2tre\" label=\"Th\xC3\xA9\xC3\xA2tre\"/>\r\n"
+    "      <content type=\"text\"><![CDATA[Une histoire invent\xC3\xA9\x65.<br /><br />\xC3\x89\x64ition Ebooks libres et gratuits.]]></content>\r\n"
+    "      <link type=\"application/epub+zip\" href=\"https://www.ebooksgratuits.com/newsendbook.php?id=3538&amp;format=epub\" rel=\"http://opds-spec.org/acquisition\" />\r\n"
+    "      <link type=\"application/x-mobipocket-ebook\" href=\"https://www.ebooksgratuits.com/newsendbook.php?id=3538&amp;format=mp\" rel=\"http://opds-spec.org/acquisition\" />\r\n"
+    "      <link type=\"application/pdf\" href=\"https://www.ebooksgratuits.com/newsendbook.php?id=3538&amp;format=pdf\" rel=\"http://opds-spec.org/acquisition\" />\r\n"
+    "      <link type=\"application/zip\" href=\"https://www.ebooksgratuits.com/newsendbook.php?id=3538&amp;format=so\" rel=\"http://opds-spec.org/acquisition\" />\r\n"
+    "   </entry>\r\n</feed>\r\n";
+
 static void testUrls(void)
 {
     char url[512];
@@ -85,6 +136,16 @@ static void testUrls(void)
     CHECK(!catalogUrl(CATALOG_SEARCH, NULL, url, sizeof(url)));
     CHECK(!catalogUrl(CATALOG_POPULAR, NULL, url, 20));
     CHECK_STR(catalogName(CATALOG_NEWEST), "Standard Ebooks: newest");
+    CHECK(catalogUrl(CATALOG_SPANISH, NULL, url, sizeof(url)));
+    CHECK_STR(url, "https://www.textos.info/populares.atom");
+    CHECK(catalogUrl(CATALOG_FRENCH, "ignored", url, sizeof(url)));
+    CHECK_STR(url, "https://www.ebooksgratuits.com/opds/feed.php");
+    CHECK_STR(catalogName(CATALOG_FRENCH), "Ebooks libres et gratuits: newest (French)");
+    CHECK_STR(catalogShowLine(CATALOG_SPANISH), "Show textos.info's most popular, in Spanish");
+    CHECK_STR(catalogShowLine(CATALOG_SEARCH), "Show your last search");
+    CHECK_STR(catalogShowLine((CatalogList)99), "Show Project Gutenberg's most popular");
+    for (int i = 0; i < CATALOG_COUNT; i++)
+        CHECK(catalogName((CatalogList)i)[0] && catalogShowLine((CatalogList)i)[0]);
 }
 
 static void testPages(void)
@@ -153,9 +214,50 @@ static void testRealAnswers(void)
     CHECK(!opdsBusyStatus(200) && !opdsBusyStatus(404) && !opdsBusyStatus(500) && !opdsBusyStatus(0));
 }
 
+// The Spanish and French catalogs as they really come.
+static void testOtherLanguages(void)
+{
+    OpdsFeed f;
+    OpdsBook *books;
+    CHECK(opdsParse(SPANISH_REAL, sizeof(SPANISH_REAL) - 1, "https://www.textos.info/populares.atom", &f));
+    int n = catalogBooks(&f, &books);
+    CHECK(n == 1);
+    if (n == 1) {
+        CHECK_STR(books[0].title, "El Faro Callado");
+        CHECK_STR(books[0].author, "Ana Ejemplo");
+        CHECK_STR(books[0].acquire, "https://www.textos.info/ana-ejemplo/el-faro-callado/epub");  // The EPUB, not the PDF.
+        CHECK_STR(books[0].ext, ".epub");
+        CHECK_STR(books[0].cover, "https://www.textos.info/img/0/530.jpg");
+        CHECK_STR(books[0].genre, "Novela corta");
+    }
+    CHECK_STR(f.next, "https://www.textos.info/populares.atom&page=2");
+    CHECK(f.feed_count == 0);  // Its "Informacion" link isn't a list of its own.
+    free(books);
+    opdsFeedFree(&f);
+
+    CHECK(opdsParse(FRENCH_REAL, sizeof(FRENCH_REAL) - 1, "https://www.ebooksgratuits.com/opds/feed.php", &f));
+    n = catalogBooks(&f, &books);
+    CHECK(n == 1);
+    if (n == 1) {
+        CHECK_STR(books[0].title, "Le Phare tranquille");
+        CHECK_STR(books[0].author, "Exemple, Ana");
+        CHECK_STR(books[0].acquire, "https://www.ebooksgratuits.com/newsendbook.php?id=3538&format=epub");
+        CHECK_STR(books[0].ext, ".epub");  // Not the zipped Word file.
+        CHECK_STR(books[0].cover, "");     // None: the book's own cover, once read.
+        CHECK_STR(books[0].genre, "Th\xC3\xA9\xC3\xA2tre");
+        char name[128];
+        catalogFileName(&books[0], name, sizeof(name));
+        CHECK_STR(name, "Le Phare tranquille - Exemple, Ana.epub");
+    }
+    CHECK_STR(f.next, "https://www.ebooksgratuits.com/opds/feed.php?page=1");
+    free(books);
+    opdsFeedFree(&f);
+}
+
 void testCatalogs(void)
 {
     testUrls();
     testPages();
     testRealAnswers();
+    testOtherLanguages();
 }

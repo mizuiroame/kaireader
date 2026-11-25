@@ -285,6 +285,8 @@ void appFreeUpdate(App *app, uint64_t now_ns);
 void appFreeOpen(App *app, int order_index, uint64_t now_ns);  // Downloaded to the card, then opened.
 bool appFreeLoading(void);
 const char *appFreeListName(const App *app);
+// The + menu's line for the list L/R would show next ("Show Standard Ebooks' newest"), translated.
+const char *appFreeNextListLine(const App *app);
 // A book of the card's books folder opened, the card's library shown (a free book downloaded).
 void appOpenCardBook(App *app, const char *path, uint64_t now_ns);
 // The network started for Free books too (app_network.c).

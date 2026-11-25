@@ -771,8 +771,8 @@ Depois
 On the SD card
 No cartão SD
 
-Public-domain classics: Project Gutenberg, Standard Ebooks.
-Clássicos de domínio público: Project Gutenberg, Standard Ebooks.
+Public-domain classics, in English, Spanish and French.
+Clássicos de domínio público, em inglês, espanhol e francês.
 
 Start with an empty library; it's all in + > Settings.
 Começar com a biblioteca vazia; está tudo em + > Configurações.
@@ -942,11 +942,11 @@ Procura agora. Em sdmc:/switch, A instala o que encontrou; pelo Brewstore, o Bre
 Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
 Procura no GitHub uma nova versão do KaiReader uma vez por dia, ao abrir, e avisa.
 
-Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg and Standard Ebooks.
-Rede: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) e os certificados raiz da Mozilla (MPL 2.0). Atualizações: Jansson (MIT). Livros grátis: Project Gutenberg e Standard Ebooks.
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits.
+Rede: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) e os certificados raiz da Mozilla (MPL 2.0). Atualizações: Jansson (MIT). Livros grátis: Project Gutenberg, Standard Ebooks, textos.info e Ebooks libres et gratuits.
 
-Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened.
-Sem vínculo com Nintendo, Amazon, Project Gutenberg ou Standard Ebooks. Livros com DRM não abrem.
+Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened.
+Sem vínculo com Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info ou Ebooks libres et gratuits. Livros com DRM não abrem.
 
 Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
 Desligue só para um servidor seu com certificado próprio (https). O login do servidor continua indo só para ele.
@@ -989,3 +989,12 @@ O ponto da pasta de rede e a cor da sua biblioteca: a própria (turquesa) ou uma
 
 Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
 Código aberto (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+
+Show textos.info's most popular, in Spanish
+Mostrar os mais populares do textos.info, em espanhol
+
+Show Ebooks libres et gratuits' newest, in French
+Mostrar as novidades do Ebooks libres et gratuits, em francês
+
+Show your last search
+Mostrar sua última busca

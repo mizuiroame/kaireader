@@ -770,8 +770,8 @@ Later
 On the SD card
 在 SD 卡上
 
-Public-domain classics: Project Gutenberg, Standard Ebooks.
-公有领域经典：Project Gutenberg、Standard Ebooks。
+Public-domain classics, in English, Spanish and French.
+公有领域经典（英语、西班牙语和法语）。
 
 Start with an empty library; it's all in + > Settings.
 从空书库开始；一切都在 + > 设置中。
@@ -941,11 +941,11 @@ Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore 
 Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
 每天在打开时到 GitHub 查找一次新版 KaiReader，并给出提示。
 
-Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg and Standard Ebooks.
-网络：libsmb2（LGPL 2.1）、curl、libssh2、Mbed TLS（Apache 2.0）和 Mozilla 根证书（MPL 2.0）。更新：Jansson（MIT）。免费书籍：Project Gutenberg 和 Standard Ebooks。
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits.
+网络：libsmb2（LGPL 2.1）、curl、libssh2、Mbed TLS（Apache 2.0）和 Mozilla 根证书（MPL 2.0）。更新：Jansson（MIT）。免费书籍：Project Gutenberg、Standard Ebooks、textos.info 和 Ebooks libres et gratuits。
 
-Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened.
-与 Nintendo、Amazon、Project Gutenberg 和 Standard Ebooks 无关。带 DRM 的书无法打开。
+Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened.
+与 Nintendo、Amazon、Project Gutenberg、Standard Ebooks、textos.info 和 Ebooks libres et gratuits 无关。带 DRM 的书无法打开。
 
 Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
 仅对使用自签名证书（https）的自有服务器关闭。登录信息仍只发送给该服务器。
@@ -988,3 +988,12 @@ The network folder's dot and its library's color: its own (turquoise) or one of 
 
 Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
 开源软件（AGPL 3.0）  ·  github.com/mizuiroame/kaireader
+
+Show textos.info's most popular, in Spanish
+显示 textos.info 最热门（西班牙语）
+
+Show Ebooks libres et gratuits' newest, in French
+显示 Ebooks libres et gratuits 最新（法语）
+
+Show your last search
+显示上次搜索

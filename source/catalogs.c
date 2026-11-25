@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lang.h"
 #include "netlist.h"
 
 #define GUTENBERG "https://www.gutenberg.org"
@@ -12,12 +13,27 @@
 static const char *const NAMES[CATALOG_COUNT] = {
     "Project Gutenberg: most popular",
     "Standard Ebooks: newest",
+    "textos.info: most popular (Spanish)",
+    "Ebooks libres et gratuits: newest (French)",
     "Project Gutenberg: search",
+};
+
+static const char *const SHOW_LINES[CATALOG_COUNT] = {
+    N_("Show Project Gutenberg's most popular"),
+    N_("Show Standard Ebooks' newest"),
+    N_("Show textos.info's most popular, in Spanish"),
+    N_("Show Ebooks libres et gratuits' newest, in French"),
+    N_("Show your last search"),
 };
 
 const char *catalogName(CatalogList list)
 {
     return list >= 0 && list < CATALOG_COUNT ? NAMES[list] : NAMES[0];
+}
+
+const char *catalogShowLine(CatalogList list)
+{
+    return list >= 0 && list < CATALOG_COUNT ? SHOW_LINES[list] : SHOW_LINES[0];
 }
 
 // query as a URL's query value: letters, digits and -._~ as they are, spaces as +, the rest %XX.
@@ -45,6 +61,10 @@ bool catalogUrl(CatalogList list, const char *query, char *out, size_t size)
         n = snprintf(out, size, "%s", GUTENBERG "/ebooks/search.opds/?sort_order=downloads");
     } else if (list == CATALOG_NEWEST) {
         n = snprintf(out, size, "%s", "https://standardebooks.org/feeds/atom/new-releases");
+    } else if (list == CATALOG_SPANISH) {
+        n = snprintf(out, size, "%s", "https://www.textos.info/populares.atom");
+    } else if (list == CATALOG_FRENCH) {
+        n = snprintf(out, size, "%s", "https://www.ebooksgratuits.com/opds/feed.php");
     } else if (list == CATALOG_SEARCH) {
         char words[CATALOG_QUERY_MAX * 3 + 1];
         while (query && *query == ' ')

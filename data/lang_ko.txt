@@ -770,8 +770,8 @@ Later
 On the SD card
 SD 카드에
 
-Public-domain classics: Project Gutenberg, Standard Ebooks.
-퍼블릭 도메인 고전: Project Gutenberg, Standard Ebooks.
+Public-domain classics, in English, Spanish and French.
+퍼블릭 도메인 고전(영어, 스페인어, 프랑스어).
 
 Start with an empty library; it's all in + > Settings.
 빈 서재로 시작해요. 모두 + > 설정에 있어요.
@@ -941,11 +941,11 @@ Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore 
 Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
 하루에 한 번, 열 때 GitHub에서 새 KaiReader를 찾아 알려 줘요.
 
-Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg and Standard Ebooks.
-네트워크: libsmb2(LGPL 2.1), curl, libssh2, Mbed TLS(Apache 2.0), Mozilla 루트 인증서(MPL 2.0). 업데이트: Jansson(MIT). 무료 책: Project Gutenberg, Standard Ebooks.
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits.
+네트워크: libsmb2(LGPL 2.1), curl, libssh2, Mbed TLS(Apache 2.0), Mozilla 루트 인증서(MPL 2.0). 업데이트: Jansson(MIT). 무료 책: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits.
 
-Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened.
-Nintendo, Amazon, Project Gutenberg, Standard Ebooks와 관련이 없어요. DRM이 걸린 책은 열 수 없어요.
+Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened.
+Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits와 관련이 없어요. DRM이 걸린 책은 열 수 없어요.
 
 Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
 자체 인증서(https)를 쓰는 내 서버일 때만 끄세요. 로그인 정보는 여전히 그 서버로만 가요.
@@ -988,3 +988,12 @@ The network folder's dot and its library's color: its own (turquoise) or one of 
 
 Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
 오픈 소스 (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+
+Show textos.info's most popular, in Spanish
+textos.info 인기 책 보기(스페인어)
+
+Show Ebooks libres et gratuits' newest, in French
+Ebooks libres et gratuits 새 책 보기(프랑스어)
+
+Show your last search
+마지막 검색 보기

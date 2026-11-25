@@ -45,7 +45,8 @@ folder and on the book server.
 
 - **Nothing on the network unless asked.** Besides the update check, KaiReader
   only talks to the network folder and the book server you set up, and to
-  Project Gutenberg and Standard Ebooks while Free books is open. Nothing is
+  the free catalogs (Project Gutenberg, Standard Ebooks, textos.info and
+  Ebooks libres et gratuits) while Free books is open. Nothing is
   asked of the free catalogs until Free books is opened.
 - **Only http and https** for web requests (no `file:` or other schemes, even
   through a redirect), and an `https://` address can't be redirected to plain

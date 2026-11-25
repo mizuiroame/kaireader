@@ -8,8 +8,9 @@ A **book reader** for **Switch 2** running
 [KaiRadio](https://github.com/mizuiroame/kairadio) and
 [KaiVideo](https://github.com/mizuiroame/kaivideo). Your DRM-free books from
 the SD card, a folder on your network or your book server (Calibre-Web,
-Kavita, Komga), and free public-domain books from Project Gutenberg and
-Standard Ebooks, as on an e-reader: **EPUB**, **PDF**,
+Kavita, Komga), and free public-domain books from Project Gutenberg,
+Standard Ebooks, textos.info (Spanish) and Ebooks libres et gratuits (French),
+as on an e-reader: **EPUB**, **PDF**,
 comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
 **XPS**, drawn with [MuPDF](https://mupdf.com/).
 
@@ -43,8 +44,8 @@ The screenshots show made-up books. [More screenshots](docs/screenshots.md)
 - **Books from your network** (SMB, WebDAV, FTP, SFTP) and **your book server**
   (Calibre-Web, Kavita, Komga), as libraries of their own.
   [More](docs/features.md#where-the-books-come-from)
-- **Free books**: Project Gutenberg and Standard Ebooks, downloaded to your
-  library. [More](docs/features.md#where-the-books-come-from)
+- **Free books**: Project Gutenberg and Standard Ebooks, textos.info in
+  Spanish and Ebooks libres et gratuits in French, downloaded to your library. [More](docs/features.md#where-the-books-come-from)
 - **Nine languages**, your accent color and a background picture, and updates
   from GitHub. [More](docs/features.md#looks-languages-and-updates)
 - **Touch and buttons** for everything. [Controls](docs/controls.md)

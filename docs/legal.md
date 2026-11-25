@@ -1,14 +1,28 @@
 # Legal notice
 
 KaiReader is an independent project. It is not affiliated with, endorsed by
-or sponsored by Nintendo, Amazon, Artifex Software, Project Gutenberg or any
-publisher. "Kindle" is a trademark of Amazon; KaiReader does not use it.
+or sponsored by Nintendo, Amazon, Artifex Software, Project Gutenberg,
+Standard Ebooks, textos.info, Ebooks libres et gratuits or any publisher. "Kindle" is a trademark of Amazon; KaiReader does not use it.
 
 ## Your books
 
 KaiReader opens the books you put on your SD card. It does not come with
-books, does not download them from anywhere, and does not point to any site
-that offers books without the author's or publisher's permission.
+books, and does not point to any site that offers books without the
+author's or publisher's permission.
+
+**Free books** lists only catalogs that publish public-domain books for
+free download through a public feed made for reading apps, and downloads a
+book only when you choose it, one at a time:
+
+| Catalog | Feed | Books |
+|---------|------|-------|
+| [Project Gutenberg](https://www.gutenberg.org/) | OPDS | Public domain in the US; check your country's laws |
+| [Standard Ebooks](https://standardebooks.org/) | Its Atom feed of new releases, open to all | Public domain in the US; its own work CC0 |
+| [textos.info](https://www.textos.info/) | OPDS | Public-domain texts, in Spanish |
+| [Ebooks libres et gratuits](https://www.ebooksgratuits.com/) | OPDS | Public-domain texts in its volunteers' editions, in French, free for personal use; at most 50 downloads a day, one at a time |
+
+Public domain depends on the country: a book free in one may not be in
+another. Check your own country's rules.
 
 **DRM.** KaiReader does not open books locked with DRM (Kindle, Adobe, Apple,
 Kobo, Readium LCP...) and will not remove DRM: in the US (DMCA §1201), the EU

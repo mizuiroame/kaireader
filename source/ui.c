@@ -566,7 +566,7 @@ static const char *menuLabel(const App *app, MenuItem item)
     case MENU_FREE_SEARCH:
         return T("Search Project Gutenberg");
     case MENU_FREE_LIST:
-        return app->free_list == 0 ? T("Show Standard Ebooks' newest") : T("Show Project Gutenberg's most popular");
+        return appFreeNextListLine(app);
     case MENU_NET_SETUP:
         return T("Add a network folder or book server");
     case MENU_SETTINGS:
@@ -635,9 +635,9 @@ static int drawAboutText(int x, int y, int w, bool draw)
         "KaiReader " KAIREADER_VERSION,
         T("A book reader for Switch 2 homebrew, by Mizuiro. Free software under the GNU AGPL 3.0; its code is on GitHub (mizuiroame/kaireader)."),
         T("Books: MuPDF (Artifex Software, AGPL 3.0), with FreeType, HarfBuzz, libjpeg, OpenJPEG, jbig2dec, lcms2, Gumbo, zlib and brotli. Comics in archives: libarchive, with XZ, LZ4, Zstandard, bzip2 and Expat."),
-        T("Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg and Standard Ebooks."),
+        T("Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits."),
         T("Text: Noto Sans (SIL OFL 1.1) and the console's own fonts. Also stb, libnx, libounce and Mesa. Every license, in full, is in docs/legal.md on GitHub."),
-        T("Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened."),
+        T("Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened."),
     };
     for (int p = 1; p < 6; p++) {  // The first (the name and version) is the page's header.
         char lines[6][160];
@@ -795,7 +795,7 @@ static void drawWelcome(const App *app)
         N_("Copy them to sdmc:/books; KaiDrop does it from your PC."),
         N_("A shared folder, a NAS or Nextcloud, FTP or SFTP."),
         N_("Calibre-Web, Kavita or Komga, by its address."),
-        N_("Public-domain classics: Project Gutenberg, Standard Ebooks."),
+        N_("Public-domain classics, in English, Spanish and French."),
         N_("Start with an empty library; it's all in + > Settings."),
     };
     dim();
