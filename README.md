@@ -7,7 +7,9 @@ A **book reader** for **Switch 2** running
 [KaiPlayer](https://github.com/mizuiroame/kaiplayer),
 [KaiRadio](https://github.com/mizuiroame/kairadio) and
 [KaiVideo](https://github.com/mizuiroame/kaivideo). Your DRM-free books from
-the SD card or a folder on your network, as on an e-reader: **EPUB**, **PDF**,
+the SD card, a folder on your network or your book server (Calibre-Web,
+Kavita, Komga), and free public-domain books from Project Gutenberg and
+Standard Ebooks, as on an e-reader: **EPUB**, **PDF**,
 comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
 **XPS**, drawn with [MuPDF](https://mupdf.com/).
 
@@ -25,10 +27,13 @@ comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
 |--------------------------|-----------|-----------|
 | ![Network folder](docs/screenshots/network.png) | ![List](docs/screenshots/library-list.png) | ![Favorites](docs/screenshots/library-favorites-stars.png) |
 
+| Your book server (OPDS) | Free books |
+|-------------------------|------------|
+| ![Book server](docs/screenshots/server.png) | ![Free books](docs/screenshots/free.png) |
+
 The screenshots show made-up books.
 
-> **Version 0.4, a pre-release: still young.** Only in English for now; book
-> servers (OPDS, Calibre-Web, Kavita, Komga), public-domain catalogs and the
+> **Version 0.5, a pre-release: still young.** Only in English for now; the
 > other languages come next.
 
 > KaiReader is an independent project. It is not affiliated with, endorsed by
@@ -51,6 +56,16 @@ The screenshots show made-up books.
   way: KaiReader looks through the folder and its folders, and reads each
   book's cover and title over the network (only the few parts it needs). A book
   you open is copied to the card first, so it opens at once the next time.
+- **Your book server**: Calibre-Web, Kavita, Komga or another OPDS catalog
+  (Settings > Book server: its address, and your user and password). Its books
+  show as the card's, with the server's own covers; one you open is downloaded
+  first.
+- **Free books**: public-domain books, free to read: Project Gutenberg's most
+  popular and its search (**Y**), and Standard Ebooks' newest (**L**/**R**
+  change the list). A book you choose is downloaded to `sdmc:/books/Free/` and
+  stays in your library.
+- **X** goes round your libraries: the SD card, the network folder and the
+  book server (the ones set up), and Free books.
 - **Favorites**: hold your finger on a cover, or choose "Add to favorites" in
   the + menu; Favorites is one of the sorts (Y).
 - **A grid or a list**: covers, or a list with more of each book (the + menu,
@@ -78,10 +93,11 @@ The screenshots show made-up books.
 | **A** | Read the book selected | Next page |
 | **Right**, **R**, **ZR** / **Left**, **L**, **ZL** | Move | Next / previous page |
 | **Up** / **Down** | Move | Bigger / smaller text; PDFs and comics: zoom |
-| **X** | SD card or network folder | Contents and bookmarks |
+| **X** | The next library: SD card, network folder, book server, Free books | Contents and bookmarks |
+| **L** / **R** | Free books: the other lists | Previous / next page |
 | **Left stick** pressed | | Bookmark the page |
 | **Right stick** pressed | Upright or lying down | Upright or lying down |
-| **Y** | Sort by: recent, favorites, title, author, genre | Colors |
+| **Y** | Sort by: recent, favorites, title, author, genre (Free books: search) | Colors |
 | **−** | | Show or hide the bars |
 | **B** | | Back to the library |
 | **+** | Menu: favorite, SD card or network folder, grid or list, look again, Settings, Exit | Menu: Contents, Bookmark, Library, Settings, Exit |
@@ -112,8 +128,10 @@ first. KaiReader shows each book's real title, from inside the book.
 
 KaiReader keeps its files next to the NRO: `shelf.txt` and `shelf-network.txt`
 (where you left each book, and your favorites), `settings.txt`,
-`bookmarks.txt`, `network.txt` (the network folder's account) and `covers/`.
-Books opened from the network folder are copied to `sdmc:/books/.network/`.
+`bookmarks.txt`, `network.txt` and `server.txt` (the accounts), `shelf-server.txt`,
+`server-covers.txt` and `covers/`.
+Books opened from the network folder are copied to `sdmc:/books/.network/`, and
+from the book server to `sdmc:/books/.opds/`; free books go to `sdmc:/books/Free/`.
 
 ## Build
 
