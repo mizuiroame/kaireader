@@ -1,35 +1,27 @@
-"""Draws KaiReader's icon (icon.jpg, 256x256): an open book, its lines of text cut out.
+"""KaiReader's icon (icon.jpg, 256x256) is no longer drawn here: all the Kai apps' icons
+come from one script, switch2homebrew-submit/tools/make_app_icons.py, which writes
+switch2homebrew-submit/icons/kaireader.jpg. This copies that file to icon.jpg.
 
 Usage: python tools/make_icon.py [OUT]
+       (run make_app_icons.py first after changing the symbol or its colors)
 """
+import shutil
 import sys
+from pathlib import Path
 
-from icon_render import Canvas, capsule, polygon, save_icon, union
-
-AMBER = (242, 181, 74)
-CORNER = 6.0
-
-
-def draw() -> Canvas:
-    canvas = Canvas()
-    # Two pages, a little apart at the spine, their outer corners a little higher.
-    left = polygon([(38, 78), (122, 92), (122, 190), (38, 176)]) - CORNER
-    right = polygon([(134, 92), (218, 78), (218, 176), (134, 190)]) - CORNER
-    book = union(left, right)
-    canvas.long_shadow(book)
-    canvas.fill(book, AMBER)
-    # Lines of text, following each page's slant.
-    for i in range(5):
-        y = 106 + i * 15
-        width = 58 if i < 4 else 34
-        canvas.cut(capsule((52, y - 6), (52 + width, y + 3), 2.6))
-        canvas.cut(capsule((204 - width, y + 3), (204, y - 6), 2.6))
-    return canvas
+SUBMIT = Path(__file__).resolve().parents[2] / "switch2homebrew-submit"
+SOURCE = SUBMIT / "icons" / "kaireader.jpg"
 
 
-def main() -> None:
-    save_icon(draw().result(), sys.argv[1] if len(sys.argv) > 1 else "icon.jpg")
+def main() -> int:
+    out = sys.argv[1] if len(sys.argv) > 1 else "icon.jpg"
+    if not SOURCE.is_file():
+        print(f"{SOURCE} not found: run python {SUBMIT / 'tools' / 'make_app_icons.py'} first")
+        return 1
+    shutil.copyfile(SOURCE, out)
+    print(f"{SOURCE} -> {out}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
