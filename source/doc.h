@@ -113,6 +113,8 @@ typedef struct {
 
 // False for files that aren't EPUBs or whose package can't be read.
 bool docEpubInfo(const char *path, int max_w, int max_h, DocEpubInfo *out);
+// A picture (JPEG, PNG...) in data, fitted into max_w x max_h (never enlarged). False if it isn't one.
+bool docImageFromData(const void *data, size_t size, int max_w, int max_h, DocImage *out);
 // Only the cover: false if there's none.
 bool docEpubCover(const char *path, int max_w, int max_h, DocImage *out);
 

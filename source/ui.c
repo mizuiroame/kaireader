@@ -296,15 +296,15 @@ static void drawLibrary(App *app, uint64_t now_ns)
     int pill_end = uiDrawSourcePill(app);
     int status_x = uiDrawStatus(&app->sys, app->prefs.clock_24h, w - MARGIN, 18, COLOR_TEXT, COLOR_DIM);
     if (now_ns - app->covers_busy_ns < COVERS_SPIN_HOLD_NS)  // Covers being read: a spinner left of the clock.
-        uiDrawCoversPill(pill_end, status_x - 18, now_ns, app->lib_tab == 1);
+        uiDrawCoversPill(pill_end, status_x - 18, now_ns, app->lib_tab);
 
     char sub[64];
     snprintf(sub, sizeof(sub), app->order_count == 1 ? T("1 book") : T("%d books"), app->order_count);
-    bool network = app->lib_tab == 1;
-    int tw = fontDraw(FONT_BOLD, 22, MARGIN, 74, network ? T("Network folder") : T("Library"), COLOR_TEXT);
+    bool remote = app->lib_tab != LIB_CARD;
+    int tw = fontDraw(FONT_BOLD, 22, MARGIN, 74, remote ? uiSourceName(app->lib_tab) : T("Library"), COLOR_TEXT);
     int sw0 = fontDraw(FONT_REGULAR, 18, MARGIN + tw + 14, 77, sub, COLOR_DIM);
-    if (network)  // The folder being looked through, after the count.
-        uiDrawNetScan(MARGIN + tw + 14 + sw0 + 20, 89.0f, now_ns);
+    if (remote)  // The folder or catalog being looked through, after the count.
+        uiDrawNetScan(app->lib_tab, MARGIN + tw + 14 + sw0 + 20, 89.0f, now_ns);
     if (app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES) {  // The sort, at the right: a tap (or Y) changes it.
         char sort[64];
         snprintf(sort, sizeof(sort), "%s", T(prefsSortName(app->prefs.sort)));
@@ -315,7 +315,7 @@ static void drawLibrary(App *app, uint64_t now_ns)
         uiHitAdd(x - bw - 16, 64, sw + bw + 24, 44, HIT_SORT, 0);
     }
 
-    if (app->order_count == 0 && network) {
+    if (app->order_count == 0 && remote) {
         uiDrawNetEmpty(app, now_ns);
     } else if (app->order_count == 0 && app->prefs.sort == SHELF_SORT_FAVORITES) {
         fontDrawCentered(FONT_BOLD, 26, w / 2.0f, 250.0f, T("No favorites yet."), COLOR_TEXT);
@@ -359,16 +359,14 @@ static void drawLibrary(App *app, uint64_t now_ns)
         uiHitClip(0, h);
         gfxResetClip();
     }
-    if (network)  // X back to the card's books.
-        drawFooter(app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES
-                       ? T("[A] Read  [Y] Sort  [X] SD card  [+] Menu")
-                       : T("[X] SD card  [+] Menu"));
-    else if (app->order_count == 0 && app->prefs.sort == SHELF_SORT_FAVORITES)  // Y back to the other books.
-        drawFooter(davConfigured() ? T("[Y] Sort  [X] Network folder  [+] Menu") : T("[Y] Sort  [+] Menu"));
-    else if (davConfigured())  // X goes to the other source.
-        drawFooter(app->order_count ? T("[A] Read  [Y] Sort  [X] Network folder  [+] Menu") : T("[X] Network folder  [+] Menu"));
-    else
-        drawFooter(app->order_count ? T("[A] Read  [Y] Sort  [+] Menu") : T("[+] Menu"));
+    // The help: X names the source it goes to, when there's another.
+    bool sources = appSourceSet(LIB_NETWORK) || appSourceSet(LIB_SERVER);
+    bool sortable = app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES;
+    char help[160];
+    snprintf(help, sizeof(help), "%s%s%s%s%s", app->order_count ? T("[A] Read  ") : "", sortable ? T("[Y] Sort  ") : "",
+             sources ? "[X] " : "", sources ? uiSourceName(appNextSource(app)) : "", sources ? "  " : "");
+    snprintf(help + strlen(help), sizeof(help) - strlen(help), "%s", T("[+] Menu"));
+    drawFooter(help);
     uiDrawNetCopy(app);
 }
 
@@ -536,13 +534,17 @@ static const char *menuLabel(const App *app, MenuItem item)
     case MENU_VIEW:
         return app->prefs.list_view ? T("Show as a grid") : T("Show as a list");
     case MENU_SOURCE:
-        return app->lib_tab == 1 ? T("Go to the SD card library") : T("Go to the network folder");
+        return appNextSource(app) == LIB_NETWORK ? T("Go to the network folder")
+               : appNextSource(app) == LIB_SERVER ? T("Go to the book server")
+                                                  : T("Go to the SD card library");
     case MENU_NET_SETUP:
-        return T("Add a network folder");
+        return T("Add a network folder or book server");
     case MENU_SETTINGS:
         return T("Settings");
     case MENU_RESCAN:
-        return app->lib_tab == 1 ? T("Look through the network folder again") : T("Look for books again");
+        return app->lib_tab == LIB_NETWORK  ? T("Look through the network folder again")
+               : app->lib_tab == LIB_SERVER ? T("Look through the server's catalog again")
+                                            : T("Look for books again");
     case MENU_EXIT:
         return T("Exit KaiReader");
     default:
@@ -585,7 +587,7 @@ static int drawAboutText(int x, int y, int w, bool draw)
 {
     const char *paragraphs[] = {
         "KaiReader " KAIREADER_VERSION,
-        T("A book reader for Switch 2 homebrew. Your books from sdmc:/books or a network folder: EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS."),
+        T("A book reader for Switch 2 homebrew. Your books from sdmc:/books, a network folder or a book server (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS."),
         T("Pages are drawn with MuPDF (Artifex Software), under the GNU AGPL 3.0. KaiReader is free software under the same license; its code is on GitHub (mizuiroame/kaireader)."),
         T("Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub."),
     };

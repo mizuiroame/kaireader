@@ -170,6 +170,7 @@ static void settingsShots(App *app, const char *dir, const char *prefix)
 }
 
 extern bool g_preview_net_configured;
+extern bool g_preview_server_configured;
 
 // The Network tab: no folder yet; then a made-up one, its list, a copy, and its Settings page.
 static void networkShots(App *app, const char *dir)
@@ -210,6 +211,29 @@ static void networkShots(App *app, const char *dir)
     app->menu_cursor = 0;
     render(app, dir, "library-menu-network");
     app->panel = PANEL_NONE;
+    // A book server too: X goes card, network folder, server.
+    g_preview_server_configured = true;
+    appServerFeedSettings();
+    appServerStart(app);
+    appSwitchSource(app, 58);  // To the network folder,
+    appSwitchSource(app, 59);  // then to the server.
+    settle(app);
+    render(app, dir, "server");
+    app->panel = PANEL_MENU;
+    app->menu_cursor = 0;
+    render(app, dir, "server-menu");
+    app->panel = PANEL_NONE;
+    app->panel = PANEL_SETTINGS;
+    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_cursor = 2;
+    render(app, dir, "settings-main-server");
+    app->settings_page = SETTINGS_PAGE_SERVER;
+    app->settings_cursor = 0;
+    render(app, dir, "settings-server");
+    app->panel = PANEL_NONE;
+    appSwitchSource(app, 60);  // Round to the card.
+    g_preview_server_configured = false;
+    appServerFeedSettings();
     g_preview_net_configured = false;  // The rest as before: no folder.
     appNetworkFeedSettings();
 }

@@ -21,7 +21,7 @@
 
 Shelf *appNetShelf(App *app)
 {
-    return app->lib_tab == 1 ? &app->shelf : &app->other_shelf;
+    return app->lib_tab == LIB_NETWORK ? &app->shelf : &app->stash[LIB_NETWORK];
 }
 
 static void shelfPath(const App *app, char *out, size_t size)
@@ -39,21 +39,23 @@ static void saveNetShelf(App *app)
 void appNetStart(App *app)
 {
     app->net_open = -1;
+    app->copy_tab = LIB_CARD;
     if (!davConfigured())
         return;
     char file[APP_FOLDER_MAX + 32];
     shelfPath(app, file, sizeof(file));
-    shelfLoad(&app->other_shelf, file);
-    for (int i = 0; i < app->other_shelf.count; i++)  // As last seen, until the folder is looked through.
-        app->other_shelf.items[i].present = true;
+    Shelf *s = &app->stash[LIB_NETWORK];
+    shelfLoad(s, file);
+    for (int i = 0; i < s->count; i++)  // As last seen, until the folder is looked through.
+        s->items[i].present = true;
 }
 
 void appNetForget(App *app)
 {
-    if (app->lib_tab == 1)
-        appLibTab(app, 0, 0);
-    shelfFree(&app->other_shelf);
-    app->other_cursor = app->other_scroll = 0;
+    if (app->lib_tab == LIB_NETWORK)
+        appLibTab(app, LIB_CARD, 0);
+    shelfFree(&app->stash[LIB_NETWORK]);
+    app->stash_cursor[LIB_NETWORK] = app->stash_scroll[LIB_NETWORK] = 0;
     app->net_scanned = false;
     app->net_problem[0] = '\0';
     char file[APP_FOLDER_MAX + 32];
@@ -86,7 +88,7 @@ static void takeScan(App *app, uint64_t now_ns)
         return;
     if (!ok) {  // The books last seen stay shown.
         snprintf(app->net_problem, sizeof(app->net_problem), "%s", why);
-        if (app->lib_tab == 1)
+        if (app->lib_tab == LIB_NETWORK)
             appNotify(app, NOTICE_ERROR, why, now_ns);
         free(books);
         return;
@@ -105,7 +107,7 @@ static void takeScan(App *app, uint64_t now_ns)
             b->size = books[i].size;
     }
     free(books);
-    if (app->lib_tab == 1)
+    if (app->lib_tab == LIB_NETWORK)
         appResort(app);
     saveNetShelf(app);
 }
@@ -126,9 +128,9 @@ bool appNetReady(App *app, int book, char *local, size_t size, uint64_t now_ns)
         appNotify(app, NOTICE_INFO, T("A book is being copied already."), now_ns);
         return false;
     }
-    shelfDisplayName(b, app->net_copying, sizeof(app->net_copying));
-    snprintf(app->net_copy_local, sizeof(app->net_copy_local), "%s", local);
-    app->net_open = book;
+    char name[SHELF_TEXT_MAX];
+    shelfDisplayName(b, name, sizeof(name));
+    appCopyStarted(app, book, name, local);
     return false;
 }
 
@@ -155,7 +157,7 @@ static void followCopy(App *app, uint64_t now_ns)
         appNotify(app, why[0] ? NOTICE_ERROR : NOTICE_INFO, why[0] ? why : T("Copy stopped."), now_ns);
         return;
     }
-    if (app->lib_tab != 1 || app->view != VIEW_LIBRARY)
+    if (app->lib_tab != app->copy_tab || app->view != VIEW_LIBRARY)
         return;  // Switched away meanwhile: it's on the card now, and opens at once next time.
     for (int i = 0; i < app->order_count; i++)
         if (app->order[i] == book) {

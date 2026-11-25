@@ -238,12 +238,33 @@ static void giveCover(ReadingCover *c)
     }
 }
 
+static ReadingCoverFetcher g_fetch_cover;
+
+void readingSetCoverFetcher(ReadingCoverFetcher fetch)
+{
+    pthread_mutex_lock(&g_lock);
+    g_fetch_cover = fetch;
+    pthread_mutex_unlock(&g_lock);
+}
+
 static void makeCover(const CoverAsk *ask)
 {
     ReadingCover *c = calloc(1, sizeof(*c));
     if (!c)
         return;
     snprintf(c->path, sizeof(c->path), "%s", ask->path);
+    pthread_mutex_lock(&g_lock);
+    ReadingCoverFetcher fetch = g_fetch_cover;
+    pthread_mutex_unlock(&g_lock);
+    if (fetch && fetch(ask->path, ask->w, ask->h, &c->image)) {  // A server's book: its own thumbnail.
+        c->ok = true;
+        giveCover(c);
+        return;
+    }
+    if (!strncmp(ask->path, READING_FETCHED_PREFIX, strlen(READING_FETCHED_PREFIX))) {  // No thumbnail: none.
+        giveCover(c);
+        return;
+    }
     // An EPUB with a cover and a title: its package says all of it, the book needn't be opened
     // (a book on the network reads half as much).
     DocEpubInfo first;

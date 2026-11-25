@@ -12,6 +12,7 @@ static const char *const PAGE_TITLES[SETTINGS_PAGE_COUNT] = {
     N_("Display"),
     N_("About KaiReader"),
     N_("Network folder"),
+    N_("Book server"),
 };
 
 static const char *const LABELS[SETTING_COUNT] = {
@@ -34,6 +35,11 @@ static const char *const LABELS[SETTING_COUNT] = {
     N_("Allow without signing (old NAS)"),
     N_("Test the connection"),
     N_("Forget this folder"),
+    N_("Book server"),
+    N_("Address"),
+    N_("User and password"),
+    N_("Test the connection"),
+    N_("Forget this server"),
 };
 
 static const char *const HELP[SETTING_COUNT] = {
@@ -56,7 +62,25 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("Only for an old NAS or a folder open to guests that doesn't sign: someone on your network could change what's read."),
     N_("Asks the folder for its top: whether it answers, and how many folders and books it has."),
     N_("Its address, user and password are taken off the card. The books already copied stay."),
+    N_("Calibre-Web, Kavita, Komga or another OPDS catalog on your network: X in the library goes to its books."),
+    N_("192.168.0.10:8083 for Calibre-Web, 192.168.0.10:25600 for Komga (its /opds address is found), or a whole OPDS address (Kavita's, with its key)."),
+    N_("Empty for a catalog open to everyone."),
+    N_("Asks the server for its catalog: whether it answers, and what's at its start."),
+    N_("Its address, user and password are taken off the card. The books already downloaded stay."),
 };
+
+static char g_srv_address[256], g_srv_user[128];
+
+void settingsSetServer(const char *address, const char *user)
+{
+    snprintf(g_srv_address, sizeof(g_srv_address), "%s", address);
+    snprintf(g_srv_user, sizeof(g_srv_user), "%s", user);
+}
+
+bool settingsIsServer(SettingRow row)
+{
+    return row >= SETTING_SRV_ADDRESS && row <= SETTING_SRV_FORGET;
+}
 
 static char g_net_address[256], g_net_user[128];
 static bool g_net_remember = true, g_net_unsigned, g_net_smb;
@@ -77,7 +101,8 @@ bool settingsIsNetwork(SettingRow row)
 
 bool settingsPickedValue(SettingRow row)
 {
-    return row == SETTING_OPEN_NETWORK || row == SETTING_NET_ADDRESS || row == SETTING_NET_ACCOUNT;
+    return row == SETTING_OPEN_NETWORK || row == SETTING_NET_ADDRESS || row == SETTING_NET_ACCOUNT ||
+           row == SETTING_OPEN_SERVER || row == SETTING_SRV_ADDRESS || row == SETTING_SRV_ACCOUNT;
 }
 
 int settingsRows(SettingsPage page, SettingRow *out)
@@ -87,6 +112,7 @@ int settingsRows(SettingsPage page, SettingRow *out)
     case SETTINGS_PAGE_MAIN:
         out[n++] = SETTING_OPEN_LIBRARY;  // As KaiPlayer's: the library, where it comes from, then the rest.
         out[n++] = SETTING_OPEN_NETWORK;
+        out[n++] = SETTING_OPEN_SERVER;
         out[n++] = SETTING_OPEN_READING;
         out[n++] = SETTING_OPEN_DISPLAY;
         out[n++] = SETTING_OPEN_ABOUT;
@@ -112,6 +138,12 @@ int settingsRows(SettingsPage page, SettingRow *out)
         out[n++] = SETTING_NET_UNSIGNED;
         out[n++] = SETTING_NET_TEST;
         out[n++] = SETTING_NET_FORGET;
+        break;
+    case SETTINGS_PAGE_SERVER:
+        out[n++] = SETTING_SRV_ADDRESS;
+        out[n++] = SETTING_SRV_ACCOUNT;
+        out[n++] = SETTING_SRV_TEST;
+        out[n++] = SETTING_SRV_FORGET;
         break;
     default:
         break;
@@ -147,6 +179,8 @@ SettingsPage settingsOpens(SettingRow row)
         return SETTINGS_PAGE_ABOUT;
     case SETTING_OPEN_NETWORK:
         return SETTINGS_PAGE_NETWORK;
+    case SETTING_OPEN_SERVER:
+        return SETTINGS_PAGE_SERVER;
     default:
         return SETTINGS_PAGE_MAIN;
     }
@@ -194,6 +228,15 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
     case SETTING_NET_ACCOUNT:
         *translate_name = g_net_user[0] == 0;
         snprintf(out, size, "%s", g_net_user[0] ? g_net_user : N_("None"));
+        break;
+    case SETTING_OPEN_SERVER:
+    case SETTING_SRV_ADDRESS:
+        *translate_name = g_srv_address[0] == 0;
+        snprintf(out, size, "%s", g_srv_address[0] ? g_srv_address : N_("Not set"));
+        break;
+    case SETTING_SRV_ACCOUNT:
+        *translate_name = g_srv_user[0] == 0;
+        snprintf(out, size, "%s", g_srv_user[0] ? g_srv_user : N_("None"));
         break;
     case SETTING_NET_REMEMBER:
         snprintf(out, size, "%s", g_net_remember ? N_("On") : N_("Off: asked when the folder is used"));

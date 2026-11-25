@@ -18,6 +18,7 @@
 #define COLOR_FAINT GFX_RGB(0x5E, 0x5E, 0x6A)
 #define COLOR_ERROR GFX_RGB(0xFF, 0x8A, 0x5C)
 #define COLOR_NETWORK GFX_RGB(0x2E, 0xC4, 0xB6)  // The network folder's, as in KaiPlayer and KaiVideo.
+#define COLOR_SERVER GFX_RGB(0x3D, 0x6B, 0xFF)   // The book server's: the deep blue of KaiPlayer's server.
 #define COLOR_CHARGING GFX_RGB(0x5B, 0xD6, 0x7A)
 
 #define MARGIN 32

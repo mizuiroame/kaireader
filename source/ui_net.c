@@ -20,13 +20,25 @@
 #define COPY_H 230
 #define BAR_H 8
 
+// Each source's name, as the pill and the help line say it, and its color.
+static const char *const SOURCE_NAMES[LIB_SOURCES] = {N_("SD card"), N_("Network folder"), N_("Book server")};
+
+const char *uiSourceName(int tab)
+{
+    return T(SOURCE_NAMES[tab >= 0 && tab < LIB_SOURCES ? tab : 0]);
+}
+
+Color uiSourceColor(int tab)
+{
+    return tab == LIB_NETWORK ? COLOR_NETWORK : tab == LIB_SERVER ? COLOR_SERVER : COLOR_ACCENT;
+}
+
 int uiDrawSourcePill(const App *app)
 {
     int title_end = MARGIN + 34 + fontTextWidth(FONT_BOLD, 26, "KaiReader");
-    if (!davConfigured())
+    if (!appSourceSet(LIB_NETWORK) && !appSourceSet(LIB_SERVER))
         return title_end;
-    bool network = app->lib_tab == 1;
-    const char *label = network ? T("Network folder") : T("SD card");
+    const char *label = uiSourceName(app->lib_tab);
     bool key = app->panel == PANEL_NONE;  // X switches it while no panel is open.
     int key_w = key ? uiButtonWidth("X") + 8 : 0;
     int x = MARGIN + 34 + fontTextWidth(FONT_BOLD, 26, "KaiReader") + PILL_GAP;
@@ -37,13 +49,13 @@ int uiDrawSourcePill(const App *app)
         uiDrawButton(x + 8, cy, "X", COLOR_SURFACE, COLOR_TEXT);
     int dot_x = x + 12 + key_w;
     gfxFillRoundRect(dot_x, (int)cy - SOURCE_DOT / 2, SOURCE_DOT, SOURCE_DOT, SOURCE_DOT / 2,
-                     network ? COLOR_NETWORK : COLOR_ACCENT);
+                     uiSourceColor(app->lib_tab));
     fontDrawMiddle(FONT_BOLD, 16, dot_x + SOURCE_DOT + 8, cy, label, COLOR_TEXT);
     uiHitAdd(x - 4, 4, w + 8, HEADER_H - 8, HIT_SOURCE, 0);
     return x + w;
 }
 
-void uiDrawCoversPill(int left, int right, uint64_t now_ns, bool network)
+void uiDrawCoversPill(int left, int right, uint64_t now_ns, int tab)
 {
     const char *label = T("Loading covers");
     int w = 12 + 18 + 8 + fontTextWidth(FONT_REGULAR, 16, label) + 14, x = right - w;
@@ -54,18 +66,19 @@ void uiDrawCoversPill(int left, int right, uint64_t now_ns, bool network)
     }
     float cy = PILL_Y + PILL_H / 2.0f;
     gfxFillRoundRect(x, PILL_Y, w, PILL_H, PILL_H / 2, COLOR_SURFACE_HI);
-    uiDrawSpinner(x + 21.0f, cy, 8.0f, now_ns, network ? COLOR_NETWORK : COLOR_ACCENT);
+    uiDrawSpinner(x + 21.0f, cy, 8.0f, now_ns, uiSourceColor(tab));
     fontDrawMiddle(FONT_REGULAR, 16, x + 38, cy, label, COLOR_DIM);
 }
 
-void uiDrawNetScan(int x, float cy, uint64_t now_ns)
+void uiDrawNetScan(int tab, int x, float cy, uint64_t now_ns)
 {
     int found;
-    if (!appNetScanning(&found))
+    if (tab == LIB_NETWORK ? !appNetScanning(&found) : tab == LIB_SERVER ? !appServerScanning(&found) : true)
         return;
-    uiDrawSpinner(x + 10.0f, cy, 9.0f, now_ns, COLOR_NETWORK);
+    uiDrawSpinner(x + 10.0f, cy, 9.0f, now_ns, uiSourceColor(tab));
     char text[96];
-    snprintf(text, sizeof(text), T("Looking through the folder... %d"), found);
+    snprintf(text, sizeof(text), tab == LIB_SERVER ? T("Looking through the catalog... %d") : T("Looking through the folder... %d"),
+             found);
     fontDrawMiddle(FONT_REGULAR, 16, x + 28, cy, text, COLOR_DIM);
 }
 
@@ -87,8 +100,35 @@ static void drawMessage(const char *const *lines, int count, const char *button,
     uiHitAdd(bx, by, bw, 48, hit, 0);
 }
 
+// The book server's library with no books.
+static void drawServerEmpty(const App *app, uint64_t now_ns)
+{
+    int found;
+    if (appServerScanning(&found)) {
+        uiDrawSpinner(gfxLayoutWidth() / 2.0f, LIB_TOP + 60.0f, 16.0f, now_ns, COLOR_SERVER);
+        const char *lines[] = {T("Looking through the server's catalog..."),
+                               T("Its books show here, with their covers, as they're found.")};
+        drawMessage(lines, 2, NULL, HIT_RESCAN_NET);
+    } else if (app->server_problem[0]) {
+        const char *lines[] = {T("The book server couldn't be read."), app->server_problem};
+        drawMessage(lines, 2, T("Try again"), HIT_RESCAN_NET);
+    } else if (app->prefs.sort == SHELF_SORT_FAVORITES) {
+        const char *lines[] = {T("No favorites here yet."),
+                               T("Hold your finger on a cover, or choose \"Add to favorites\" in the + menu.")};
+        drawMessage(lines, 2, NULL, HIT_RESCAN_NET);
+    } else {
+        const char *lines[] = {T("No books in the server's catalog."),
+                               T("KaiReader reads its EPUB, PDF, CBZ, CBR, FB2 and MOBI books.")};
+        drawMessage(lines, 2, T("Look again"), HIT_RESCAN_NET);
+    }
+}
+
 void uiDrawNetEmpty(const App *app, uint64_t now_ns)
 {
+    if (app->lib_tab == LIB_SERVER) {
+        drawServerEmpty(app, now_ns);
+        return;
+    }
     int found;
     if (appNetScanning(&found)) {
         uiDrawSpinner(gfxLayoutWidth() / 2.0f, LIB_TOP + 60.0f, 16.0f, now_ns, COLOR_NETWORK);

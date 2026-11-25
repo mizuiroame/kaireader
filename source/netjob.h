@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "dav.h"
+#include "opds.h"
 
 #define NETJOB_WHY_MAX 256
 
@@ -33,6 +34,18 @@ bool netJobScan(void);
 bool netJobScanning(int *found);
 // A scan ended, once: its books (malloc'd, the caller frees them) and whether the top could be read.
 bool netJobTakeScan(NetBook **books, int *count, bool *ok, char *why, size_t why_size);
+
+#define NETJOB_SERVER_FEEDS 300  // Feeds of a book server's catalog read at most in a look-through.
+
+// Looks through a book server's catalog from catalog (its lists, their pages), each book
+// once. False if a look-through of it runs already.
+bool netJobServerScan(const char *catalog);
+bool netJobServerScanning(int *found);
+// Its end, once: the books (malloc'd, the caller frees them), and whether the catalog could be read.
+bool netJobTakeServerScan(OpdsBook **books, int *count, bool *ok, char *why, size_t why_size);
+
+// Downloads a book server's book (its link) to local, as netJobCopy does. False if a copy runs already.
+bool netJobCopyLink(const char *link, const char *local, int64_t size);
 
 // Copies location to local (through local ".part", then renamed); size from the
 // listing, -1 if unknown. False if a copy runs already.

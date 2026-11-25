@@ -831,10 +831,55 @@ static void readNames(fz_xml *package, DocEpubInfo *out)
 }
 
 // The cover picture at entry in the zip, fitted into max_w x max_h (never enlarged).
+// A picture in buf (taken: it's dropped), fitted into max_w x max_h (never enlarged).
+static bool fitPicture(fz_context *ctx, fz_buffer *buf, int max_w, int max_h, DocImage *out);
+
 static bool readCover(fz_context *ctx, fz_archive *zip, const char *entry, int max_w, int max_h, DocImage *out)
 {
-    bool ok = false;
     fz_buffer *buf = NULL;
+    fz_var(buf);
+    fz_try(ctx)
+    {
+        buf = fz_read_archive_entry(ctx, zip, entry);
+    }
+    fz_catch(ctx)
+    {
+        return false;
+    }
+    return fitPicture(ctx, buf, max_w, max_h, out);
+}
+
+bool docImageFromData(const void *data, size_t size, int max_w, int max_h, DocImage *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!data || !size || max_w <= 0 || max_h <= 0)
+        return false;
+    fz_context *ctx = fz_new_context(NULL, NULL, 32u << 20);
+    if (!ctx)
+        return false;
+    fz_set_warning_callback(ctx, quiet, NULL);
+    fz_set_error_callback(ctx, quiet, NULL);
+    fz_buffer *buf = NULL;
+    fz_var(buf);
+    bool ok = false;
+    fz_try(ctx)
+    {
+        fz_register_document_handlers(ctx);
+        buf = fz_new_buffer_from_copied_data(ctx, data, size);
+    }
+    fz_catch(ctx)
+    {
+        buf = NULL;
+    }
+    if (buf)
+        ok = fitPicture(ctx, buf, max_w, max_h, out);
+    fz_drop_context(ctx);
+    return ok;
+}
+
+static bool fitPicture(fz_context *ctx, fz_buffer *buf, int max_w, int max_h, DocImage *out)
+{
+    bool ok = false;
     fz_image *image = NULL;
     fz_pixmap *pix = NULL, *rgb = NULL, *small = NULL;
     fz_var(ok);
@@ -845,7 +890,6 @@ static bool readCover(fz_context *ctx, fz_archive *zip, const char *entry, int m
     fz_var(small);
     fz_try(ctx)
     {
-        buf = fz_read_archive_entry(ctx, zip, entry);
         image = fz_new_image_from_buffer(ctx, buf);
         if (image->w <= 0 || image->h <= 0 || (uint64_t)image->w * (uint64_t)image->h > COVER_PIXELS_MAX)
             fz_throw(ctx, FZ_ERROR_LIMIT, "cover too big");

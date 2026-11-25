@@ -34,6 +34,10 @@
 #define LIB_SIDE 24          // Room at each side of the grid, at least.
 #define FOOTER_H 56          // The help line at the bottom.
 #define NET_LOCAL_MAX (APP_FOLDER_MAX + 512)
+#define LIB_CARD 0     // The library's sources: the SD card's books,
+#define LIB_NETWORK 1  // the network folder's,
+#define LIB_SERVER 2   // and the book server's (OPDS).
+#define LIB_SOURCES 3
 
 #define CONTENTS_ROW_H 48
 #define READ_TURN_NS 180000000ull  // A page sliding to the next.
@@ -57,7 +61,7 @@ typedef enum {
     MENU_FAVORITE,    // The book selected in the library: a favorite, or not any more.
     MENU_VIEW,        // The library as a list, or as a grid.
     MENU_SOURCE,      // The library: the SD card's books, or the network folder's.
-    MENU_NET_SETUP,   // No network folder yet: its Settings page.
+    MENU_NET_SETUP,   // No other source yet: Settings, at the network folder and the book server.
     MENU_SETTINGS,
     MENU_RESCAN,      // The card's books looked for again, or the network folder read again.
     MENU_EXIT,
@@ -122,11 +126,15 @@ typedef struct {
     unsigned mark_generation;
 
     // The library: its tabs, the books on the card (0) and the network folder (1, app_netlib.c).
-    // shelf is the one shown; other_shelf the other source's (swapped by X), with its place.
+    // The library's source (LIB_*): shelf is its books; the others' wait in stash (X swaps them),
+    // with where each was left.
     int lib_tab;
-    Shelf other_shelf;
-    int other_cursor, other_scroll;
+    Shelf stash[LIB_SOURCES];
+    int stash_cursor[LIB_SOURCES], stash_scroll[LIB_SOURCES];
     bool net_scanned;                    // The network folder looked through since KaiReader started.
+    bool server_scanned;                 // The book server's catalog walked since KaiReader started.
+    char server_problem[256];            // Why the server couldn't be read; "" if it could.
+    int copy_tab;                        // The library of the book being copied to open.
     char net_problem[256];               // Why the folder couldn't be read; "" if it could.
     int net_open;                        // A network book copied to be opened: its shelf index; -1 none.
     char net_copying[DAV_NAME_MAX];      // The book being copied to the card; "" none.
@@ -198,6 +206,8 @@ bool appNetworkEnsurePassword(App *app, uint64_t now_ns);
 void appLibTab(App *app, int tab, uint64_t now_ns);
 // X in the library: the other source, or (none yet) Settings with how to add a network folder.
 void appSwitchSource(App *app, uint64_t now_ns);
+// The source X goes to next (round to the card).
+int appNextSource(const App *app);
 // The library shown sorted and laid out again (after its shelf changed), the book selected kept.
 void appResort(App *app);
 // The network folder's library (app_netlib.c).
@@ -213,6 +223,24 @@ bool appNetReady(App *app, int book, char *local, size_t size, uint64_t now_ns);
 void appNetCancelCopy(void);
 // The network folder's shelf, which ever is shown.
 Shelf *appNetShelf(App *app);
+// A book being copied to the card to be opened (book: its index in the shelf shown).
+void appCopyStarted(App *app, int book, const char *name, const char *local);
+// The network started while a folder or a server is set (app_network.c).
+void appNetworkUse(void);
+// True for a source that's set up (the card always is).
+bool appSourceSet(int tab);
+
+// The book server's library and Settings page (app_server.c).
+Shelf *appServerShelf(App *app);
+void appServerStart(App *app);   // Its account and shelf read from the card.
+void appServerForget(App *app);
+void appServerScan(App *app, uint64_t now_ns);
+bool appServerScanning(int *found);
+void appServerUpdate(App *app, uint64_t now_ns);
+void appServerTestUpdate(App *app, uint64_t now_ns);
+bool appServerReady(App *app, int book, char *local, size_t size, uint64_t now_ns);
+bool appServerActivate(App *app, SettingRow row, uint64_t now_ns);
+void appServerFeedSettings(void);
 // The copy's share done (0..1), -1 if its size isn't known; done and total in bytes.
 float appNetCopyProgress(int64_t *done, int64_t *total);
 void appOpenBook(App *app, int order_index, uint64_t now_ns);

@@ -11,6 +11,7 @@
 #include "net.h"
 #include "netjob.h"
 #include "netstream.h"
+#include "opdsnet.h"
 #include "smbnet.h"
 
 #define TEST_TEXT_MAX 256
@@ -28,9 +29,9 @@ static void accountPath(const App *app, char *out, size_t size)
     snprintf(out, size, "%s/%s", app->folder, DAV_ACCOUNT_FILE);
 }
 
-static void useNetwork(void)
+void appNetworkUse(void)
 {
-    bool wanted = davConfigured();
+    bool wanted = davConfigured() || opdsConfigured();
     if (wanted && !g_network)
         g_network = netInit();
     else if (!wanted && g_network) {
@@ -56,7 +57,7 @@ void appNetworkStart(App *app)
     davLoadAccount(path);
     netStreamInstall();  // "dav:/" books open over the network (covers, titles).
     appNetworkFeedSettings();
-    useNetwork();
+    appNetworkUse();
 }
 
 static void save(App *app, const DavAccount *a, uint64_t now)
@@ -73,7 +74,7 @@ static void save(App *app, const DavAccount *a, uint64_t now)
     accountPath(app, path, sizeof(path));
     if (!davSaveAccount(path))
         appNotify(app, NOTICE_ERROR, T("It couldn't be written to the card."), now);
-    useNetwork();
+    appNetworkUse();
     appNetworkFeedSettings();
 }
 
@@ -243,7 +244,6 @@ static void forget(App *app, uint64_t now)
 {
     DavAccount none = {0};
     save(app, &none, now);
-    app->lib_tab = 0;
     appNotify(app, NOTICE_DONE, T("The network folder is forgotten."), now);
 }
 

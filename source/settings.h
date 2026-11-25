@@ -16,6 +16,7 @@ typedef enum {
     SETTINGS_PAGE_DISPLAY,
     SETTINGS_PAGE_ABOUT,
     SETTINGS_PAGE_NETWORK,
+    SETTINGS_PAGE_SERVER,
     SETTINGS_PAGE_COUNT,
 } SettingsPage;
 
@@ -39,6 +40,11 @@ typedef enum {
     SETTING_NET_UNSIGNED,
     SETTING_NET_TEST,
     SETTING_NET_FORGET,
+    SETTING_OPEN_SERVER,   // The book server's page (app_server.c does its rows).
+    SETTING_SRV_ADDRESS,
+    SETTING_SRV_ACCOUNT,
+    SETTING_SRV_TEST,
+    SETTING_SRV_FORGET,
     SETTING_COUNT,
 } SettingRow;
 
@@ -67,6 +73,10 @@ bool settingsHasValue(SettingRow row);
 void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool *translate_name);
 // The network folder's rows are the app's (app_network.c): true for them.
 bool settingsIsNetwork(SettingRow row);
+// The book server's rows are the app's too (app_server.c).
+bool settingsIsServer(SettingRow row);
+// What the book server's rows show: its address as shown, and the user.
+void settingsSetServer(const char *address, const char *user);
 // A row that shows a value but is picked, not stepped (the folder's address): no arrows.
 bool settingsPickedValue(SettingRow row);
 // What the network folder's rows show: its address as shown, the user, the two switches,

@@ -9,6 +9,7 @@
 #include "approot.h"
 #include "buttons.h"
 #include "davnet.h"
+#include "opdsnet.h"
 #include "gfx.h"
 #include "lang.h"
 #include "motion.h"
@@ -34,15 +35,19 @@ static void pathIn(const App *app, const char *name, char *out, size_t size)
     snprintf(out, size, "%s/%s", app->folder, name);
 }
 
-#define CARD_SHELF "shelf.txt"
-#define NET_SHELF "shelf-network.txt"
+static const char *const SHELF_FILES[LIB_SOURCES] = {"shelf.txt", "shelf-network.txt", "shelf-server.txt"};
 
-// The library shown (the card's, or the network folder's) to its file.
+// The library shown to its file.
 static void saveShelf(App *app)
 {
     char file[APP_FOLDER_MAX + 32];
-    pathIn(app, app->lib_tab == 1 ? NET_SHELF : CARD_SHELF, file, sizeof(file));
+    pathIn(app, SHELF_FILES[app->lib_tab], file, sizeof(file));
     shelfSave(&app->shelf, file);
+}
+
+bool appSourceSet(int tab)
+{
+    return tab == LIB_CARD || (tab == LIB_NETWORK && davConfigured()) || (tab == LIB_SERVER && opdsConfigured());
 }
 
 static void savePrefs(App *app)
@@ -167,8 +172,12 @@ static void keepCursorVisible(App *app)
 
 void appRescan(App *app, uint64_t now_ns)
 {
-    if (app->lib_tab == 1) {  // The network folder's: looked through again.
+    if (app->lib_tab == LIB_NETWORK) {  // The network folder's: looked through again.
         appNetScan(app, now_ns);
+        return;
+    }
+    if (app->lib_tab == LIB_SERVER) {  // The server's catalog: walked again.
+        appServerScan(app, now_ns);
         return;
     }
     int found = shelfScan(&app->shelf, app->books_folder);
@@ -203,6 +212,8 @@ void appInit(App *app, const char *folder)
     app->turn_from = -1;
     appNetworkStart(app);
     appNetStart(app);
+    appServerStart(app);
+    appNetworkUse();
 }
 
 const ShelfBook *appSelectedBook(const App *app)
@@ -343,13 +354,16 @@ void appFree(App *app)
     free(app->lines);
     app->lines = NULL;
     coversFree(&app->covers);
-    if (davConfigured()) {  // The other library too, to its file.
+    for (int tab = 0; tab < LIB_SOURCES; tab++) {  // The other libraries too, to their files.
+        if (tab == app->lib_tab || !appSourceSet(tab))
+            continue;
         char file[APP_FOLDER_MAX + 32];
-        pathIn(app, app->lib_tab == 1 ? CARD_SHELF : NET_SHELF, file, sizeof(file));
-        shelfSave(&app->other_shelf, file);
+        pathIn(app, SHELF_FILES[tab], file, sizeof(file));
+        shelfSave(&app->stash[tab], file);
     }
     shelfFree(&app->shelf);
-    shelfFree(&app->other_shelf);
+    for (int tab = 0; tab < LIB_SOURCES; tab++)
+        shelfFree(&app->stash[tab]);
     bookmarksFree(&app->marks);
 }
 
@@ -409,6 +423,10 @@ void appOpenBook(App *app, int order_index, uint64_t now_ns)
     const char *open = app->shelf.items[app->order[order_index]].path;
     if (davIsLocation(open)) {  // The network folder's: its copy on the card, made first if it isn't there.
         if (!appNetReady(app, app->order[order_index], local, sizeof(local), now_ns))
+            return;
+        open = local;
+    } else if (!strncmp(open, OPDS_PREFIX, strlen(OPDS_PREFIX))) {  // The server's: downloaded first.
+        if (!appServerReady(app, app->order[order_index], local, sizeof(local), now_ns))
             return;
         open = local;
     }
@@ -709,6 +727,8 @@ void appUpdate(App *app, uint64_t now_ns)
         app->covers_busy_ns = now_ns;
     appNetworkUpdate(app, now_ns);
     appNetUpdate(app, now_ns);
+    appServerUpdate(app, now_ns);
+    appServerTestUpdate(app, now_ns);
     if (app->view == VIEW_READER)
         followBook(app, now_ns);
     if (app->turn_from >= 0 && now_ns - app->turn_start_ns >= READ_TURN_NS)
@@ -816,7 +836,7 @@ int appMenuRows(const App *app, MenuItem *out)
     if (app->view == VIEW_LIBRARY) {
         if (appSelectedBook(app))
             out[n++] = MENU_FAVORITE;
-        out[n++] = davConfigured() ? MENU_SOURCE : MENU_NET_SETUP;
+        out[n++] = appSourceSet(LIB_NETWORK) || appSourceSet(LIB_SERVER) ? MENU_SOURCE : MENU_NET_SETUP;
         out[n++] = MENU_VIEW;
         out[n++] = MENU_RESCAN;
     }
@@ -887,32 +907,57 @@ void appResort(App *app)
 
 void appLibTab(App *app, int tab, uint64_t now_ns)
 {
-    tab = tab ? 1 : 0;
-    if (tab == app->lib_tab || (tab == 1 && !davConfigured()))
+    if (tab < 0 || tab >= LIB_SOURCES || tab == app->lib_tab || !appSourceSet(tab))
         return;
     saveShelf(app);
-    Shelf shown = app->shelf;  // The other library in its place, where it was left.
-    app->shelf = app->other_shelf;
-    app->other_shelf = shown;
-    int cursor = app->cursor, scroll = app->scroll;
+    int was = app->lib_tab;  // The shown library to the stash, the one asked from it, where each was left.
+    app->stash[was] = app->shelf;
+    app->stash_cursor[was] = app->cursor;
+    app->stash_scroll[was] = app->scroll;
+    app->shelf = app->stash[tab];
+    memset(&app->stash[tab], 0, sizeof(app->stash[tab]));
     app->lib_tab = tab;
     app->order_count = 0;  // The order was the other shelf's.
     sortShelf(app);
-    app->cursor = app->other_cursor < app->order_count ? app->other_cursor : 0;
-    app->scroll = app->other_scroll;
-    app->other_cursor = cursor;
-    app->other_scroll = scroll;
+    app->cursor = app->stash_cursor[tab] < app->order_count ? app->stash_cursor[tab] : 0;
+    app->scroll = app->stash_scroll[tab];
     kineticStop(&app->kinetic);
     layoutLibrary(app);
     keepCursorVisible(app);
-    if (tab == 1 && !app->net_scanned)  // Once a session: what's in the folder now.
+    if (tab == LIB_NETWORK && !app->net_scanned)  // Once a session: what's in it now.
         appNetScan(app, now_ns);
+    if (tab == LIB_SERVER && !app->server_scanned)
+        appServerScan(app, now_ns);
+}
+
+// The next source that's set up, after tab (round to the card).
+static int nextSource(int tab)
+{
+    for (int i = 1; i <= LIB_SOURCES; i++) {
+        int next = (tab + i) % LIB_SOURCES;
+        if (appSourceSet(next))
+            return next;
+    }
+    return LIB_CARD;
+}
+
+int appNextSource(const App *app)
+{
+    return nextSource(app->lib_tab);
+}
+
+void appCopyStarted(App *app, int book, const char *name, const char *local)
+{
+    snprintf(app->net_copying, sizeof(app->net_copying), "%s", name && name[0] ? name : T("A book"));
+    snprintf(app->net_copy_local, sizeof(app->net_copy_local), "%s", local);
+    app->net_open = book;
+    app->copy_tab = app->lib_tab;
 }
 
 void appSwitchSource(App *app, uint64_t now_ns)
 {
-    if (davConfigured()) {
-        appLibTab(app, app->lib_tab ? 0 : 1, now_ns);
+    if (appSourceSet(LIB_NETWORK) || appSourceSet(LIB_SERVER)) {
+        appLibTab(app, nextSource(app->lib_tab), now_ns);
         return;
     }
     openSettings(app);
@@ -950,8 +995,9 @@ static void menuPick(App *app, MenuItem item, uint64_t now_ns)
     case MENU_SOURCE:
         appSwitchSource(app, now_ns);
         break;
-    case MENU_NET_SETUP:
-        openNetworkSettings(app);
+    case MENU_NET_SETUP:  // Settings' main page, on the network folder (the book server under it).
+        openSettings(app);
+        app->settings_cursor = 1;
         break;
     case MENU_RESCAN:
         appRescan(app, now_ns);
@@ -991,6 +1037,11 @@ static void settingsPick(App *app, int index, int dir, uint64_t now_ns)
         return;
     app->settings_cursor = index;
     SettingRow row = rows[index];
+    if (settingsIsServer(row)) {  // The book server's rows: the keyboard, the test, forgetting it.
+        if (!dir)
+            appServerActivate(app, row, now_ns);
+        return;
+    }
     if (settingsIsNetwork(row)) {  // The account's rows: the keyboard, or a switch saved with the account.
         bool toggle = row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED;
         if (!dir || toggle)
@@ -1324,8 +1375,8 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
     case HIT_NET_SETUP:  // No folder yet: its Settings page.
         openNetworkSettings(app);
         break;
-    case HIT_RESCAN_NET:
-        appNetScan(app, now_ns);
+    case HIT_RESCAN_NET:  // Look again: the folder, or the server's catalog.
+        appRescan(app, now_ns);
         break;
     case HIT_NET_CANCEL:
         appNetCancelCopy();

@@ -114,6 +114,11 @@ int readingChapters(DocChapter *out, int max);
 // Asks for a book's cover, w x h pixels at most (the newest asks come first;
 // a few are kept). A cover comes back failed if the book can't be opened.
 void readingWantCover(const char *path, int w, int h);
+// Books whose covers come from elsewhere (a book server's thumbnails): paths with this prefix
+// are asked of the fetcher, which fills out (w x h at most) and returns true, or false for none.
+#define READING_FETCHED_PREFIX "opds:"
+typedef bool (*ReadingCoverFetcher)(const char *path, int w, int h, DocImage *out);
+void readingSetCoverFetcher(ReadingCoverFetcher fetch);
 bool readingTakeCover(ReadingCover *out);
 // True while covers are asked for or being made.
 bool readingCoversPending(void);
