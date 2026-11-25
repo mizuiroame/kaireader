@@ -1,0 +1,757 @@
+# KaiReader em português (Brasil).
+# Cada linha em inglês é seguida da tradução, com uma linha em branco entre os
+# pares. %d, %s e afins ficam iguais, na mesma ordem. Veja source/lang.h.
+language = Português (Brasil)
+
+%d books
+%d livros
+
+%d books in the library.
+%d livros na biblioteca.
+
+%d of %d
+%d de %d
+
+%s of %s
+%s de %s
+
+%s: added to your favorites.
+%s: adicionado aos favoritos.
+
+%s: no longer a favorite.
+%s: não é mais favorito.
+
+(a page without text)
+(uma página sem texto)
+
+1 book
+1 livro
+
+1 book in the library.
+1 livro na biblioteca.
+
+12-hour
+12 horas
+
+192.168.0.10:8083 for Calibre-Web, 192.168.0.10:25600 for Komga (its /opds address is found), or a whole OPDS address (Kavita's, with its key).
+192.168.0.10:8083 para Calibre-Web, 192.168.0.10:25600 para Komga (o endereço /opds é encontrado), ou um endereço OPDS completo (o do Kavita, com a chave).
+
+21:47 or 9:47 PM.
+21:47 ou 9:47 PM.
+
+24-hour
+24 horas
+
+[+] Menu
+[+] Menu
+
+[<>] Change  [A] Choose  [B] Back
+[<>] Mudar  [A] Escolher  [B] Voltar
+
+[A] Choose  [B] Close
+[A] Escolher  [B] Fechar
+
+[A] Go  [<>] Page  [L][R] Tabs  [B] Close
+[A] Ir  [<>] Página  [L][R] Abas  [B] Fechar
+
+[A] Go  [Y] Remove  [L][R] Tabs  [B] Close
+[A] Ir  [Y] Remover  [L][R] Abas  [B] Fechar
+
+[A] Open  [B] Close
+[A] Abrir  [B] Fechar
+
+[A] Read  
+[A] Ler  
+
+[B] Back
+[B] Voltar
+
+[B] Stop
+[B] Parar
+
+[X] Contents  [^v] Zoom  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library
+[X] Sumário  [^v] Zoom  [LS] Marcador  [RS] Girar  [-] Ocultar  [B] Biblioteca
+
+[X] Contents  [Y] Colors  [^v] Text size  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library
+[X] Sumário  [Y] Cores  [^v] Tamanho  [LS] Marcador  [RS] Girar  [-] Ocultar  [B] Biblioteca
+
+[Y] Search  [L][R] Lists  
+[Y] Buscar  [L][R] Listas  
+
+[Y] Sort  
+[Y] Ordenar  
+
+\\PC\Books (a Windows shared folder), 192.168.0.10:8098 (WebDAV or a web folder), ftp://nas or sftp://nas.
+\\PC\Books (uma pasta compartilhada do Windows), 192.168.0.10:8098 (WebDAV ou uma pasta web), ftp://nas ou sftp://nas.
+
+A book
+Um livro
+
+A book is being copied already.
+Já há um livro sendo copiado.
+
+A book reader for Switch 2 homebrew. Your books from sdmc:/books, a network folder or a book server (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS.
+Um leitor de livros para homebrew do Switch 2. Seus livros de sdmc:/books, de uma pasta de rede ou de um servidor de livros (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT e XPS.
+
+A grid
+Grade
+
+A grid of covers, or a list with more of each book. The + menu changes it too.
+Uma grade de capas, ou uma lista com mais de cada livro. O menu + também muda isso.
+
+A list
+Lista
+
+A shared folder (SMB), WebDAV, FTP or SFTP folder on your network: X in the library switches between its books and the SD card's.
+Uma pasta compartilhada (SMB), WebDAV, FTP ou SFTP da sua rede: X na biblioteca alterna entre os livros dela e os do cartão SD.
+
+About KaiReader
+Sobre o KaiReader
+
+Add a network folder or book server
+Adicionar uma pasta de rede ou um servidor de livros
+
+Add to favorites
+Adicionar aos favoritos
+
+Address
+Endereço
+
+Address: \\PC\Books (shared folder), 192.168.0.10:8098 (WebDAV or web), ftp://nas or sftp://nas
+Endereço: \\PC\Books (pasta compartilhada), 192.168.0.10:8098 (WebDAV ou web), ftp://nas ou sftp://nas
+
+Allow without signing (old NAS)
+Permitir sem assinatura (NAS antigo)
+
+Asks the folder for its top: whether it answers, and how many folders and books it has.
+Pede à pasta o primeiro nível: se ela responde, e quantas pastas e livros tem.
+
+Asks the server for its catalog: whether it answers, and what's at its start.
+Pede o catálogo ao servidor: se ele responde, e o que há no início.
+
+Author
+Autor
+
+Automatic
+Automático
+
+Back
+Voltar
+
+Back to the library
+Voltar à biblioteca
+
+Black
+Preto
+
+Book server
+Servidor de livros
+
+Bookmark added. Press X, then R, to see them all.
+Marcador adicionado. Aperte X e depois R para ver todos.
+
+Bookmark removed.
+Marcador removido.
+
+Bookmark this page
+Marcar esta página
+
+Bookmarks
+Marcadores
+
+Books are EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files, in it or its folders.
+Os livros são arquivos EPUB, PDF, CBZ, CBR, FB2, MOBI ou TXT, nela ou nas suas pastas.
+
+Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub.
+Livros com DRM não abrem: só os que você pode ler em qualquer lugar. Quadrinhos em arquivos compactados usam libarchive; pastas de rede usam libsmb2 (LGPL 2.1), curl, libssh2 e Mbed TLS. As licenças estão em docs/legal.md no GitHub.
+
+Books with DRM (bought in a store that locks them) can't be opened.
+Livros com DRM (comprados numa loja que os bloqueia) não abrem.
+
+Calibre-Web, Kavita, Komga or another OPDS catalog on your network: X in the library goes to its books.
+Calibre-Web, Kavita, Komga ou outro catálogo OPDS da sua rede: X na biblioteca leva aos livros dele.
+
+Clock
+Relógio
+
+Colors
+Cores
+
+Contents
+Sumário
+
+Contents and bookmarks
+Sumário e marcadores
+
+Copy stopped.
+Cópia interrompida.
+
+Copying to the card
+Copiando para o cartão
+
+Dark
+Escuro
+
+Display
+Tela
+
+Empty for a catalog open to everyone.
+Vazio para um catálogo aberto a todos.
+
+Empty for a folder open to everyone.
+Vazio para uma pasta aberta a todos.
+
+Enter the folder's address first.
+Primeiro digite o endereço da pasta.
+
+Enter the server's address first.
+Primeiro digite o endereço do servidor.
+
+Exit KaiReader
+Sair do KaiReader
+
+Favorites
+Favoritos
+
+Finding your bookmarks…
+Procurando seus marcadores…
+
+Finished
+Concluído
+
+For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading.
+Para livros de texto fluido (EPUB, FB2, MOBI, TXT). Cima e baixo mudam durante a leitura.
+
+Forget this folder
+Esquecer esta pasta
+
+Forget this server
+Esquecer este servidor
+
+Free books
+Livros grátis
+
+Genre
+Gênero
+
+Go to free books
+Ir para livros grátis
+
+Go to the book server
+Ir para o servidor de livros
+
+Go to the network folder
+Ir para a pasta de rede
+
+Go to the SD card library
+Ir para a biblioteca do cartão SD
+
+Hold your finger on a cover, or choose "Add to favorites" in the + menu.
+Segure o dedo sobre uma capa, ou escolha "Adicionar aos favoritos" no menu +.
+
+Horizontal
+Horizontal
+
+How the books are sorted, and looking for new ones.
+Como os livros são ordenados, e procurar novos.
+
+It couldn't be written to the card.
+Não foi possível gravar no cartão.
+
+It isn't answering right now (it may be down for maintenance): try again later.
+Não está respondendo agora (pode estar em manutenção): tente mais tarde.
+
+Its address, user and password are taken off the card. The books already copied stay.
+O endereço, o usuário e a senha são apagados do cartão. Os livros já copiados ficam.
+
+Its address, user and password are taken off the card. The books already downloaded stay.
+O endereço, o usuário e a senha são apagados do cartão. Os livros já baixados ficam.
+
+Its books show here, with their covers, as they're found.
+Os livros aparecem aqui, com as capas, conforme são encontrados.
+
+its catalog
+o catálogo dele
+
+KaiReader reads its EPUB, PDF, CBZ, CBR, FB2 and MOBI books.
+O KaiReader lê os livros EPUB, PDF, CBZ, CBR, FB2 e MOBI dele.
+
+Library
+Biblioteca
+
+Light
+Claro
+
+Light, sepia, dark or black paper, for books that flow. Y changes it while reading.
+Papel claro, sépia, escuro ou preto, para livros de texto fluido. Y muda durante a leitura.
+
+Load the list again
+Carregar a lista de novo
+
+Loading covers
+Carregando capas
+
+Loading...
+Carregando...
+
+Look again
+Procurar de novo
+
+Look for books again
+Procurar livros de novo
+
+Look through the network folder again
+Percorrer a pasta de rede de novo
+
+Look through the server's catalog again
+Percorrer o catálogo do servidor de novo
+
+Looking through the catalog... %d
+Percorrendo o catálogo... %d
+
+Looking through the folder... %d
+Percorrendo a pasta... %d
+
+Looking through the network folder...
+Percorrendo a pasta de rede...
+
+Looking through the server's catalog...
+Percorrendo o catálogo do servidor...
+
+Looks in sdmc:/books again for books added or removed.
+Procura de novo em sdmc:/books livros adicionados ou removidos.
+
+Lying down. Press the right stick (or the turn button) to stand it up.
+Na horizontal. Aperte o direcional direito (ou o botão de girar) para deixar na vertical.
+
+Made by
+Feito por
+
+Network folder
+Pasta de rede
+
+Network folder set: test the connection, then press X in the library to see its books.
+Pasta de rede definida: teste a conexão e depois aperte X na biblioteca para ver os livros.
+
+No author
+Sem autor
+
+No bookmarks in this book yet.
+Ainda não há marcadores neste livro.
+
+No books in the network folder.
+Não há livros na pasta de rede.
+
+No books in the server's catalog.
+Não há livros no catálogo do servidor.
+
+No books yet.
+Ainda não há livros.
+
+No favorites here yet.
+Ainda não há favoritos aqui.
+
+No favorites yet.
+Ainda não há favoritos.
+
+No genre
+Sem gênero
+
+No more bookmarks fit in this book.
+Não cabem mais marcadores neste livro.
+
+No other source yet: add a network folder in Settings.
+Ainda não há outra fonte: adicione uma pasta de rede nas Configurações.
+
+None
+Nenhum
+
+Not set
+Não configurado
+
+Not signed: someone on your network could change what's read. Use it only for an old NAS.
+Sem assinatura: alguém na sua rede poderia alterar o que é lido. Use só com um NAS antigo.
+
+Nothing answered at that address and port. Is the server on, and is the port right?
+Nada respondeu nesse endereço e porta. O servidor está ligado e a porta está certa?
+
+Nothing answered at that address. Is the computer on, and is the folder shared?
+Nada respondeu nesse endereço. O computador está ligado e a pasta está compartilhada?
+
+Nothing found for "%s".
+Nada encontrado para "%s".
+
+Off
+Não
+
+Off: asked when the folder is used
+Não: pedida ao usar a pasta
+
+Off: the password isn't kept on the card, and it's asked for when the folder is used.
+Desligado: a senha não fica no cartão e é pedida quando a pasta é usada.
+
+On
+Sim
+
+On: not signed
+Sim: sem assinatura
+
+One
+Uma
+
+One moment: the bookmarks are still being found.
+Um momento: os marcadores ainda estão sendo procurados.
+
+One moment: the page is still being read.
+Um momento: a página ainda está sendo lida.
+
+Only for an old NAS or a folder open to guests that doesn't sign: someone on your network could change what's read.
+Só para um NAS antigo ou uma pasta aberta a convidados que não assina: alguém na sua rede poderia mudar o que é lido.
+
+Only for shared folders (SMB)
+Só para pastas compartilhadas (SMB)
+
+Opening the book…
+Abrindo o livro…
+
+Out of memory
+Sem memória
+
+Out of memory.
+Sem memória.
+
+p. %d
+p. %d
+
+Pages
+Páginas
+
+Pages are drawn with MuPDF (Artifex Software), under the GNU AGPL 3.0. KaiReader is free software under the same license; its code is on GitHub (mizuiroame/kaireader).
+As páginas são desenhadas com o MuPDF (Artifex Software), sob a GNU AGPL 3.0. O KaiReader é software livre com a mesma licença; o código está no GitHub (mizuiroame/kaireader).
+
+Password
+Senha
+
+Password for %s (%s)
+Senha de %s (%s)
+
+Press the left stick in, or the ribbon on the reading bar, to bookmark a page.
+Aperte o direcional esquerdo, ou a fita da barra de leitura, para marcar uma página.
+
+Public-domain books, free to read. Loading the list...
+Livros de domínio público, grátis. Carregando a lista...
+
+Put EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files in the books folder of the SD card:
+Coloque arquivos EPUB, PDF, CBZ, CBR, FB2, MOBI ou TXT na pasta de livros do cartão SD:
+
+Reading
+Leitura
+
+Recently read
+Lidos recentemente
+
+Recently read, your favorites, by title, by author or by genre (from the book's subject). Y changes it in the library.
+Lidos recentemente, seus favoritos, por título, por autor ou por gênero (do assunto do livro). Y muda isso na biblioteca.
+
+Remember the password
+Lembrar a senha
+
+Remove from favorites
+Remover dos favoritos
+
+Remove this page's bookmark
+Remover o marcador desta página
+
+Saved until KaiReader closes: the password isn't kept on the card.
+Salva até o KaiReader fechar: a senha não fica no cartão.
+
+Saved: the card keeps the password's hash, not the password.
+Salva: o cartão guarda o hash da senha, não a senha.
+
+Saved: the password is only encoded on the card. Use a user that can only read the books.
+Salva: a senha só fica codificada no cartão. Use um usuário que só possa ler os livros.
+
+Screen
+Orientação
+
+SD card
+Cartão SD
+
+Search
+Buscar
+
+Search again
+Buscar de novo
+
+Search Project Gutenberg
+Buscar no Project Gutenberg
+
+Search Project Gutenberg: a title, an author, a subject
+Buscar no Project Gutenberg: um título, um autor, um assunto
+
+Sepia
+Sépia
+
+Server set: add your user and password if it asks for them, then test the connection.
+Servidor definido: adicione seu usuário e senha se ele pedir, depois teste a conexão.
+
+Set up the network folder in Settings first.
+Primeiro configure a pasta de rede em Configurações.
+
+Settings
+Configurações
+
+Show as a grid
+Mostrar em grade
+
+Show as a list
+Mostrar em lista
+
+Show books as
+Mostrar livros como
+
+Show Project Gutenberg's most popular
+Mostrar os mais populares do Project Gutenberg
+
+Show Standard Ebooks' newest
+Mostrar as novidades do Standard Ebooks
+
+Signing is only for shared folders (SMB).
+A assinatura é só para pastas compartilhadas (SMB).
+
+Sort books by
+Ordenar livros por
+
+Stop
+Parar
+
+Test the connection
+Testar a conexão
+
+Testing the connection...
+Testando a conexão...
+
+Text size
+Tamanho do texto
+
+Text size and the colors of the page.
+Tamanho do texto e cores da página.
+
+That address answers, but it isn't a WebDAV folder. Check the path after the port.
+Esse endereço responde, mas não é uma pasta WebDAV. Verifique o caminho depois da porta.
+
+That address answers, but not as an SFTP server. Is the port right?
+Esse endereço responde, mas não como servidor SFTP. A porta está certa?
+
+That address answers, but with neither a WebDAV folder nor a list of files. Check the path after the port.
+Esse endereço responde, mas nem com uma pasta WebDAV nem com uma lista de arquivos. Verifique o caminho depois da porta.
+
+That address isn't an OPDS catalog.
+Esse endereço não é um catálogo OPDS.
+
+That book's name is too long to keep on the card.
+O nome desse livro é longo demais para guardar no cartão.
+
+That file isn't on the server any more, or this user can't read it.
+Esse arquivo não está mais no servidor, ou este usuário não pode lê-lo.
+
+That folder isn't on the server, or this user can't see it.
+Essa pasta não está no servidor, ou este usuário não pode vê-la.
+
+That folder isn't on the server.
+Essa pasta não está no servidor.
+
+That folder's name is too long.
+O nome dessa pasta é longo demais.
+
+That isn't a network folder's address.
+Esse não é o endereço de uma pasta de rede.
+
+That isn't a network folder's address: \\PC\Books, smb://, http://, https://, ftp://, ftps://, ftpes:// or sftp://.
+Esse não é o endereço de uma pasta de rede: \\PC\Books, smb://, http://, https://, ftp://, ftps://, ftpes:// ou sftp://.
+
+That isn't a server's address: 192.168.0.10:8083, http:// or https://.
+Esse não é o endereço de um servidor: 192.168.0.10:8083, http:// ou https://.
+
+That password can't be used.
+Essa senha não pode ser usada.
+
+That shared folder isn't on the computer. Check the share's name after the computer's.
+Essa pasta compartilhada não está no computador. Verifique o nome do compartilhamento depois do nome do computador.
+
+The book couldn't be opened: %s
+Não foi possível abrir o livro: %s
+
+The book couldn't be read from the network folder.
+Não foi possível ler o livro da pasta de rede.
+
+The book server couldn't be read.
+Não foi possível ler o servidor de livros.
+
+The book server is forgotten.
+O servidor de livros foi esquecido.
+
+The bookmarks couldn't be saved.
+Não foi possível salvar os marcadores.
+
+The catalog couldn't be read.
+Não foi possível ler o catálogo.
+
+The connection failed. Check the address and the network.
+A conexão falhou. Verifique o endereço e a rede.
+
+The connection is signed again.
+A conexão volta a ser assinada.
+
+The file couldn't be read.
+Não foi possível ler o arquivo.
+
+The folder couldn't be read.
+Não foi possível ler a pasta.
+
+The keyboard couldn't open.
+Não foi possível abrir o teclado.
+
+The library is full.
+A biblioteca está cheia.
+
+The name in the address couldn't be found. Check it, or use the server's IP address.
+O nome no endereço não foi encontrado. Verifique-o, ou use o endereço IP do servidor.
+
+The network can't be used.
+Não é possível usar a rede.
+
+The network folder answers. At its top: folders %d, books %d.
+A pasta de rede responde. No primeiro nível: pastas %d, livros %d.
+
+The network folder couldn't be read.
+Não foi possível ler a pasta de rede.
+
+The network folder is forgotten.
+A pasta de rede foi esquecida.
+
+The network folder's password isn't remembered: it's asked for when the folder is used.
+A senha da pasta de rede não é lembrada: ela é pedida quando a pasta é usada.
+
+The password is kept on the card.
+A senha fica guardada no cartão.
+
+The password won't be kept on the card: KaiReader asks for it when the folder is used.
+A senha não ficará no cartão: o KaiReader pede quando a pasta for usada.
+
+The secure connection failed.
+A conexão segura falhou.
+
+The secure connection failed. Does the server use https on that port?
+A conexão segura falhou. O servidor usa https nessa porta?
+
+The server answered %ld.
+O servidor respondeu %ld.
+
+The server answers: %s, with %d books and %d lists at its start.
+O servidor responde: %s, com %d livros e %d listas no início.
+
+The server couldn't be read.
+Não foi possível ler o servidor.
+
+The server didn't answer in time. Is the console on the same network as the server?
+O servidor não respondeu a tempo. O console está na mesma rede que o servidor?
+
+The server doesn't answer: check its address, and that it's on.
+O servidor não responde: confira o endereço e se ele está ligado.
+
+The server doesn't let this user see that folder.
+O servidor não deixa este usuário ver essa pasta.
+
+The server doesn't offer a secure connection: use ftp:// instead.
+O servidor não oferece conexão segura: use ftp:// no lugar.
+
+The server doesn't offer SFTP to this user.
+O servidor não oferece SFTP a este usuário.
+
+The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust your home network, turn on Allow without signing on this page.
+O servidor não assina a conexão (um NAS antigo, ou uma pasta aberta a convidados). Se você confia na sua rede de casa, ative Permitir sem assinatura nesta página.
+
+The server's address: 192.168.0.10:8083 (Calibre-Web), 192.168.0.10:25600 (Komga), or its OPDS address
+Endereço do servidor: 192.168.0.10:8083 (Calibre-Web), 192.168.0.10:25600 (Komga), ou o endereço OPDS
+
+The server's certificate isn't trusted.
+O certificado do servidor não é confiável.
+
+The server's folder listing couldn't be read.
+Não foi possível ler a lista da pasta do servidor.
+
+The server's key isn't the one met before: it may be another server pretending to be it. If you changed the server, set the address again in Settings.
+A chave do servidor não é a de antes: pode ser outro servidor se passando por ele. Se você trocou o servidor, coloque o endereço de novo em Configurações.
+
+The shared folder couldn't be opened (%d: %s).
+Não foi possível abrir a pasta compartilhada (%d: %s).
+
+The version, and the licenses of the parts KaiReader is made of.
+A versão, e as licenças das partes de que o KaiReader é feito.
+
+There's no catalog at that address.
+Não há catálogo nesse endereço.
+
+This book has no table of contents and no bookmarks yet.
+Este livro ainda não tem sumário nem marcadores.
+
+This book has no table of contents.
+Este livro não tem sumário.
+
+This book's pages are fixed: the text size is for books that flow.
+As páginas deste livro são fixas: o tamanho do texto é para livros de texto fluido.
+
+Title
+Título
+
+Try again
+Tentar de novo
+
+Try other words: a title, an author or a subject, in English.
+Tente outras palavras: um título, um autor ou um assunto, em inglês.
+
+Two pages side by side, like an open book, with the console lying down. Upright, always one.
+Duas páginas lado a lado, como um livro aberto, com o console na horizontal. Na vertical, sempre uma.
+
+Two side by side
+Duas lado a lado
+
+Unknown author
+Autor desconhecido
+
+Upright. Press the right stick (or the turn button) to lay it down again.
+Na vertical. Aperte o direcional direito (ou o botão de girar) para voltar à horizontal.
+
+User and password
+Usuário e senha
+
+User name (empty: none)
+Nome de usuário (vazio: nenhum)
+
+User name (empty: none; DOMAIN\user for a domain)
+Usuário (vazio: nenhum; DOMÍNIO\usuário para um domínio)
+
+Vertical
+Vertical
+
+Vertical: hold the console like a book. Automatic: it turns as you turn the console (handheld). The right stick pressed in switches horizontal and vertical. The buttons and the touch screen turn with it.
+Vertical: segure o console como um livro. Automático: gira quando você gira o console (modo portátil). Apertar o direcional direito alterna entre horizontal e vertical. Os botões e a tela de toque giram junto.
+
+Without the password the network folder can't be read.
+Sem a senha, a pasta de rede não pode ser lida.
+
+Wrong user name or password.
+Usuário ou senha incorretos.
+
+Y shows the other books.
+Y mostra os outros livros.
+
+Language
+Idioma
+
+The language of KaiReader's words (not of your books). More can be added as files in the lang folder.
+O idioma dos textos do KaiReader (não dos seus livros). Dá para adicionar mais como arquivos na pasta lang.
+
+The language, reading with the console upright like a book, and the clock.
+O idioma, ler com o console na vertical como um livro, e o relógio.

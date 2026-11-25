@@ -1,0 +1,756 @@
+# KaiReader 한국어.
+# 영어 줄 다음에 번역을 두고, 쌍 사이에는 빈 줄을 둡니다. %d, %s 등은 같은 순서로 그대로 둡니다. source/lang.h 참고.
+language = 한국어
+
+%d books
+%d권
+
+%d books in the library.
+서재에 %d권.
+
+%d of %d
+%d / %d
+
+%s of %s
+%s / %s
+
+%s: added to your favorites.
+%s: 즐겨찾기에 추가했어요.
+
+%s: no longer a favorite.
+%s: 즐겨찾기에서 뺐어요.
+
+(a page without text)
+(글자가 없는 페이지)
+
+1 book
+1권
+
+1 book in the library.
+서재에 1권.
+
+12-hour
+12시간제
+
+192.168.0.10:8083 for Calibre-Web, 192.168.0.10:25600 for Komga (its /opds address is found), or a whole OPDS address (Kavita's, with its key).
+Calibre-Web은 192.168.0.10:8083, Komga는 192.168.0.10:25600(/opds 주소는 자동으로 찾아요), 또는 전체 OPDS 주소(Kavita는 키 포함).
+
+21:47 or 9:47 PM.
+21:47 또는 오후 9:47.
+
+24-hour
+24시간제
+
+[+] Menu
+[+] 메뉴
+
+[<>] Change  [A] Choose  [B] Back
+[<>] 변경  [A] 선택  [B] 뒤로
+
+[A] Choose  [B] Close
+[A] 선택  [B] 닫기
+
+[A] Go  [<>] Page  [L][R] Tabs  [B] Close
+[A] 이동  [<>] 페이지  [L][R] 탭  [B] 닫기
+
+[A] Go  [Y] Remove  [L][R] Tabs  [B] Close
+[A] 이동  [Y] 삭제  [L][R] 탭  [B] 닫기
+
+[A] Open  [B] Close
+[A] 열기  [B] 닫기
+
+[A] Read  
+[A] 읽기  
+
+[B] Back
+[B] 뒤로
+
+[B] Stop
+[B] 중지
+
+[X] Contents  [^v] Zoom  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library
+[X] 목차  [^v] 확대  [LS] 책갈피  [RS] 회전  [-] 숨기기  [B] 서재
+
+[X] Contents  [Y] Colors  [^v] Text size  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library
+[X] 목차  [Y] 색상  [^v] 글자 크기  [LS] 책갈피  [RS] 회전  [-] 숨기기  [B] 서재
+
+[Y] Search  [L][R] Lists  
+[Y] 검색  [L][R] 목록  
+
+[Y] Sort  
+[Y] 정렬  
+
+\\PC\Books (a Windows shared folder), 192.168.0.10:8098 (WebDAV or a web folder), ftp://nas or sftp://nas.
+\\PC\Books(Windows 공유 폴더), 192.168.0.10:8098(WebDAV 또는 웹 폴더), ftp://nas 또는 sftp://nas.
+
+A book
+책
+
+A book is being copied already.
+이미 다른 책을 복사하고 있어요.
+
+A book reader for Switch 2 homebrew. Your books from sdmc:/books, a network folder or a book server (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS.
+Switch 2 홈브루용 책 리더. sdmc:/books, 네트워크 폴더, 책 서버(OPDS)의 책을 읽어요: EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT, XPS.
+
+A grid
+격자
+
+A grid of covers, or a list with more of each book. The + menu changes it too.
+표지 격자, 또는 책마다 정보가 더 많은 목록. + 메뉴에서도 바꿀 수 있어요.
+
+A list
+목록
+
+A shared folder (SMB), WebDAV, FTP or SFTP folder on your network: X in the library switches between its books and the SD card's.
+네트워크의 공유 폴더(SMB), WebDAV, FTP, SFTP 폴더: 서재에서 X를 누르면 그 책과 SD 카드의 책을 오가요.
+
+About KaiReader
+KaiReader 정보
+
+Add a network folder or book server
+네트워크 폴더나 책 서버 추가
+
+Add to favorites
+즐겨찾기에 추가
+
+Address
+주소
+
+Address: \\PC\Books (shared folder), 192.168.0.10:8098 (WebDAV or web), ftp://nas or sftp://nas
+주소: \\PC\Books(공유 폴더), 192.168.0.10:8098(WebDAV 또는 웹), ftp://nas 또는 sftp://nas
+
+Allow without signing (old NAS)
+서명 없이 허용 (오래된 NAS)
+
+Asks the folder for its top: whether it answers, and how many folders and books it has.
+폴더의 맨 위를 확인해요: 응답하는지, 폴더와 책이 몇 개인지.
+
+Asks the server for its catalog: whether it answers, and what's at its start.
+서버에 카탈로그를 요청해요: 응답하는지, 처음에 무엇이 있는지.
+
+Author
+저자
+
+Automatic
+자동
+
+Back
+뒤로
+
+Back to the library
+서재로 돌아가기
+
+Black
+검은색
+
+Book server
+책 서버
+
+Bookmark added. Press X, then R, to see them all.
+책갈피를 추가했어요. X를 누른 뒤 R을 누르면 모두 볼 수 있어요.
+
+Bookmark removed.
+책갈피를 삭제했어요.
+
+Bookmark this page
+이 페이지에 책갈피
+
+Bookmarks
+책갈피
+
+Books are EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files, in it or its folders.
+책은 이 폴더나 하위 폴더의 EPUB, PDF, CBZ, CBR, FB2, MOBI, TXT 파일이에요.
+
+Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub.
+DRM으로 잠긴 책은 열 수 없어요: 어디서나 읽을 수 있는 책만 열려요. 압축 파일 속 만화는 libarchive, 네트워크 폴더는 libsmb2(LGPL 2.1), curl, libssh2, Mbed TLS를 써요. 라이선스는 GitHub의 docs/legal.md에 있어요.
+
+Books with DRM (bought in a store that locks them) can't be opened.
+DRM이 걸린 책(잠금을 거는 스토어에서 산 책)은 열 수 없어요.
+
+Calibre-Web, Kavita, Komga or another OPDS catalog on your network: X in the library goes to its books.
+네트워크의 Calibre-Web, Kavita, Komga 또는 다른 OPDS 카탈로그: 서재에서 X를 누르면 그 책으로 가요.
+
+Clock
+시계
+
+Colors
+색상
+
+Contents
+목차
+
+Contents and bookmarks
+목차와 책갈피
+
+Copy stopped.
+복사를 중지했어요.
+
+Copying to the card
+카드에 복사하는 중
+
+Dark
+다크
+
+Display
+표시
+
+Empty for a catalog open to everyone.
+누구나 쓸 수 있는 카탈로그면 비워 두세요.
+
+Empty for a folder open to everyone.
+누구나 쓸 수 있는 폴더면 비워 두세요.
+
+Enter the folder's address first.
+먼저 폴더 주소를 입력하세요.
+
+Enter the server's address first.
+먼저 서버 주소를 입력하세요.
+
+Exit KaiReader
+KaiReader 종료
+
+Favorites
+즐겨찾기
+
+Finding your bookmarks…
+책갈피를 찾는 중…
+
+Finished
+다 읽음
+
+For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading.
+흐르는 글 책(EPUB, FB2, MOBI, TXT)에 적용돼요. 읽는 중에 위아래로 바꿔요.
+
+Forget this folder
+이 폴더 설정 삭제
+
+Forget this server
+이 서버 설정 삭제
+
+Free books
+무료 책
+
+Genre
+장르
+
+Go to free books
+무료 책으로
+
+Go to the book server
+책 서버로
+
+Go to the network folder
+네트워크 폴더로
+
+Go to the SD card library
+SD 카드 서재로 이동
+
+Hold your finger on a cover, or choose "Add to favorites" in the + menu.
+표지를 길게 누르거나 + 메뉴에서 "즐겨찾기에 추가"를 고르세요.
+
+Horizontal
+가로
+
+How the books are sorted, and looking for new ones.
+책 정렬 방식과 새 책 찾기.
+
+It couldn't be written to the card.
+SD 카드에 저장할 수 없었습니다.
+
+It isn't answering right now (it may be down for maintenance): try again later.
+지금 응답이 없어요(점검 중일 수 있어요). 나중에 다시 시도하세요.
+
+Its address, user and password are taken off the card. The books already copied stay.
+주소, 사용자, 비밀번호를 카드에서 지워요. 이미 복사한 책은 남아요.
+
+Its address, user and password are taken off the card. The books already downloaded stay.
+주소, 사용자, 비밀번호를 카드에서 지워요. 이미 받은 책은 남아요.
+
+Its books show here, with their covers, as they're found.
+찾는 대로 책이 표지와 함께 여기에 나타나요.
+
+its catalog
+카탈로그
+
+KaiReader reads its EPUB, PDF, CBZ, CBR, FB2 and MOBI books.
+KaiReader는 EPUB, PDF, CBZ, CBR, FB2, MOBI 책을 읽어요.
+
+Library
+서재
+
+Light
+밝게
+
+Light, sepia, dark or black paper, for books that flow. Y changes it while reading.
+흐르는 글 책의 종이: 밝게, 세피아, 어둡게, 검정. 읽는 중에 Y로 바꿔요.
+
+Load the list again
+목록 다시 불러오기
+
+Loading covers
+표지 불러오는 중
+
+Loading...
+불러오는 중...
+
+Look again
+다시 찾기
+
+Look for books again
+책 다시 찾기
+
+Look through the network folder again
+네트워크 폴더 다시 살펴보기
+
+Look through the server's catalog again
+서버 카탈로그 다시 살펴보기
+
+Looking through the catalog... %d
+카탈로그 살펴보는 중... %d
+
+Looking through the folder... %d
+폴더 살펴보는 중... %d
+
+Looking through the network folder...
+네트워크 폴더 살펴보는 중...
+
+Looking through the server's catalog...
+서버 카탈로그 살펴보는 중...
+
+Looks in sdmc:/books again for books added or removed.
+sdmc:/books에서 추가되거나 빠진 책을 다시 찾아요.
+
+Lying down. Press the right stick (or the turn button) to stand it up.
+가로예요. 오른쪽 스틱(또는 회전 버튼)을 누르면 세로로 바뀌어요.
+
+Made by
+제작
+
+Network folder
+네트워크 폴더
+
+Network folder set: test the connection, then press X in the library to see its books.
+네트워크 폴더를 설정했어요. 연결을 테스트한 뒤 서재에서 X를 누르면 책이 보여요.
+
+No author
+저자 없음
+
+No bookmarks in this book yet.
+이 책에는 아직 책갈피가 없어요.
+
+No books in the network folder.
+네트워크 폴더에 책이 없어요.
+
+No books in the server's catalog.
+서버 카탈로그에 책이 없어요.
+
+No books yet.
+아직 책이 없어요.
+
+No favorites here yet.
+아직 즐겨찾기가 없어요.
+
+No favorites yet.
+아직 즐겨찾기가 없습니다.
+
+No genre
+장르 없음
+
+No more bookmarks fit in this book.
+이 책에는 책갈피를 더 추가할 수 없어요.
+
+No other source yet: add a network folder in Settings.
+아직 다른 소스가 없어요. 설정에서 네트워크 폴더를 추가하세요.
+
+None
+없음
+
+Not set
+설정 안 함
+
+Not signed: someone on your network could change what's read. Use it only for an old NAS.
+서명 없음: 네트워크의 누군가가 읽는 내용을 바꿀 수 있습니다. 오래된 NAS에만 사용하세요.
+
+Nothing answered at that address and port. Is the server on, and is the port right?
+해당 주소와 포트에서 응답이 없습니다. 서버가 켜져 있고 포트가 맞는지 확인하세요.
+
+Nothing answered at that address. Is the computer on, and is the folder shared?
+해당 주소에서 응답이 없습니다. 컴퓨터가 켜져 있고 폴더가 공유되어 있는지 확인하세요.
+
+Nothing found for "%s".
+"%s"에 대한 결과가 없어요.
+
+Off
+끔
+
+Off: asked when the folder is used
+끔: 폴더를 사용할 때 입력
+
+Off: the password isn't kept on the card, and it's asked for when the folder is used.
+끔: 비밀번호를 카드에 저장하지 않고, 폴더를 쓸 때 물어봐요.
+
+On
+켬
+
+On: not signed
+켬: 서명 없음
+
+One
+한 쪽
+
+One moment: the bookmarks are still being found.
+잠시만요: 아직 책갈피를 찾고 있어요.
+
+One moment: the page is still being read.
+잠시만요: 아직 페이지를 읽고 있어요.
+
+Only for an old NAS or a folder open to guests that doesn't sign: someone on your network could change what's read.
+서명하지 않는 오래된 NAS나 게스트용 폴더 전용: 네트워크의 누군가가 읽는 내용을 바꿀 수 있어요.
+
+Only for shared folders (SMB)
+공유 폴더(SMB) 전용
+
+Opening the book…
+책을 여는 중…
+
+Out of memory
+메모리 부족
+
+Out of memory.
+메모리가 부족합니다.
+
+p. %d
+%d쪽
+
+Pages
+페이지
+
+Pages are drawn with MuPDF (Artifex Software), under the GNU AGPL 3.0. KaiReader is free software under the same license; its code is on GitHub (mizuiroame/kaireader).
+페이지는 MuPDF(Artifex Software, GNU AGPL 3.0)로 그려요. KaiReader도 같은 라이선스의 자유 소프트웨어이며, 코드는 GitHub(mizuiroame/kaireader)에 있어요.
+
+Password
+비밀번호
+
+Password for %s (%s)
+%s의 비밀번호 (%s)
+
+Press the left stick in, or the ribbon on the reading bar, to bookmark a page.
+왼쪽 스틱을 누르거나 읽기 막대의 리본을 누르면 책갈피를 달아요.
+
+Public-domain books, free to read. Loading the list...
+퍼블릭 도메인 무료 책. 목록을 불러오는 중...
+
+Put EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files in the books folder of the SD card:
+SD 카드의 책 폴더에 EPUB, PDF, CBZ, CBR, FB2, MOBI, TXT 파일을 넣으세요:
+
+Reading
+읽기
+
+Recently read
+최근 읽은 책
+
+Recently read, your favorites, by title, by author or by genre (from the book's subject). Y changes it in the library.
+최근 읽은 책, 즐겨찾기, 제목순, 저자순, 장르순(책의 주제 기준). 서재에서 Y로 바꿔요.
+
+Remember the password
+비밀번호 기억
+
+Remove from favorites
+즐겨찾기에서 빼기
+
+Remove this page's bookmark
+이 페이지의 책갈피 삭제
+
+Saved until KaiReader closes: the password isn't kept on the card.
+KaiReader를 닫을 때까지 저장: 비밀번호는 카드에 저장되지 않아요.
+
+Saved: the card keeps the password's hash, not the password.
+저장했습니다. 카드에는 비밀번호가 아니라 그 해시가 저장됩니다.
+
+Saved: the password is only encoded on the card. Use a user that can only read the books.
+저장했어요: 비밀번호는 카드에 인코딩만 돼요. 책 읽기만 가능한 사용자를 쓰세요.
+
+Screen
+화면 방향
+
+SD card
+SD 카드
+
+Search
+검색
+
+Search again
+다시 검색
+
+Search Project Gutenberg
+Project Gutenberg 검색
+
+Search Project Gutenberg: a title, an author, a subject
+Project Gutenberg 검색: 제목, 저자, 주제
+
+Sepia
+세피아
+
+Server set: add your user and password if it asks for them, then test the connection.
+서버를 설정했어요. 필요하면 사용자와 비밀번호를 추가한 뒤 연결을 테스트하세요.
+
+Set up the network folder in Settings first.
+먼저 설정에서 네트워크 폴더를 설정하세요.
+
+Settings
+설정
+
+Show as a grid
+격자로 보기
+
+Show as a list
+목록으로 보기
+
+Show books as
+책 보기 방식
+
+Show Project Gutenberg's most popular
+Project Gutenberg 인기 책 보기
+
+Show Standard Ebooks' newest
+Standard Ebooks 새 책 보기
+
+Signing is only for shared folders (SMB).
+서명은 공유 폴더(SMB)에만 해당합니다.
+
+Sort books by
+책 정렬 기준
+
+Stop
+중지
+
+Test the connection
+연결 테스트
+
+Testing the connection...
+연결을 테스트하는 중...
+
+Text size
+글자 크기
+
+Text size and the colors of the page.
+글자 크기와 페이지 색상.
+
+That address answers, but it isn't a WebDAV folder. Check the path after the port.
+이 주소에서 응답이 있지만 WebDAV 폴더가 아닙니다. 포트 뒤의 경로를 확인하세요.
+
+That address answers, but not as an SFTP server. Is the port right?
+그 주소는 응답하지만 SFTP 서버가 아닙니다. 포트가 맞나요?
+
+That address answers, but with neither a WebDAV folder nor a list of files. Check the path after the port.
+그 주소는 응답하지만 WebDAV 폴더도 파일 목록도 아닙니다. 포트 뒤의 경로를 확인하세요.
+
+That address isn't an OPDS catalog.
+이 주소는 OPDS 카탈로그가 아니에요.
+
+That book's name is too long to keep on the card.
+그 책 이름은 너무 길어서 카드에 저장할 수 없어요.
+
+That file isn't on the server any more, or this user can't read it.
+그 파일이 서버에 더는 없거나, 이 사용자는 읽을 수 없어요.
+
+That folder isn't on the server, or this user can't see it.
+서버에 이 폴더가 없거나 이 사용자가 볼 수 없습니다.
+
+That folder isn't on the server.
+서버에 이 폴더가 없습니다.
+
+That folder's name is too long.
+폴더 이름이 너무 깁니다.
+
+That isn't a network folder's address.
+네트워크 폴더 주소가 아닙니다.
+
+That isn't a network folder's address: \\PC\Books, smb://, http://, https://, ftp://, ftps://, ftpes:// or sftp://.
+네트워크 폴더 주소가 아니에요: \\PC\Books, smb://, http://, https://, ftp://, ftps://, ftpes://, sftp://.
+
+That isn't a server's address: 192.168.0.10:8083, http:// or https://.
+서버 주소가 아니에요: 192.168.0.10:8083, http://, https://.
+
+That password can't be used.
+그 비밀번호는 사용할 수 없습니다.
+
+That shared folder isn't on the computer. Check the share's name after the computer's.
+컴퓨터에 해당 공유 폴더가 없습니다. 컴퓨터 이름 뒤의 공유 이름을 확인하세요.
+
+The book couldn't be opened: %s
+책을 열 수 없어요: %s
+
+The book couldn't be read from the network folder.
+네트워크 폴더에서 책을 읽을 수 없어요.
+
+The book server couldn't be read.
+책 서버를 읽을 수 없어요.
+
+The book server is forgotten.
+책 서버 설정을 지웠어요.
+
+The bookmarks couldn't be saved.
+책갈피를 저장할 수 없어요.
+
+The catalog couldn't be read.
+카탈로그를 읽을 수 없어요.
+
+The connection failed. Check the address and the network.
+연결에 실패했습니다. 주소와 네트워크를 확인하세요.
+
+The connection is signed again.
+연결이 다시 서명됩니다.
+
+The file couldn't be read.
+파일을 읽을 수 없습니다.
+
+The folder couldn't be read.
+폴더를 읽을 수 없어요.
+
+The keyboard couldn't open.
+키보드를 열 수 없었습니다.
+
+The library is full.
+서재가 가득 찼어요.
+
+The name in the address couldn't be found. Check it, or use the server's IP address.
+주소의 이름을 찾을 수 없습니다. 주소를 확인하거나 서버의 IP 주소를 사용하세요.
+
+The network can't be used.
+네트워크를 사용할 수 없습니다.
+
+The network folder answers. At its top: folders %d, books %d.
+네트워크 폴더가 응답해요. 맨 위: 폴더 %d, 책 %d.
+
+The network folder couldn't be read.
+네트워크 폴더를 읽을 수 없었습니다.
+
+The network folder is forgotten.
+네트워크 폴더 설정을 삭제했습니다.
+
+The network folder's password isn't remembered: it's asked for when the folder is used.
+네트워크 폴더의 비밀번호는 저장되지 않습니다. 폴더를 사용할 때 물어봅니다.
+
+The password is kept on the card.
+비밀번호를 카드에 저장합니다.
+
+The password won't be kept on the card: KaiReader asks for it when the folder is used.
+비밀번호를 카드에 저장하지 않아요. 폴더를 쓸 때 KaiReader가 물어봐요.
+
+The secure connection failed.
+보안 연결에 실패했습니다.
+
+The secure connection failed. Does the server use https on that port?
+보안 연결에 실패했습니다. 서버가 이 포트에서 https를 사용하는지 확인하세요.
+
+The server answered %ld.
+서버 응답: %ld
+
+The server answers: %s, with %d books and %d lists at its start.
+서버가 응답해요: %s, 처음에 책 %d권과 목록 %d개.
+
+The server couldn't be read.
+서버를 읽을 수 없어요.
+
+The server didn't answer in time. Is the console on the same network as the server?
+서버가 제시간에 응답하지 않았습니다. 본체가 서버와 같은 네트워크에 있는지 확인하세요.
+
+The server doesn't answer: check its address, and that it's on.
+서버가 응답하지 않아요. 주소와 전원이 켜져 있는지 확인하세요.
+
+The server doesn't let this user see that folder.
+이 사용자는 서버에서 해당 폴더를 볼 수 없습니다.
+
+The server doesn't offer a secure connection: use ftp:// instead.
+서버가 보안 연결을 제공하지 않습니다. 대신 ftp://를 사용하세요.
+
+The server doesn't offer SFTP to this user.
+서버가 이 사용자에게 SFTP를 제공하지 않습니다.
+
+The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust your home network, turn on Allow without signing on this page.
+서버가 연결에 서명하지 않습니다(오래된 NAS 또는 게스트에게 열린 폴더). 집 네트워크를 신뢰한다면 이 페이지에서 서명 없이 허용을 켜세요.
+
+The server's address: 192.168.0.10:8083 (Calibre-Web), 192.168.0.10:25600 (Komga), or its OPDS address
+서버 주소: 192.168.0.10:8083(Calibre-Web), 192.168.0.10:25600(Komga) 또는 OPDS 주소
+
+The server's certificate isn't trusted.
+서버의 인증서를 신뢰할 수 없습니다.
+
+The server's folder listing couldn't be read.
+서버의 폴더 목록을 읽을 수 없습니다.
+
+The server's key isn't the one met before: it may be another server pretending to be it. If you changed the server, set the address again in Settings.
+서버의 키가 이전과 다릅니다. 다른 서버가 이 서버인 척하고 있을 수 있습니다. 서버를 바꿨다면 설정에서 주소를 다시 입력하세요.
+
+The shared folder couldn't be opened (%d: %s).
+공유 폴더를 열 수 없었습니다 (%d: %s).
+
+The version, and the licenses of the parts KaiReader is made of.
+버전과 KaiReader를 이루는 구성 요소의 라이선스.
+
+There's no catalog at that address.
+그 주소에는 카탈로그가 없어요.
+
+This book has no table of contents and no bookmarks yet.
+이 책에는 목차도 책갈피도 아직 없어요.
+
+This book has no table of contents.
+이 책에는 목차가 없어요.
+
+This book's pages are fixed: the text size is for books that flow.
+이 책은 페이지가 고정돼 있어요. 글자 크기는 흐르는 글 책에만 적용돼요.
+
+Title
+제목
+
+Try again
+다시 시도
+
+Try other words: a title, an author or a subject, in English.
+다른 단어로 해 보세요: 제목, 저자, 주제를 영어로.
+
+Two pages side by side, like an open book, with the console lying down. Upright, always one.
+본체를 가로로 두면 펼친 책처럼 두 쪽을 나란히 보여요. 세로일 때는 항상 한 쪽.
+
+Two side by side
+두 쪽 나란히
+
+Unknown author
+저자 미상
+
+Upright. Press the right stick (or the turn button) to lay it down again.
+세로예요. 오른쪽 스틱(또는 회전 버튼)을 누르면 다시 가로로 바뀌어요.
+
+User and password
+사용자 이름과 비밀번호
+
+User name (empty: none)
+사용자 이름(비우면 없음)
+
+User name (empty: none; DOMAIN\user for a domain)
+사용자 이름 (비워 두면 없음, 도메인은 DOMAIN\user)
+
+Vertical
+세로
+
+Vertical: hold the console like a book. Automatic: it turns as you turn the console (handheld). The right stick pressed in switches horizontal and vertical. The buttons and the touch screen turn with it.
+세로: 책처럼 본체를 들어요. 자동: 본체를 돌리면 화면도 돌아가요(휴대 모드). 오른쪽 스틱을 누르면 가로와 세로를 바꿔요. 버튼과 터치스크린도 함께 돌아가요.
+
+Without the password the network folder can't be read.
+비밀번호가 없으면 네트워크 폴더를 읽을 수 없습니다.
+
+Wrong user name or password.
+사용자 이름 또는 비밀번호가 올바르지 않습니다.
+
+Y shows the other books.
+Y를 누르면 다른 책이 보여요.
+
+Language
+언어
+
+The language of KaiReader's words (not of your books). More can be added as files in the lang folder.
+KaiReader 화면의 언어(책의 언어가 아니에요). lang 폴더에 파일로 더 추가할 수 있어요.
+
+The language, reading with the console upright like a book, and the clock.
+언어, 책처럼 본체를 세로로 들고 읽기, 그리고 시계.

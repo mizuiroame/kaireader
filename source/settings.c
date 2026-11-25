@@ -40,12 +40,13 @@ static const char *const LABELS[SETTING_COUNT] = {
     N_("User and password"),
     N_("Test the connection"),
     N_("Forget this server"),
+    N_("Language"),
 };
 
 static const char *const HELP[SETTING_COUNT] = {
     N_("Text size and the colors of the page."),
     N_("How the books are sorted, and looking for new ones."),
-    N_("Reading with the console upright like a book, and the clock."),
+    N_("The language, reading with the console upright like a book, and the clock."),
     N_("The version, and the licenses of the parts KaiReader is made of."),
     N_("For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading."),
     N_("Light, sepia, dark or black paper, for books that flow. Y changes it while reading."),
@@ -67,7 +68,15 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("Empty for a catalog open to everyone."),
     N_("Asks the server for its catalog: whether it answers, and what's at its start."),
     N_("Its address, user and password are taken off the card. The books already downloaded stay."),
+    N_("The language of KaiReader's words (not of your books). More can be added as files in the lang folder."),
 };
+
+static char g_language_name[64] = "English";
+
+void settingsSetLanguageName(const char *name)
+{
+    snprintf(g_language_name, sizeof(g_language_name), "%s", name);
+}
 
 static char g_srv_address[256], g_srv_user[128];
 
@@ -128,6 +137,7 @@ int settingsRows(SettingsPage page, SettingRow *out)
         out[n++] = SETTING_RESCAN;
         break;
     case SETTINGS_PAGE_DISPLAY:
+        out[n++] = SETTING_LANGUAGE;
         out[n++] = SETTING_SCREEN;
         out[n++] = SETTING_CLOCK;
         break;
@@ -189,7 +199,7 @@ SettingsPage settingsOpens(SettingRow row)
 bool settingsHasValue(SettingRow row)
 {
     return row == SETTING_TEXT_SIZE || row == SETTING_COLORS || row == SETTING_PAGES || row == SETTING_SORT ||
-           row == SETTING_VIEW ||
+           row == SETTING_VIEW || row == SETTING_LANGUAGE ||
            row == SETTING_SCREEN || row == SETTING_CLOCK || row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED ||
            settingsPickedValue(row);
 }
@@ -213,6 +223,10 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
         break;
     case SETTING_VIEW:
         snprintf(out, size, "%s", p->list_view ? N_("A list") : N_("A grid"));
+        break;
+    case SETTING_LANGUAGE:  // Its own name, in itself: not translated.
+        *translate_name = false;
+        snprintf(out, size, "%s", g_language_name);
         break;
     case SETTING_SCREEN:
         snprintf(out, size, "%s", prefsTurnName(p->turn));

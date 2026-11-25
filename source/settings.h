@@ -45,6 +45,7 @@ typedef enum {
     SETTING_SRV_ACCOUNT,
     SETTING_SRV_TEST,
     SETTING_SRV_FORGET,
+    SETTING_LANGUAGE,      // The app's language (the app steps it: languages.h).
     SETTING_COUNT,
 } SettingRow;
 
@@ -77,6 +78,8 @@ bool settingsIsNetwork(SettingRow row);
 bool settingsIsServer(SettingRow row);
 // What the book server's rows show: its address as shown, and the user.
 void settingsSetServer(const char *address, const char *user);
+// The language in use's name, as its row shows it ("Español (Latinoamérica)").
+void settingsSetLanguageName(const char *name);
 // A row that shows a value but is picked, not stepped (the folder's address): no arrows.
 bool settingsPickedValue(SettingRow row);
 // What the network folder's rows show: its address as shown, the user, the two switches,

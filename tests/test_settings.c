@@ -14,6 +14,18 @@ void testSettings(void)
     CHECK(settingsRows(SETTINGS_PAGE_SERVER, rows) == 4 && rows[0] == SETTING_SRV_ADDRESS && settingsIsServer(rows[3]));
     CHECK(!settingsIsServer(SETTING_NET_TEST) && !settingsIsNetwork(SETTING_SRV_TEST) && settingsPickedValue(SETTING_SRV_ADDRESS));
     CHECK(settingsOpens(SETTING_CLOCK) == SETTINGS_PAGE_MAIN);
+    // Display: the language first, its name as given (in itself, not translated).
+    CHECK(settingsRows(SETTINGS_PAGE_DISPLAY, rows) == 3 && rows[0] == SETTING_LANGUAGE && settingsHasValue(SETTING_LANGUAGE));
+    {
+        Prefs lp;
+        prefsDefaults(&lp);
+        char v[64];
+        bool named = true;
+        settingsSetLanguageName("Deutsch");
+        settingsValue(&lp, SETTING_LANGUAGE, v, sizeof(v), &named);
+        CHECK(!named && !strcmp(v, "Deutsch"));
+        settingsSetLanguageName("English");
+    }
     // Library: the sort, the view (a grid or a list), looking again.
     CHECK(settingsRows(SETTINGS_PAGE_LIBRARY, rows) == 3 && rows[1] == SETTING_VIEW && settingsHasValue(SETTING_VIEW));
     {

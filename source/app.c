@@ -9,6 +9,7 @@
 #include "approot.h"
 #include "buttons.h"
 #include "davnet.h"
+#include "languages.h"
 #include "opdsnet.h"
 #include "gfx.h"
 #include "lang.h"
@@ -179,6 +180,29 @@ static void keepCursorVisible(App *app)
     kineticStop(&app->kinetic);
 }
 
+void appUseLanguage(App *app)
+{
+    char folder[APP_FOLDER_MAX + 16];
+    pathIn(app, "lang", folder, sizeof(folder));
+    appRootMakeFolder(folder);  // Where more languages' files go, there to be seen.
+    languagesFind(folder);
+    if (!languageUse(app->prefs.language))
+        snprintf(app->prefs.language, sizeof(app->prefs.language), "%s", "en");
+    settingsSetLanguageName(languageName(languageIndex(app->prefs.language)));
+}
+
+// Left or right on the Language row: the next language found, put in use and kept.
+static void stepLanguage(App *app, int dir)
+{
+    int count = languagesCount();
+    if (count <= 0)
+        return;
+    int at = (languageIndex(app->prefs.language) + (dir ? dir : 1) % count + count) % count;
+    snprintf(app->prefs.language, sizeof(app->prefs.language), "%s", languageId(at));
+    appUseLanguage(app);
+    savePrefs(app);
+}
+
 void appRescan(App *app, uint64_t now_ns)
 {
     if (app->lib_tab == LIB_NETWORK) {  // The network folder's: looked through again.
@@ -215,6 +239,7 @@ void appInit(App *app, const char *folder)
     prefsDefaults(&app->prefs);
     pathIn(app, "settings.txt", path, sizeof(path));
     prefsLoad(&app->prefs, path);
+    appUseLanguage(app);
     useTurnSetting(app);
     pathIn(app, "shelf.txt", path, sizeof(path));
     shelfLoad(&app->shelf, path);
@@ -1092,6 +1117,10 @@ static void settingsPick(App *app, int index, int dir, uint64_t now_ns)
         return;
     app->settings_cursor = index;
     SettingRow row = rows[index];
+    if (row == SETTING_LANGUAGE) {
+        stepLanguage(app, dir);
+        return;
+    }
     if (settingsIsServer(row)) {  // The book server's rows: the keyboard, the test, forgetting it.
         if (!dir)
             appServerActivate(app, row, now_ns);

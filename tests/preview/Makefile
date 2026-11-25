@@ -7,7 +7,7 @@ SRC     := ../../source
 OUT     := build
 CFLAGS  := -std=gnu11 -O1 -g -Wall -Wextra -pthread -DKAIREADER_VERSION=\"preview\" -I$(SRC) -I../../third_party -I$(OUT)
 UI_SRC  := gfx.c font.c ui.c ui_common.c ui_buttons.c ui_hit.c ui_notice.c util.c app.c touch.c kinetic.c \
-           image_impl.c lang.c notice.c approot.c shelf.c doc.c reading.c covers.c prefs.c settings.c            motion.c ui_brand.c bookmarks.c app_marks.c ui_marks.c app_zoom.c app_netlib.c ui_net.c netlist.c dav.c md4.c app_server.c opds.c app_free.c catalogs.c
+           image_impl.c lang.c notice.c approot.c shelf.c doc.c reading.c covers.c prefs.c settings.c            motion.c ui_brand.c bookmarks.c app_marks.c ui_marks.c app_zoom.c app_netlib.c ui_net.c netlist.c dav.c md4.c app_server.c opds.c app_free.c catalogs.c languages.c
 
 .PHONY: run clean
 
@@ -32,9 +32,15 @@ $(OUT)/brand_word_png.c: ../../data/brand_word.png embed.py
 
 BRAND   := $(OUT)/brand_seal_png.c $(OUT)/brand_word_png.c
 
-$(OUT)/preview: preview.c font_system_host.c net_host.c $(addprefix $(SRC)/,$(UI_SRC)) $(OUT)/font_regular_ttf.c $(OUT)/font_bold_ttf.c $(BRAND)
+LANGS   := de es fr it ja ko pt zh
+LANG_C  := $(foreach l,$(LANGS),$(OUT)/lang_$(l)_txt.c)
+
+$(OUT)/lang_%_txt.c: ../../data/lang_%.txt embed.py
+	python3 embed.py $< $(OUT) lang_$*_txt
+
+$(OUT)/preview: preview.c font_system_host.c net_host.c $(addprefix $(SRC)/,$(UI_SRC)) $(OUT)/font_regular_ttf.c $(OUT)/font_bold_ttf.c $(BRAND) $(LANG_C)
 	$(CC) $(CFLAGS) preview.c font_system_host.c net_host.c $(addprefix $(SRC)/,$(UI_SRC)) \
-		$(OUT)/font_regular_ttf.c $(OUT)/font_bold_ttf.c $(BRAND) -o $@ -lmupdf -lmupdf-third -larchive -lm -pthread
+		$(OUT)/font_regular_ttf.c $(OUT)/font_bold_ttf.c $(BRAND) $(LANG_C) -o $@ -lmupdf -lmupdf-third -larchive -lm -pthread
 
 clean:
 	rm -rf $(OUT)

@@ -21,20 +21,25 @@ void testPrefs(void)
     p.sort = SHELF_SORT_GENRE;
     p.turn = 2;
     p.two_pages = true;
+    CHECK(!strcmp(p.language, "en"));
+    snprintf(p.language, sizeof(p.language), "%s", "es");
     CHECK(prefsSave(&p, TMP_ROOT "/settings.txt"));
     Prefs q;
     prefsDefaults(&q);
     CHECK(prefsLoad(&q, TMP_ROOT "/settings.txt"));
     CHECK(q.text_size == 7 && q.theme == THEME_BLACK && !q.clock_24h && q.sort == SHELF_SORT_GENRE && q.turn == 2 && q.two_pages);
+    CHECK(!strcmp(q.language, "es"));
 
     FILE *f = fopen(TMP_ROOT "/bad-settings.txt", "w");
     if (f) {
-        fputs("# c\ntext_size = 99\ntheme=2\r\nclock_24h = yes\nnothing\n = 3\ntheme = 1x\nsort = 9\nturn = -1\n", f);
+        fputs("# c\ntext_size = 99\ntheme=2\r\nclock_24h = yes\nnothing\n = 3\ntheme = 1x\nsort = 9\nturn = -1\n"
+              "language = ../../x\n", f);  // A path isn't a language: refused.
         fclose(f);
     }
     prefsDefaults(&q);
     CHECK(prefsLoad(&q, TMP_ROOT "/bad-settings.txt"));
     CHECK(q.text_size == PREFS_TEXT_DEFAULT && q.theme == THEME_DARK && q.clock_24h && q.sort == 0 && q.turn == 0);
+    CHECK(!strcmp(q.language, "en"));
     CHECK(!strcmp(prefsSortName(SHELF_SORT_AUTHOR), "Author") && !strcmp(prefsSortName(99), "Recently read"));
     CHECK(!strcmp(prefsTurnName(1), "Vertical") && !strcmp(prefsTurnName(2), "Vertical") &&
           !strcmp(prefsTurnName(7), "Horizontal"));

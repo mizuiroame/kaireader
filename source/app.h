@@ -197,6 +197,8 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns);
 void appNotify(App *app, NoticeKind kind, const char *text, uint64_t now_ns);
 // Looks for books again.
 void appRescan(App *app, uint64_t now_ns);
+// The language in Settings put in use (at start, and when it changes).
+void appUseLanguage(App *app);
 // The book at a place in the library's order: a favorite, or not any more (with a notice).
 void appToggleFavorite(App *app, int order_index, uint64_t now_ns);
 // The book selected in the library, if there's one (the card's books shown).

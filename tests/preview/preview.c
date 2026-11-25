@@ -454,6 +454,38 @@ int main(int argc, char **argv)
     app.prefs.turn = GFX_TURN_NONE;  // Lying down again for the next run's settings.
     gfxSetTurn(GFX_TURN_NONE);
 
+    // Other languages: the longest words (German), Spanish, and Japanese (the console's fonts).
+    static const char *const LANGS[] = {"es", "de", "ja"};
+    for (int i = 0; i < 3; i++) {
+        char name[64];
+        snprintf(app.prefs.language, sizeof(app.prefs.language), "%s", LANGS[i]);
+        appUseLanguage(&app);
+        snprintf(name, sizeof(name), "%s-library", LANGS[i]);
+        render(&app, dir, name);
+        app.panel = PANEL_MENU;
+        app.menu_cursor = 0;
+        snprintf(name, sizeof(name), "%s-menu", LANGS[i]);
+        render(&app, dir, name);
+        app.panel = PANEL_SETTINGS;
+        app.settings_page = SETTINGS_PAGE_MAIN;
+        app.settings_cursor = 0;
+        snprintf(name, sizeof(name), "%s-settings", LANGS[i]);
+        render(&app, dir, name);
+        app.settings_page = SETTINGS_PAGE_DISPLAY;
+        snprintf(name, sizeof(name), "%s-settings-display", LANGS[i]);
+        render(&app, dir, name);
+        app.panel = PANEL_NONE;
+        appOpenBook(&app, indexOfBook(&app, "quiet.epub"), 12);
+        settle(&app);
+        app.bars = true;
+        snprintf(name, sizeof(name), "%s-epub-bars", LANGS[i]);
+        render(&app, dir, name);
+        app.bars = false;
+        appCloseBook(&app);
+    }
+    snprintf(app.prefs.language, sizeof(app.prefs.language), "%s", "en");
+    appUseLanguage(&app);
+
     appFree(&app);
     readingStop();
     fontExit();

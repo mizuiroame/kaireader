@@ -50,6 +50,7 @@ void prefsDefaults(Prefs *p)
     p->upright = GFX_TURN_RIGHT;
     p->two_pages = false;
     p->list_view = false;
+    snprintf(p->language, sizeof(p->language), "%s", "en");
 }
 
 static char *trim(char *s)
@@ -102,6 +103,9 @@ bool prefsLoad(Prefs *p, const char *file)
             p->two_pages = v != 0;
         else if (!strcmp(key, "list_view") && number(value, 0, 1, &v))
             p->list_view = v != 0;
+        else if (!strcmp(key, "language") && value[0] && strlen(value) < sizeof(p->language) &&
+                 !strpbrk(value, "/\\\r\n"))
+            snprintf(p->language, sizeof(p->language), "%s", value);  // An id or a file's name: never a path.
     }
     bool ok = !ferror(f);
     fclose(f);
@@ -119,7 +123,7 @@ bool prefsSave(const Prefs *p, const char *file)
     fprintf(f, "# KaiReader settings\ntext_size = %d\ntheme = %d\nclock_24h = %d\nsort = %d\nturn = %d\n"
                "two_pages = %d\n",
             p->text_size, p->theme, p->clock_24h ? 1 : 0, p->sort, p->turn, p->two_pages ? 1 : 0);
-    fprintf(f, "upright = %d\nlist_view = %d\n", p->upright, p->list_view ? 1 : 0);
+    fprintf(f, "upright = %d\nlist_view = %d\nlanguage = %s\n", p->upright, p->list_view ? 1 : 0, p->language);
     bool ok = !ferror(f);
     ok = fclose(f) == 0 && ok;
     if (!ok) {

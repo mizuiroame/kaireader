@@ -1,0 +1,756 @@
+# KaiReader 日本語。
+# 英語の行の次に訳を置き、組の間は空行にします。%d、%s などは同じ順序でそのまま残します。source/lang.h を参照。
+language = 日本語
+
+%d books
+%d 冊
+
+%d books in the library.
+ライブラリーに %d 冊。
+
+%d of %d
+%d / %d
+
+%s of %s
+%s / %s
+
+%s: added to your favorites.
+%s: お気に入りに追加しました。
+
+%s: no longer a favorite.
+%s: お気に入りから外しました。
+
+(a page without text)
+（テキストのないページ）
+
+1 book
+1 冊
+
+1 book in the library.
+ライブラリーに 1 冊。
+
+12-hour
+12時間制
+
+192.168.0.10:8083 for Calibre-Web, 192.168.0.10:25600 for Komga (its /opds address is found), or a whole OPDS address (Kavita's, with its key).
+Calibre-Web なら 192.168.0.10:8083、Komga なら 192.168.0.10:25600（/opds のアドレスは自動で見つかります）、または OPDS の完全なアドレス（Kavita はキー付き）。
+
+21:47 or 9:47 PM.
+21:47 または 午後 9:47。
+
+24-hour
+24時間制
+
+[+] Menu
+[+] メニュー
+
+[<>] Change  [A] Choose  [B] Back
+[<>] 変更  [A] 選択  [B] 戻る
+
+[A] Choose  [B] Close
+[A] 選択  [B] 閉じる
+
+[A] Go  [<>] Page  [L][R] Tabs  [B] Close
+[A] 移動  [<>] ページ  [L][R] タブ  [B] 閉じる
+
+[A] Go  [Y] Remove  [L][R] Tabs  [B] Close
+[A] 移動  [Y] 削除  [L][R] タブ  [B] 閉じる
+
+[A] Open  [B] Close
+[A] 開く  [B] 閉じる
+
+[A] Read  
+[A] 読む  
+
+[B] Back
+[B] 戻る
+
+[B] Stop
+[B] 中止
+
+[X] Contents  [^v] Zoom  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library
+[X] 目次  [^v] ズーム  [LS] しおり  [RS] 回転  [-] 隠す  [B] ライブラリー
+
+[X] Contents  [Y] Colors  [^v] Text size  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library
+[X] 目次  [Y] 配色  [^v] 文字サイズ  [LS] しおり  [RS] 回転  [-] 隠す  [B] ライブラリー
+
+[Y] Search  [L][R] Lists  
+[Y] 検索  [L][R] リスト  
+
+[Y] Sort  
+[Y] 並べ替え  
+
+\\PC\Books (a Windows shared folder), 192.168.0.10:8098 (WebDAV or a web folder), ftp://nas or sftp://nas.
+\\PC\Books（Windows の共有フォルダ）、192.168.0.10:8098（WebDAV または Web フォルダ）、ftp://nas、sftp://nas。
+
+A book
+本
+
+A book is being copied already.
+すでに別の本をコピー中です。
+
+A book reader for Switch 2 homebrew. Your books from sdmc:/books, a network folder or a book server (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS.
+Switch 2 の自作ソフト用の電子書籍リーダー。sdmc:/books、ネットワークフォルダ、ブックサーバー（OPDS）の本を読めます：EPUB、PDF、CBZ、CBR、CB7、FB2、MOBI、TXT、XPS。
+
+A grid
+グリッド
+
+A grid of covers, or a list with more of each book. The + menu changes it too.
+表紙のグリッド、または各本の情報が多いリスト。+ メニューでも切り替えられます。
+
+A list
+リスト
+
+A shared folder (SMB), WebDAV, FTP or SFTP folder on your network: X in the library switches between its books and the SD card's.
+ネットワーク上の共有フォルダ（SMB）、WebDAV、FTP、SFTP フォルダ。ライブラリーで X を押すと、その本と SD カードの本を切り替えます。
+
+About KaiReader
+KaiReader について
+
+Add a network folder or book server
+ネットワークフォルダかブックサーバーを追加
+
+Add to favorites
+お気に入りに追加
+
+Address
+アドレス
+
+Address: \\PC\Books (shared folder), 192.168.0.10:8098 (WebDAV or web), ftp://nas or sftp://nas
+アドレス：\\PC\Books（共有フォルダ）、192.168.0.10:8098（WebDAV または Web）、ftp://nas、sftp://nas
+
+Allow without signing (old NAS)
+署名なしを許可（古いNAS）
+
+Asks the folder for its top: whether it answers, and how many folders and books it has.
+フォルダの最上位を確認します：応答するか、フォルダと本がいくつあるか。
+
+Asks the server for its catalog: whether it answers, and what's at its start.
+サーバーにカタログを問い合わせます：応答するか、最初に何があるか。
+
+Author
+著者
+
+Automatic
+自動
+
+Back
+戻る
+
+Back to the library
+ライブラリーに戻る
+
+Black
+ブラック
+
+Book server
+ブックサーバー
+
+Bookmark added. Press X, then R, to see them all.
+しおりを追加しました。X、続けて R で一覧を表示します。
+
+Bookmark removed.
+しおりを削除しました。
+
+Bookmark this page
+このページにしおり
+
+Bookmarks
+しおり
+
+Books are EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files, in it or its folders.
+本は EPUB、PDF、CBZ、CBR、FB2、MOBI、TXT ファイルで、このフォルダかその中のフォルダに置きます。
+
+Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub.
+DRM で保護された本は開けません：どこでも読める本だけです。アーカイブ形式のコミックには libarchive、ネットワークフォルダには libsmb2（LGPL 2.1）、curl、libssh2、Mbed TLS を使用しています。ライセンスは GitHub の docs/legal.md にあります。
+
+Books with DRM (bought in a store that locks them) can't be opened.
+DRM 付きの本（ロックをかけるストアで購入したもの）は開けません。
+
+Calibre-Web, Kavita, Komga or another OPDS catalog on your network: X in the library goes to its books.
+ネットワーク上の Calibre-Web、Kavita、Komga などの OPDS カタログ。ライブラリーで X を押すとその本へ移ります。
+
+Clock
+時計
+
+Colors
+配色
+
+Contents
+目次
+
+Contents and bookmarks
+目次としおり
+
+Copy stopped.
+コピーを中止しました。
+
+Copying to the card
+カードにコピー中
+
+Dark
+ダーク
+
+Display
+画面
+
+Empty for a catalog open to everyone.
+誰でも使えるカタログなら空欄に。
+
+Empty for a folder open to everyone.
+誰でも使えるフォルダなら空欄に。
+
+Enter the folder's address first.
+先にフォルダーのアドレスを入力してください。
+
+Enter the server's address first.
+先にサーバーのアドレスを入力してください。
+
+Exit KaiReader
+KaiReader を終了
+
+Favorites
+お気に入り
+
+Finding your bookmarks…
+しおりを探しています…
+
+Finished
+読了
+
+For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading.
+リフローする本（EPUB、FB2、MOBI、TXT）用。読書中は上下で変更できます。
+
+Forget this folder
+このフォルダーの登録を解除
+
+Forget this server
+このサーバーの登録を解除
+
+Free books
+無料の本
+
+Genre
+ジャンル
+
+Go to free books
+無料の本へ
+
+Go to the book server
+ブックサーバーへ
+
+Go to the network folder
+ネットワークフォルダへ
+
+Go to the SD card library
+SDカードのライブラリーへ
+
+Hold your finger on a cover, or choose "Add to favorites" in the + menu.
+表紙を長押しするか、+ メニューで「お気に入りに追加」を選びます。
+
+Horizontal
+横向き
+
+How the books are sorted, and looking for new ones.
+本の並べ方と、新しい本の検索。
+
+It couldn't be written to the card.
+SDカードに書き込めませんでした。
+
+It isn't answering right now (it may be down for maintenance): try again later.
+現在応答がありません（メンテナンス中かもしれません）。後でもう一度お試しください。
+
+Its address, user and password are taken off the card. The books already copied stay.
+アドレス、ユーザー、パスワードをカードから削除します。コピー済みの本は残ります。
+
+Its address, user and password are taken off the card. The books already downloaded stay.
+アドレス、ユーザー、パスワードをカードから削除します。ダウンロード済みの本は残ります。
+
+Its books show here, with their covers, as they're found.
+見つかった本から、表紙付きでここに表示されます。
+
+its catalog
+そのカタログ
+
+KaiReader reads its EPUB, PDF, CBZ, CBR, FB2 and MOBI books.
+KaiReader が読めるのは EPUB、PDF、CBZ、CBR、FB2、MOBI の本です。
+
+Library
+ライブラリー
+
+Light
+ライト
+
+Light, sepia, dark or black paper, for books that flow. Y changes it while reading.
+リフローする本の紙の色：ライト、セピア、ダーク、ブラック。読書中は Y で変更できます。
+
+Load the list again
+リストを再読み込み
+
+Loading covers
+表紙を読み込み中
+
+Loading...
+読み込み中...
+
+Look again
+もう一度探す
+
+Look for books again
+本をもう一度探す
+
+Look through the network folder again
+ネットワークフォルダをもう一度調べる
+
+Look through the server's catalog again
+サーバーのカタログをもう一度調べる
+
+Looking through the catalog... %d
+カタログを調べています... %d
+
+Looking through the folder... %d
+フォルダを調べています... %d
+
+Looking through the network folder...
+ネットワークフォルダを調べています...
+
+Looking through the server's catalog...
+サーバーのカタログを調べています...
+
+Looks in sdmc:/books again for books added or removed.
+sdmc:/books をもう一度調べ、追加・削除された本を探します。
+
+Lying down. Press the right stick (or the turn button) to stand it up.
+横向きです。右スティック（または回転ボタン）を押すと縦向きになります。
+
+Made by
+制作
+
+Network folder
+ネットワークフォルダー
+
+Network folder set: test the connection, then press X in the library to see its books.
+ネットワークフォルダを設定しました。接続をテストし、ライブラリーで X を押すと本が表示されます。
+
+No author
+著者なし
+
+No bookmarks in this book yet.
+この本にはまだしおりがありません。
+
+No books in the network folder.
+ネットワークフォルダに本がありません。
+
+No books in the server's catalog.
+サーバーのカタログに本がありません。
+
+No books yet.
+まだ本がありません。
+
+No favorites here yet.
+まだお気に入りがありません。
+
+No favorites yet.
+まだお気に入りがありません。
+
+No genre
+ジャンルなし
+
+No more bookmarks fit in this book.
+この本にはこれ以上しおりを追加できません。
+
+No other source yet: add a network folder in Settings.
+ほかのソースはまだありません。設定でネットワークフォルダを追加してください。
+
+None
+なし
+
+Not set
+未設定
+
+Not signed: someone on your network could change what's read. Use it only for an old NAS.
+署名なし：ネットワーク上の誰かが読み込む内容を書き換えられます。古いNASの場合だけ使ってください。
+
+Nothing answered at that address and port. Is the server on, and is the port right?
+そのアドレスとポートから応答がありません。サーバーは起動していますか？ポートは正しいですか？
+
+Nothing answered at that address. Is the computer on, and is the folder shared?
+そのアドレスから応答がありません。パソコンは起動していますか？フォルダーは共有されていますか？
+
+Nothing found for "%s".
+「%s」は見つかりませんでした。
+
+Off
+オフ
+
+Off: asked when the folder is used
+オフ：フォルダーを使うときに入力
+
+Off: the password isn't kept on the card, and it's asked for when the folder is used.
+オフ：パスワードはカードに保存せず、フォルダを使うときに入力します。
+
+On
+オン
+
+On: not signed
+オン：署名なし
+
+One
+1 ページ
+
+One moment: the bookmarks are still being found.
+少々お待ちください：しおりを探しています。
+
+One moment: the page is still being read.
+少々お待ちください：ページを読み込んでいます。
+
+Only for an old NAS or a folder open to guests that doesn't sign: someone on your network could change what's read.
+署名しない古い NAS やゲスト用フォルダ向け：ネットワーク上の誰かが読み込む内容を書き換えられる可能性があります。
+
+Only for shared folders (SMB)
+共有フォルダー（SMB）のみ
+
+Opening the book…
+本を開いています…
+
+Out of memory
+メモリ不足
+
+Out of memory.
+メモリーが足りません。
+
+p. %d
+%d ページ
+
+Pages
+ページ
+
+Pages are drawn with MuPDF (Artifex Software), under the GNU AGPL 3.0. KaiReader is free software under the same license; its code is on GitHub (mizuiroame/kaireader).
+ページは MuPDF（Artifex Software、GNU AGPL 3.0）で描画しています。KaiReader も同じライセンスのフリーソフトウェアで、コードは GitHub（mizuiroame/kaireader）にあります。
+
+Password
+パスワード
+
+Password for %s (%s)
+%s のパスワード（%s）
+
+Press the left stick in, or the ribbon on the reading bar, to bookmark a page.
+左スティックを押し込むか、読書バーのリボンを押すとしおりを付けられます。
+
+Public-domain books, free to read. Loading the list...
+パブリックドメインの無料の本。リストを読み込んでいます...
+
+Put EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files in the books folder of the SD card:
+SD カードの books フォルダに EPUB、PDF、CBZ、CBR、FB2、MOBI、TXT ファイルを入れてください：
+
+Reading
+読書
+
+Recently read
+最近読んだ本
+
+Recently read, your favorites, by title, by author or by genre (from the book's subject). Y changes it in the library.
+最近読んだ本、お気に入り、タイトル順、著者順、ジャンル順（本の主題から）。ライブラリーでは Y で変更できます。
+
+Remember the password
+パスワードを保存
+
+Remove from favorites
+お気に入りから外す
+
+Remove this page's bookmark
+このページのしおりを削除
+
+Saved until KaiReader closes: the password isn't kept on the card.
+KaiReader を閉じるまで保存：パスワードはカードに保存されません。
+
+Saved: the card keeps the password's hash, not the password.
+保存しました。カードにはパスワードではなく、そのハッシュが保存されます。
+
+Saved: the password is only encoded on the card. Use a user that can only read the books.
+保存しました：パスワードはカード上でエンコードされているだけです。本を読むだけの権限のユーザーを使ってください。
+
+Screen
+画面の向き
+
+SD card
+SDカード
+
+Search
+検索
+
+Search again
+もう一度検索
+
+Search Project Gutenberg
+Project Gutenberg を検索
+
+Search Project Gutenberg: a title, an author, a subject
+Project Gutenberg を検索：タイトル、著者、主題
+
+Sepia
+セピア
+
+Server set: add your user and password if it asks for them, then test the connection.
+サーバーを設定しました。必要ならユーザーとパスワードを追加し、接続をテストしてください。
+
+Set up the network folder in Settings first.
+先に「設定」でネットワークフォルダーを設定してください。
+
+Settings
+設定
+
+Show as a grid
+グリッドで表示
+
+Show as a list
+リストで表示
+
+Show books as
+本の表示
+
+Show Project Gutenberg's most popular
+Project Gutenberg の人気の本を表示
+
+Show Standard Ebooks' newest
+Standard Ebooks の新着を表示
+
+Signing is only for shared folders (SMB).
+署名は共有フォルダー（SMB）だけのものです。
+
+Sort books by
+本の並べ方
+
+Stop
+中止
+
+Test the connection
+接続をテスト
+
+Testing the connection...
+接続をテストしています...
+
+Text size
+文字サイズ
+
+Text size and the colors of the page.
+文字サイズとページの配色。
+
+That address answers, but it isn't a WebDAV folder. Check the path after the port.
+そのアドレスは応答しましたが、WebDAV フォルダーではありません。ポートのあとのパスを確認してください。
+
+That address answers, but not as an SFTP server. Is the port right?
+そのアドレスは応答しますが、SFTP サーバーではありません。ポートは正しいですか？
+
+That address answers, but with neither a WebDAV folder nor a list of files. Check the path after the port.
+そのアドレスは応答しますが、WebDAV フォルダーでもファイル一覧でもありません。ポートの後のパスを確認してください。
+
+That address isn't an OPDS catalog.
+このアドレスは OPDS カタログではありません。
+
+That book's name is too long to keep on the card.
+その本の名前は長すぎてカードに保存できません。
+
+That file isn't on the server any more, or this user can't read it.
+そのファイルはもうサーバーにないか、このユーザーでは読めません。
+
+That folder isn't on the server, or this user can't see it.
+そのフォルダーはサーバーにないか、このユーザーには見えません。
+
+That folder isn't on the server.
+そのフォルダーはサーバーにありません。
+
+That folder's name is too long.
+そのフォルダーの名前が長すぎます。
+
+That isn't a network folder's address.
+ネットワークフォルダーのアドレスではありません。
+
+That isn't a network folder's address: \\PC\Books, smb://, http://, https://, ftp://, ftps://, ftpes:// or sftp://.
+ネットワークフォルダのアドレスではありません：\\PC\Books、smb://、http://、https://、ftp://、ftps://、ftpes://、sftp://。
+
+That isn't a server's address: 192.168.0.10:8083, http:// or https://.
+サーバーのアドレスではありません：192.168.0.10:8083、http://、https://。
+
+That password can't be used.
+そのパスワードは使えません。
+
+That shared folder isn't on the computer. Check the share's name after the computer's.
+その共有フォルダーはパソコンにありません。パソコン名のあとの共有名を確認してください。
+
+The book couldn't be opened: %s
+本を開けませんでした：%s
+
+The book couldn't be read from the network folder.
+ネットワークフォルダから本を読み込めませんでした。
+
+The book server couldn't be read.
+ブックサーバーを読み込めませんでした。
+
+The book server is forgotten.
+ブックサーバーの設定を削除しました。
+
+The bookmarks couldn't be saved.
+しおりを保存できませんでした。
+
+The catalog couldn't be read.
+カタログを読み込めませんでした。
+
+The connection failed. Check the address and the network.
+接続できませんでした。アドレスとネットワークを確認してください。
+
+The connection is signed again.
+接続は再び署名されます。
+
+The file couldn't be read.
+ファイルを読み取れませんでした。
+
+The folder couldn't be read.
+フォルダを読み込めませんでした。
+
+The keyboard couldn't open.
+キーボードを開けませんでした。
+
+The library is full.
+ライブラリーがいっぱいです。
+
+The name in the address couldn't be found. Check it, or use the server's IP address.
+アドレスの名前が見つかりませんでした。確認するか、サーバーのIPアドレスを使ってください。
+
+The network can't be used.
+ネットワークを使用できません。
+
+The network folder answers. At its top: folders %d, books %d.
+ネットワークフォルダが応答しました。最上位：フォルダ %d、本 %d。
+
+The network folder couldn't be read.
+ネットワークフォルダーを読み込めませんでした。
+
+The network folder is forgotten.
+ネットワークフォルダーの登録を解除しました。
+
+The network folder's password isn't remembered: it's asked for when the folder is used.
+ネットワークフォルダーのパスワードは保存されていません。フォルダーを使うときに入力を求めます。
+
+The password is kept on the card.
+パスワードはカードに保存されます。
+
+The password won't be kept on the card: KaiReader asks for it when the folder is used.
+パスワードはカードに保存しません。フォルダを使うときに KaiReader が尋ねます。
+
+The secure connection failed.
+安全な接続に失敗しました。
+
+The secure connection failed. Does the server use https on that port?
+安全な接続ができませんでした。サーバーはそのポートで https を使っていますか？
+
+The server answered %ld.
+サーバーの応答: %ld。
+
+The server answers: %s, with %d books and %d lists at its start.
+サーバーが応答しました：%s。最初に本 %d 冊、リスト %d 件。
+
+The server couldn't be read.
+サーバーを読み込めませんでした。
+
+The server didn't answer in time. Is the console on the same network as the server?
+サーバーが時間内に応答しませんでした。本体はサーバーと同じネットワークにありますか？
+
+The server doesn't answer: check its address, and that it's on.
+サーバーが応答しません。アドレスと電源を確認してください。
+
+The server doesn't let this user see that folder.
+このユーザーはサーバーでそのフォルダーを見る権限がありません。
+
+The server doesn't offer a secure connection: use ftp:// instead.
+サーバーは安全な接続に対応していません。代わりに ftp:// を使ってください。
+
+The server doesn't offer SFTP to this user.
+サーバーはこのユーザーに SFTP を提供していません。
+
+The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust your home network, turn on Allow without signing on this page.
+サーバーが接続に署名しません（古いNAS、またはゲストに公開されたフォルダー）。家のネットワークを信頼できるなら、このページで「署名なしを許可」をオンにしてください。
+
+The server's address: 192.168.0.10:8083 (Calibre-Web), 192.168.0.10:25600 (Komga), or its OPDS address
+サーバーのアドレス：192.168.0.10:8083（Calibre-Web）、192.168.0.10:25600（Komga）、または OPDS アドレス
+
+The server's certificate isn't trusted.
+サーバーの証明書は信頼されていません。
+
+The server's folder listing couldn't be read.
+サーバーのフォルダー一覧を読み取れませんでした。
+
+The server's key isn't the one met before: it may be another server pretending to be it. If you changed the server, set the address again in Settings.
+サーバーの鍵が以前のものと違います。別のサーバーがなりすましている可能性があります。サーバーを変えた場合は、設定でアドレスを入力し直してください。
+
+The shared folder couldn't be opened (%d: %s).
+共有フォルダーを開けませんでした（%d: %s）。
+
+The version, and the licenses of the parts KaiReader is made of.
+バージョンと、KaiReader を構成する部品のライセンス。
+
+There's no catalog at that address.
+そのアドレスにカタログはありません。
+
+This book has no table of contents and no bookmarks yet.
+この本には目次もしおりもまだありません。
+
+This book has no table of contents.
+この本には目次がありません。
+
+This book's pages are fixed: the text size is for books that flow.
+この本のページは固定です。文字サイズはリフローする本用です。
+
+Title
+タイトル
+
+Try again
+再試行
+
+Try other words: a title, an author or a subject, in English.
+別の言葉で試してください：タイトル、著者、主題を英語で。
+
+Two pages side by side, like an open book, with the console lying down. Upright, always one.
+本体を横向きにすると、開いた本のように 2 ページ並べて表示。縦向きでは常に 1 ページ。
+
+Two side by side
+2 ページ並べる
+
+Unknown author
+著者不明
+
+Upright. Press the right stick (or the turn button) to lay it down again.
+縦向きです。右スティック（または回転ボタン）を押すと横向きに戻ります。
+
+User and password
+ユーザー名とパスワード
+
+User name (empty: none)
+ユーザー名（空欄：なし）
+
+User name (empty: none; DOMAIN\user for a domain)
+ユーザー名（空欄: なし、ドメインは DOMAIN\user）
+
+Vertical
+縦向き
+
+Vertical: hold the console like a book. Automatic: it turns as you turn the console (handheld). The right stick pressed in switches horizontal and vertical. The buttons and the touch screen turn with it.
+縦向き：本のように本体を持ちます。自動：本体を回すと画面も回ります（携帯モード）。右スティックを押し込むと横向きと縦向きを切り替えます。ボタンとタッチ画面も一緒に回ります。
+
+Without the password the network folder can't be read.
+パスワードがないとネットワークフォルダーを読めません。
+
+Wrong user name or password.
+ユーザー名またはパスワードが違います。
+
+Y shows the other books.
+Y でほかの本を表示します。
+
+Language
+言語
+
+The language of KaiReader's words (not of your books). More can be added as files in the lang folder.
+KaiReader の表示言語（本の言語ではありません）。lang フォルダにファイルを置くと言語を追加できます。
+
+The language, reading with the console upright like a book, and the clock.
+言語、本のように本体を縦に持って読む設定、そして時計。

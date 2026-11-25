@@ -13,14 +13,13 @@ def main() -> None:
     (outdir / f"{name}.h").write_text(
         f"#pragma once\n"
         f"extern const unsigned char {name}[];\n"
-        f"extern const unsigned int {name}_size;\n"
+        f"#define {name}_size {len(data)}u  /* A constant, as devkitPro's bin2o makes it. */\n"
     )
     rows = ",\n".join(
         ", ".join(str(b) for b in data[i:i + 32]) for i in range(0, len(data), 32)
     )
     (outdir / f"{name}.c").write_text(
         f"const unsigned char {name}[] = {{\n{rows}\n}};\n"
-        f"const unsigned int {name}_size = {len(data)};\n"
     )
 
 

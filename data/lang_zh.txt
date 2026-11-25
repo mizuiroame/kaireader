@@ -1,0 +1,756 @@
+# KaiReader 简体中文。
+# 每行英文后跟其译文，每组之间空一行。%d、%s 等保持原样，顺序相同。见 source/lang.h。
+language = 简体中文
+
+%d books
+%d 本书
+
+%d books in the library.
+书库中有 %d 本书。
+
+%d of %d
+%d / %d
+
+%s of %s
+%s / %s
+
+%s: added to your favorites.
+%s：已加入收藏。
+
+%s: no longer a favorite.
+%s：已取消收藏。
+
+(a page without text)
+（没有文字的一页）
+
+1 book
+1 本书
+
+1 book in the library.
+书库中有 1 本书。
+
+12-hour
+12小时制
+
+192.168.0.10:8083 for Calibre-Web, 192.168.0.10:25600 for Komga (its /opds address is found), or a whole OPDS address (Kavita's, with its key).
+Calibre-Web 填 192.168.0.10:8083，Komga 填 192.168.0.10:25600（会自动找到 /opds 地址），或完整的 OPDS 地址（Kavita 的需带密钥）。
+
+21:47 or 9:47 PM.
+21:47 或 下午 9:47。
+
+24-hour
+24小时制
+
+[+] Menu
+[+] 菜单
+
+[<>] Change  [A] Choose  [B] Back
+[<>] 更改  [A] 选择  [B] 返回
+
+[A] Choose  [B] Close
+[A] 选择  [B] 关闭
+
+[A] Go  [<>] Page  [L][R] Tabs  [B] Close
+[A] 前往  [<>] 翻页  [L][R] 标签  [B] 关闭
+
+[A] Go  [Y] Remove  [L][R] Tabs  [B] Close
+[A] 前往  [Y] 删除  [L][R] 标签  [B] 关闭
+
+[A] Open  [B] Close
+[A] 打开  [B] 关闭
+
+[A] Read  
+[A] 阅读  
+
+[B] Back
+[B] 返回
+
+[B] Stop
+[B] 停止
+
+[X] Contents  [^v] Zoom  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library
+[X] 目录  [^v] 缩放  [LS] 书签  [RS] 旋转  [-] 隐藏  [B] 书库
+
+[X] Contents  [Y] Colors  [^v] Text size  [LS] Bookmark  [RS] Turn  [-] Hide  [B] Library
+[X] 目录  [Y] 配色  [^v] 字号  [LS] 书签  [RS] 旋转  [-] 隐藏  [B] 书库
+
+[Y] Search  [L][R] Lists  
+[Y] 搜索  [L][R] 列表  
+
+[Y] Sort  
+[Y] 排序  
+
+\\PC\Books (a Windows shared folder), 192.168.0.10:8098 (WebDAV or a web folder), ftp://nas or sftp://nas.
+\\PC\Books（Windows 共享文件夹）、192.168.0.10:8098（WebDAV 或网页文件夹）、ftp://nas 或 sftp://nas。
+
+A book
+一本书
+
+A book is being copied already.
+已有一本书正在复制。
+
+A book reader for Switch 2 homebrew. Your books from sdmc:/books, a network folder or a book server (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS.
+Switch 2 自制软件的阅读器。阅读来自 sdmc:/books、网络文件夹或书籍服务器（OPDS）的书：EPUB、PDF、CBZ、CBR、CB7、FB2、MOBI、TXT 和 XPS。
+
+A grid
+网格
+
+A grid of covers, or a list with more of each book. The + menu changes it too.
+封面网格，或显示每本书更多信息的列表。也可在 + 菜单中切换。
+
+A list
+列表
+
+A shared folder (SMB), WebDAV, FTP or SFTP folder on your network: X in the library switches between its books and the SD card's.
+你网络中的共享文件夹（SMB）、WebDAV、FTP 或 SFTP 文件夹：在书库中按 X 在它的书和 SD 卡的书之间切换。
+
+About KaiReader
+关于 KaiReader
+
+Add a network folder or book server
+添加网络文件夹或书籍服务器
+
+Add to favorites
+添加到收藏
+
+Address
+地址
+
+Address: \\PC\Books (shared folder), 192.168.0.10:8098 (WebDAV or web), ftp://nas or sftp://nas
+地址：\\PC\Books（共享文件夹）、192.168.0.10:8098（WebDAV 或网页）、ftp://nas 或 sftp://nas
+
+Allow without signing (old NAS)
+允许不签名（旧 NAS）
+
+Asks the folder for its top: whether it answers, and how many folders and books it has.
+查询文件夹的顶层：是否有响应，以及有多少文件夹和书。
+
+Asks the server for its catalog: whether it answers, and what's at its start.
+向服务器请求目录：是否有响应，以及开头有什么。
+
+Author
+作者
+
+Automatic
+自动
+
+Back
+返回
+
+Back to the library
+返回书库
+
+Black
+黑色
+
+Book server
+书籍服务器
+
+Bookmark added. Press X, then R, to see them all.
+已添加书签。按 X 再按 R 查看全部。
+
+Bookmark removed.
+已删除书签。
+
+Bookmark this page
+为此页添加书签
+
+Bookmarks
+书签
+
+Books are EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files, in it or its folders.
+书是该文件夹或其子文件夹中的 EPUB、PDF、CBZ、CBR、FB2、MOBI 或 TXT 文件。
+
+Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub.
+带 DRM 的书无法打开：只能打开在任何地方都能读的书。压缩包中的漫画使用 libarchive；网络文件夹使用 libsmb2（LGPL 2.1）、curl、libssh2 和 Mbed TLS。它们的许可证在 GitHub 的 docs/legal.md 中。
+
+Books with DRM (bought in a store that locks them) can't be opened.
+带 DRM 的书（在会加锁的商店购买的）无法打开。
+
+Calibre-Web, Kavita, Komga or another OPDS catalog on your network: X in the library goes to its books.
+你网络中的 Calibre-Web、Kavita、Komga 或其他 OPDS 目录：在书库中按 X 前往它的书。
+
+Clock
+时钟
+
+Colors
+配色
+
+Contents
+目录
+
+Contents and bookmarks
+目录和书签
+
+Copy stopped.
+已停止复制。
+
+Copying to the card
+正在复制到存储卡
+
+Dark
+深色
+
+Display
+显示
+
+Empty for a catalog open to everyone.
+对所有人开放的目录留空即可。
+
+Empty for a folder open to everyone.
+对所有人开放的文件夹留空即可。
+
+Enter the folder's address first.
+请先输入文件夹地址。
+
+Enter the server's address first.
+请先输入服务器地址。
+
+Exit KaiReader
+退出 KaiReader
+
+Favorites
+收藏
+
+Finding your bookmarks…
+正在查找书签…
+
+Finished
+已读完
+
+For books that flow (EPUB, FB2, MOBI, TXT). Up and down change it while reading.
+适用于流式排版的书（EPUB、FB2、MOBI、TXT）。阅读时按上下更改。
+
+Forget this folder
+忘记此文件夹
+
+Forget this server
+忘记此服务器
+
+Free books
+免费书籍
+
+Genre
+流派
+
+Go to free books
+前往免费书籍
+
+Go to the book server
+前往书籍服务器
+
+Go to the network folder
+前往网络文件夹
+
+Go to the SD card library
+前往SD卡的书库
+
+Hold your finger on a cover, or choose "Add to favorites" in the + menu.
+长按封面，或在 + 菜单中选择“添加到收藏”。
+
+Horizontal
+横向
+
+How the books are sorted, and looking for new ones.
+书的排序方式，以及查找新书。
+
+It couldn't be written to the card.
+无法写入SD卡。
+
+It isn't answering right now (it may be down for maintenance): try again later.
+暂时没有响应（可能正在维护）：请稍后再试。
+
+Its address, user and password are taken off the card. The books already copied stay.
+从存储卡删除地址、用户名和密码。已复制的书会保留。
+
+Its address, user and password are taken off the card. The books already downloaded stay.
+从存储卡删除地址、用户名和密码。已下载的书会保留。
+
+Its books show here, with their covers, as they're found.
+找到的书会连同封面显示在这里。
+
+its catalog
+其目录
+
+KaiReader reads its EPUB, PDF, CBZ, CBR, FB2 and MOBI books.
+KaiReader 可阅读其中的 EPUB、PDF、CBZ、CBR、FB2 和 MOBI 书。
+
+Library
+书库
+
+Light
+浅色
+
+Light, sepia, dark or black paper, for books that flow. Y changes it while reading.
+流式排版书的纸张：浅色、棕褐、深色或黑色。阅读时按 Y 更改。
+
+Load the list again
+重新载入列表
+
+Loading covers
+正在载入封面
+
+Loading...
+正在载入...
+
+Look again
+重新查找
+
+Look for books again
+重新查找书籍
+
+Look through the network folder again
+重新浏览网络文件夹
+
+Look through the server's catalog again
+重新浏览服务器目录
+
+Looking through the catalog... %d
+正在浏览目录... %d
+
+Looking through the folder... %d
+正在浏览文件夹... %d
+
+Looking through the network folder...
+正在浏览网络文件夹...
+
+Looking through the server's catalog...
+正在浏览服务器目录...
+
+Looks in sdmc:/books again for books added or removed.
+重新检查 sdmc:/books 中新增或移除的书。
+
+Lying down. Press the right stick (or the turn button) to stand it up.
+横向。按右摇杆（或旋转按钮）改为竖向。
+
+Made by
+制作者
+
+Network folder
+网络文件夹
+
+Network folder set: test the connection, then press X in the library to see its books.
+网络文件夹已设置：测试连接后，在书库中按 X 查看它的书。
+
+No author
+无作者
+
+No bookmarks in this book yet.
+这本书还没有书签。
+
+No books in the network folder.
+网络文件夹中没有书。
+
+No books in the server's catalog.
+服务器目录中没有书。
+
+No books yet.
+还没有书。
+
+No favorites here yet.
+这里还没有收藏。
+
+No favorites yet.
+还没有收藏。
+
+No genre
+无类型
+
+No more bookmarks fit in this book.
+这本书无法再添加书签。
+
+No other source yet: add a network folder in Settings.
+还没有其他来源：请在设置中添加网络文件夹。
+
+None
+无
+
+Not set
+未设置
+
+Not signed: someone on your network could change what's read. Use it only for an old NAS.
+未签名：你网络中的人可能篡改读取的内容。仅用于旧 NAS。
+
+Nothing answered at that address and port. Is the server on, and is the port right?
+该地址和端口没有响应。服务器是否已开启？端口是否正确？
+
+Nothing answered at that address. Is the computer on, and is the folder shared?
+该地址没有响应。电脑是否已开启？文件夹是否已共享？
+
+Nothing found for "%s".
+未找到“%s”。
+
+Off
+关
+
+Off: asked when the folder is used
+关：使用文件夹时询问
+
+Off: the password isn't kept on the card, and it's asked for when the folder is used.
+关闭：密码不保存在存储卡上，使用文件夹时再询问。
+
+On
+开
+
+On: not signed
+开：不签名
+
+One
+单页
+
+One moment: the bookmarks are still being found.
+请稍候：仍在查找书签。
+
+One moment: the page is still being read.
+请稍候：仍在读取页面。
+
+Only for an old NAS or a folder open to guests that doesn't sign: someone on your network could change what's read.
+仅用于不签名的旧 NAS 或访客文件夹：你网络中的人可能篡改读取的内容。
+
+Only for shared folders (SMB)
+仅用于共享文件夹（SMB）
+
+Opening the book…
+正在打开书…
+
+Out of memory
+内存不足
+
+Out of memory.
+内存不足。
+
+p. %d
+第 %d 页
+
+Pages
+页面
+
+Pages are drawn with MuPDF (Artifex Software), under the GNU AGPL 3.0. KaiReader is free software under the same license; its code is on GitHub (mizuiroame/kaireader).
+页面由 MuPDF（Artifex Software，GNU AGPL 3.0）绘制。KaiReader 是同一许可证下的自由软件；代码在 GitHub（mizuiroame/kaireader）。
+
+Password
+密码
+
+Password for %s (%s)
+%s 的密码（%s）
+
+Press the left stick in, or the ribbon on the reading bar, to bookmark a page.
+按下左摇杆，或点击阅读栏上的书签带，即可为页面添加书签。
+
+Public-domain books, free to read. Loading the list...
+公有领域的免费书籍。正在载入列表...
+
+Put EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files in the books folder of the SD card:
+将 EPUB、PDF、CBZ、CBR、FB2、MOBI 或 TXT 文件放入 SD 卡的书籍文件夹：
+
+Reading
+阅读
+
+Recently read
+最近阅读
+
+Recently read, your favorites, by title, by author or by genre (from the book's subject). Y changes it in the library.
+最近阅读、收藏、按书名、按作者或按类型（来自书的主题）。在书库中按 Y 更改。
+
+Remember the password
+记住密码
+
+Remove from favorites
+取消收藏
+
+Remove this page's bookmark
+删除此页书签
+
+Saved until KaiReader closes: the password isn't kept on the card.
+保存至 KaiReader 关闭：密码不保存在存储卡上。
+
+Saved: the card keeps the password's hash, not the password.
+已保存：卡上存的是密码的哈希，而不是密码。
+
+Saved: the password is only encoded on the card. Use a user that can only read the books.
+已保存：密码在存储卡上只是编码存储。请使用只能读取书籍的用户。
+
+Screen
+屏幕方向
+
+SD card
+SD卡
+
+Search
+搜索
+
+Search again
+重新搜索
+
+Search Project Gutenberg
+搜索 Project Gutenberg
+
+Search Project Gutenberg: a title, an author, a subject
+搜索 Project Gutenberg：书名、作者、主题
+
+Sepia
+棕褐
+
+Server set: add your user and password if it asks for them, then test the connection.
+服务器已设置：如有需要请添加用户名和密码，然后测试连接。
+
+Set up the network folder in Settings first.
+请先在“设置”中设置网络文件夹。
+
+Settings
+设置
+
+Show as a grid
+以网格显示
+
+Show as a list
+以列表显示
+
+Show books as
+书籍显示方式
+
+Show Project Gutenberg's most popular
+显示 Project Gutenberg 最热门
+
+Show Standard Ebooks' newest
+显示 Standard Ebooks 最新
+
+Signing is only for shared folders (SMB).
+签名仅适用于共享文件夹（SMB）。
+
+Sort books by
+书籍排序方式
+
+Stop
+停止
+
+Test the connection
+测试连接
+
+Testing the connection...
+正在测试连接...
+
+Text size
+字号
+
+Text size and the colors of the page.
+字号和页面配色。
+
+That address answers, but it isn't a WebDAV folder. Check the path after the port.
+该地址有响应，但不是WebDAV文件夹。请检查端口后面的路径。
+
+That address answers, but not as an SFTP server. Is the port right?
+该地址有响应，但不是 SFTP 服务器。端口正确吗？
+
+That address answers, but with neither a WebDAV folder nor a list of files. Check the path after the port.
+该地址有响应，但既不是 WebDAV 文件夹，也不是文件列表。请检查端口后面的路径。
+
+That address isn't an OPDS catalog.
+该地址不是 OPDS 目录。
+
+That book's name is too long to keep on the card.
+该书名太长，无法保存到存储卡。
+
+That file isn't on the server any more, or this user can't read it.
+该文件已不在服务器上，或此用户无法读取。
+
+That folder isn't on the server, or this user can't see it.
+服务器上没有该文件夹，或者该用户无法查看。
+
+That folder isn't on the server.
+服务器上没有该文件夹。
+
+That folder's name is too long.
+该文件夹名称过长。
+
+That isn't a network folder's address.
+这不是网络文件夹地址。
+
+That isn't a network folder's address: \\PC\Books, smb://, http://, https://, ftp://, ftps://, ftpes:// or sftp://.
+这不是网络文件夹地址：\\PC\Books、smb://、http://、https://、ftp://、ftps://、ftpes:// 或 sftp://。
+
+That isn't a server's address: 192.168.0.10:8083, http:// or https://.
+这不是服务器地址：192.168.0.10:8083、http:// 或 https://。
+
+That password can't be used.
+无法使用该密码。
+
+That shared folder isn't on the computer. Check the share's name after the computer's.
+电脑上没有该共享文件夹。请检查电脑名称后面的共享名称。
+
+The book couldn't be opened: %s
+无法打开这本书：%s
+
+The book couldn't be read from the network folder.
+无法从网络文件夹读取这本书。
+
+The book server couldn't be read.
+无法读取书籍服务器。
+
+The book server is forgotten.
+已移除书籍服务器。
+
+The bookmarks couldn't be saved.
+无法保存书签。
+
+The catalog couldn't be read.
+无法读取目录。
+
+The connection failed. Check the address and the network.
+连接失败。请检查地址和网络。
+
+The connection is signed again.
+连接重新启用签名。
+
+The file couldn't be read.
+无法读取该文件。
+
+The folder couldn't be read.
+无法读取文件夹。
+
+The keyboard couldn't open.
+无法打开键盘。
+
+The library is full.
+书库已满。
+
+The name in the address couldn't be found. Check it, or use the server's IP address.
+找不到地址中的名称。请检查地址，或使用服务器的IP地址。
+
+The network can't be used.
+无法使用网络。
+
+The network folder answers. At its top: folders %d, books %d.
+网络文件夹有响应。顶层：文件夹 %d，书 %d。
+
+The network folder couldn't be read.
+无法读取网络文件夹。
+
+The network folder is forgotten.
+已忘记网络文件夹。
+
+The network folder's password isn't remembered: it's asked for when the folder is used.
+网络文件夹的密码未保存：使用该文件夹时会询问。
+
+The password is kept on the card.
+密码会存在卡上。
+
+The password won't be kept on the card: KaiReader asks for it when the folder is used.
+密码不会保存在存储卡上：使用文件夹时 KaiReader 会询问。
+
+The secure connection failed.
+安全连接失败。
+
+The secure connection failed. Does the server use https on that port?
+安全连接失败。服务器在该端口上是否使用https？
+
+The server answered %ld.
+服务器返回了%ld。
+
+The server answers: %s, with %d books and %d lists at its start.
+服务器有响应：%s，开头有 %d 本书和 %d 个列表。
+
+The server couldn't be read.
+无法读取服务器。
+
+The server didn't answer in time. Is the console on the same network as the server?
+服务器未及时响应。主机和服务器是否在同一网络中？
+
+The server doesn't answer: check its address, and that it's on.
+服务器没有响应：请检查地址以及它是否开启。
+
+The server doesn't let this user see that folder.
+服务器不允许此用户查看该文件夹。
+
+The server doesn't offer a secure connection: use ftp:// instead.
+服务器不提供安全连接：请改用 ftp://。
+
+The server doesn't offer SFTP to this user.
+服务器不向该用户提供 SFTP。
+
+The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust your home network, turn on Allow without signing on this page.
+服务器不对连接签名（旧 NAS，或对访客开放的文件夹）。如果你信任家里的网络，请在此页面打开“允许不签名”。
+
+The server's address: 192.168.0.10:8083 (Calibre-Web), 192.168.0.10:25600 (Komga), or its OPDS address
+服务器地址：192.168.0.10:8083（Calibre-Web）、192.168.0.10:25600（Komga）或其 OPDS 地址
+
+The server's certificate isn't trusted.
+服务器证书不受信任。
+
+The server's folder listing couldn't be read.
+无法读取服务器的文件夹列表。
+
+The server's key isn't the one met before: it may be another server pretending to be it. If you changed the server, set the address again in Settings.
+服务器的密钥与之前的不同：可能是另一台服务器在冒充它。如果你更换了服务器，请在设置中重新输入地址。
+
+The shared folder couldn't be opened (%d: %s).
+无法打开共享文件夹（%d: %s）。
+
+The version, and the licenses of the parts KaiReader is made of.
+版本，以及 KaiReader 所用组件的许可证。
+
+There's no catalog at that address.
+该地址没有目录。
+
+This book has no table of contents and no bookmarks yet.
+这本书没有目录，也还没有书签。
+
+This book has no table of contents.
+这本书没有目录。
+
+This book's pages are fixed: the text size is for books that flow.
+这本书的页面是固定的：字号仅适用于流式排版的书。
+
+Title
+书名
+
+Try again
+重试
+
+Try other words: a title, an author or a subject, in English.
+试试其他词：书名、作者或主题，用英文。
+
+Two pages side by side, like an open book, with the console lying down. Upright, always one.
+主机横放时，像打开的书一样并排显示两页。竖持时始终单页。
+
+Two side by side
+双页并排
+
+Unknown author
+未知作者
+
+Upright. Press the right stick (or the turn button) to lay it down again.
+竖向。按右摇杆（或旋转按钮）恢复横向。
+
+User and password
+用户名和密码
+
+User name (empty: none)
+用户名（留空：无）
+
+User name (empty: none; DOMAIN\user for a domain)
+用户名（留空表示无；域用户请用 DOMAIN\user）
+
+Vertical
+竖向
+
+Vertical: hold the console like a book. Automatic: it turns as you turn the console (handheld). The right stick pressed in switches horizontal and vertical. The buttons and the touch screen turn with it.
+竖向：像书一样握持主机。自动：转动主机时画面随之旋转（掌机模式）。按下右摇杆在横向和竖向之间切换。按键和触摸屏也一起旋转。
+
+Without the password the network folder can't be read.
+没有密码就无法读取网络文件夹。
+
+Wrong user name or password.
+用户名或密码错误。
+
+Y shows the other books.
+按 Y 显示其他书。
+
+Language
+语言
+
+The language of KaiReader's words (not of your books). More can be added as files in the lang folder.
+KaiReader 界面的语言（不是书的语言）。可在 lang 文件夹中以文件形式添加更多语言。
+
+The language, reading with the console upright like a book, and the clock.
+语言、像书一样竖持主机阅读，以及时钟。
