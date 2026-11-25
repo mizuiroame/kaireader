@@ -165,9 +165,6 @@ Les livres sont des fichiers EPUB, PDF, CBZ, CBR, FB2, MOBI ou TXT, dans ce doss
 Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub.
 Les livres verrouillés par DRM ne s'ouvrent pas : seulement ceux lisibles partout. Les BD dans des archives utilisent libarchive ; les dossiers réseau, libsmb2 (LGPL 2.1), curl, libssh2 et Mbed TLS. Leurs licences sont dans docs/legal.md sur GitHub.
 
-Books with DRM (bought in a store that locks them) can't be opened.
-Les livres avec DRM (achetés dans une boutique qui les verrouille) ne s'ouvrent pas.
-
 Calibre-Web, Kavita, Komga or another OPDS catalog on your network: X in the library goes to its books.
 Calibre-Web, Kavita, Komga ou un autre catalogue OPDS sur votre réseau : X dans la bibliothèque mène à ses livres.
 
@@ -755,3 +752,45 @@ La langue des textes de KaiReader (pas celle de vos livres). D'autres peuvent ê
 
 The language, reading with the console upright like a book, and the clock.
 La langue, lire avec la console à la verticale comme un livre, et l'horloge.
+
+[A] Choose  [B] Later
+[A] Choisir  [B] Plus tard
+
+A book server
+Un serveur de livres
+
+A network folder
+Un dossier réseau
+
+A shared folder, a NAS or Nextcloud, FTP or SFTP.
+Un dossier partagé, un NAS ou Nextcloud, FTP ou SFTP.
+
+Calibre-Web, Kavita or Komga, by its address.
+Calibre-Web, Kavita ou Komga, par son adresse.
+
+Copy them to sdmc:/books; KaiDrop does it from your PC.
+Copiez-les dans sdmc:/books ; KaiDrop le fait depuis votre PC.
+
+Copy your books to sdmc:/books (KaiDrop gives them names the console can list), then choose "Look for books again" in the + menu.
+Copiez vos livres dans sdmc:/books (KaiDrop leur donne des noms que la console sait afficher), puis choisissez « Rechercher à nouveau les livres » dans le menu +.
+
+KaiDrop copies them from your PC with names the console can list. Books with DRM can't be opened.
+KaiDrop les copie depuis votre PC avec des noms que la console sait afficher. Les livres avec DRM ne s'ouvrent pas.
+
+Later
+Plus tard
+
+On the SD card
+Sur la carte SD
+
+Public-domain classics: Project Gutenberg, Standard Ebooks.
+Classiques du domaine public : Project Gutenberg, Standard Ebooks.
+
+Start with an empty library; it's all in + > Settings.
+Commencer avec une bibliothèque vide ; tout est dans + > Paramètres.
+
+Welcome! Where are your books?
+Bienvenue ! Où sont vos livres ?
+
+You can change it any time in + > Settings.
+Vous pouvez le changer à tout moment dans + > Paramètres.

@@ -29,6 +29,7 @@ typedef enum {
     HIT_CHAPTER,      // arg: an entry of the contents. A tap goes there.
     HIT_RESCAN,       // Looks for books again.
     HIT_SOURCE,       // The library's source pill: a tap switches it (as X).
+    HIT_WELCOME_ROW,  // arg: a row of the first run's welcome.
     HIT_NET_SETUP,    // The Network tab without a folder: opens its Settings page.
     HIT_NET_CANCEL,   // Stops a book's copy.
     HIT_RESCAN_NET,   // Reads the network folder again.

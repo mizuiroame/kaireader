@@ -164,9 +164,6 @@ Books are EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files, in it or its folders.
 Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub.
 DRM으로 잠긴 책은 열 수 없어요: 어디서나 읽을 수 있는 책만 열려요. 압축 파일 속 만화는 libarchive, 네트워크 폴더는 libsmb2(LGPL 2.1), curl, libssh2, Mbed TLS를 써요. 라이선스는 GitHub의 docs/legal.md에 있어요.
 
-Books with DRM (bought in a store that locks them) can't be opened.
-DRM이 걸린 책(잠금을 거는 스토어에서 산 책)은 열 수 없어요.
-
 Calibre-Web, Kavita, Komga or another OPDS catalog on your network: X in the library goes to its books.
 네트워크의 Calibre-Web, Kavita, Komga 또는 다른 OPDS 카탈로그: 서재에서 X를 누르면 그 책으로 가요.
 
@@ -754,3 +751,45 @@ KaiReader 화면의 언어(책의 언어가 아니에요). lang 폴더에 파일
 
 The language, reading with the console upright like a book, and the clock.
 언어, 책처럼 본체를 세로로 들고 읽기, 그리고 시계.
+
+[A] Choose  [B] Later
+[A] 선택  [B] 나중에
+
+A book server
+책 서버
+
+A network folder
+네트워크 폴더
+
+A shared folder, a NAS or Nextcloud, FTP or SFTP.
+공유 폴더, NAS나 Nextcloud, FTP, SFTP.
+
+Calibre-Web, Kavita or Komga, by its address.
+Calibre-Web, Kavita, Komga를 주소로.
+
+Copy them to sdmc:/books; KaiDrop does it from your PC.
+sdmc:/books에 복사하세요. KaiDrop으로 PC에서 할 수 있어요.
+
+Copy your books to sdmc:/books (KaiDrop gives them names the console can list), then choose "Look for books again" in the + menu.
+책을 sdmc:/books에 복사하고(KaiDrop은 본체에서 보이는 이름으로 바꿔요), + 메뉴에서 "책 다시 찾기"를 고르세요.
+
+KaiDrop copies them from your PC with names the console can list. Books with DRM can't be opened.
+KaiDrop은 PC에서 본체가 보여 줄 수 있는 이름으로 복사해요. DRM이 걸린 책은 열 수 없어요.
+
+Later
+나중에
+
+On the SD card
+SD 카드에
+
+Public-domain classics: Project Gutenberg, Standard Ebooks.
+퍼블릭 도메인 고전: Project Gutenberg, Standard Ebooks.
+
+Start with an empty library; it's all in + > Settings.
+빈 서재로 시작해요. 모두 + > 설정에 있어요.
+
+Welcome! Where are your books?
+환영해요! 책은 어디에 있나요?
+
+You can change it any time in + > Settings.
++ > 설정에서 언제든지 바꿀 수 있습니다.

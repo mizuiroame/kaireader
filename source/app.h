@@ -53,7 +53,17 @@ typedef enum {
     PANEL_MENU,      // + : a few things to do (and Settings).
     PANEL_SETTINGS,  // Settings, in pages.
     PANEL_CONTENTS,  // The book's table of contents, or its bookmarks (contents_tab).
+    PANEL_WELCOME,   // The first run's: where are the books? (app_welcome.c)
 } Panel;
+
+typedef enum {
+    WELCOME_CARD,
+    WELCOME_NETWORK,
+    WELCOME_SERVER,
+    WELCOME_FREE,
+    WELCOME_LATER,
+    WELCOME_ROW_COUNT,
+} WelcomeRow;
 
 typedef enum {
     MENU_CONTENTS,
@@ -138,6 +148,9 @@ typedef struct {
     bool server_scanned;                 // The book server's catalog walked since KaiReader started.
     char server_problem[256];            // Why the server couldn't be read; "" if it could.
     int copy_tab;                        // The library of the book being copied to open.
+    int welcome_cursor;
+    bool welcome_away;                   // Gone to a Settings page from the welcome: back to it if unset.
+    bool settings_from_welcome;          // B on that page goes back to the welcome.
     int free_list;                       // Free books: the list shown (catalogs.h's CatalogList),
     char free_query[128];                // the last search,
     char free_asked[1024];               // the page asked for last, and whether it adds to the list;
@@ -197,6 +210,15 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns);
 void appNotify(App *app, NoticeKind kind, const char *text, uint64_t now_ns);
 // Looks for books again.
 void appRescan(App *app, uint64_t now_ns);
+// The first run's welcome (app_welcome.c).
+bool appWelcomeNeeded(const App *app);
+void appOpenWelcome(App *app);
+void appWelcomeChoose(App *app, int row, uint64_t now_ns);
+void appWelcomeButtons(App *app, uint64_t pressed, uint64_t now_ns);
+void appWelcomeTick(App *app);
+// Settings open at a page (B there closes it); and the settings written to the card.
+void appOpenSettingsPage(App *app, int page);
+void appSavePrefs(App *app);
 // The language in Settings put in use (at start, and when it changes).
 void appUseLanguage(App *app);
 // The book at a place in the library's order: a favorite, or not any more (with a notice).

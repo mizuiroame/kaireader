@@ -268,7 +268,7 @@ static void drawEmpty(int w)
         T("No books yet."),
         T("Put EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files in the books folder of the SD card:"),
         "sdmc:/books",
-        T("Books with DRM (bought in a store that locks them) can't be opened."),
+        T("KaiDrop copies them from your PC with names the console can list. Books with DRM can't be opened."),
     };
     int y = 230;
     for (int i = 0; i < 4; i++) {
@@ -697,6 +697,45 @@ static void drawSettings(const App *app)
                app->settings_page == SETTINGS_PAGE_MAIN ? T("[A] Open  [B] Close") : T("[<>] Change  [A] Choose  [B] Back"));
 }
 
+// The first run's welcome: where are the books? A row each, a line under it.
+#define WELCOME_W 700
+#define WELCOME_ROW_H 74
+
+static void drawWelcome(const App *app)
+{
+    static const char *const TITLES[WELCOME_ROW_COUNT] = {
+        N_("On the SD card"), N_("A network folder"), N_("A book server"), N_("Free books"), N_("Later"),
+    };
+    static const char *const NOTES[WELCOME_ROW_COUNT] = {
+        N_("Copy them to sdmc:/books; KaiDrop does it from your PC."),
+        N_("A shared folder, a NAS or Nextcloud, FTP or SFTP."),
+        N_("Calibre-Web, Kavita or Komga, by its address."),
+        N_("Public-domain classics: Project Gutenberg, Standard Ebooks."),
+        N_("Start with an empty library; it's all in + > Settings."),
+    };
+    dim();
+    int w = minInt(WELCOME_W, gfxLayoutWidth() - 40), h = 116 + WELCOME_ROW_COUNT * WELCOME_ROW_H + 64;
+    int x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
+    gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
+    uiHitAdd(x, y, w, h, HIT_SETTING, -1);  // The panel itself: nothing.
+    fontDrawClipped(FONT_BOLD, 26, x + 32, y + 26, w - 64, T("Welcome! Where are your books?"), COLOR_TEXT);
+    fontDrawClipped(FONT_REGULAR, 17, x + 32, y + 68, w - 64, T("You can change it any time in + > Settings."), COLOR_DIM);
+    int list_y = y + 110;
+    for (int i = 0; i < WELCOME_ROW_COUNT; i++) {
+        int ry = list_y + i * WELCOME_ROW_H;
+        bool on = i == app->welcome_cursor;
+        if (on) {
+            gfxFillRoundRect(x + 14, ry, w - 28, WELCOME_ROW_H - 6, 12, COLOR_SURFACE_HI);
+            gfxFillRect(x + 14, ry + 14, 3, WELCOME_ROW_H - 34, COLOR_ACCENT);
+        }
+        fontDrawClipped(on ? FONT_BOLD : FONT_REGULAR, 21, x + 36, ry + 10, w - 72, T(TITLES[i]),
+                        i == WELCOME_LATER ? COLOR_DIM : on ? COLOR_ACCENT : COLOR_TEXT);
+        fontDrawClipped(FONT_REGULAR, 16, x + 36, ry + 40, w - 72, T(NOTES[i]), COLOR_DIM);
+        uiHitAdd(x + 14, ry, w - 28, WELCOME_ROW_H - 6, HIT_WELCOME_ROW, i);
+    }
+    uiDrawHelp(x + 32, y + h - 30.0f, w - 64, T("[A] Choose  [B] Later"));
+}
+
 static void drawContents(const App *app)
 {
     dim();
@@ -769,6 +808,8 @@ void uiDraw(App *app, uint64_t now_ns)
         drawSettings(app);
     else if (app->panel == PANEL_CONTENTS)
         drawContents(app);
+    else if (app->panel == PANEL_WELCOME)
+        drawWelcome(app);
     NoticeView views[NOTICE_STACK + 1];
     int n = noticeVisible(&app->notices, now_ns, views);
     uiDrawNotices(views, n);

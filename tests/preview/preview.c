@@ -272,6 +272,11 @@ int main(int argc, char **argv)
     setSort(&app, SHELF_SORT_TITLE);
     setSort(&app, SHELF_SORT_RECENT);
     render(&app, dir, "library");
+    appOpenWelcome(&app);  // The first run's (shown with no books anywhere).
+    render(&app, dir, "welcome");
+    app.welcome_cursor = WELCOME_FREE;
+    render(&app, dir, "welcome-free");
+    app.panel = PANEL_NONE;
     app.covers_busy_ns = 1234567890ull;
     render(&app, dir, "library-covers-loading");
     app.covers_busy_ns = 0;

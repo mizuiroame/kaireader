@@ -21,14 +21,15 @@ void testPrefs(void)
     p.sort = SHELF_SORT_GENRE;
     p.turn = 2;
     p.two_pages = true;
-    CHECK(!strcmp(p.language, "en"));
+    CHECK(!strcmp(p.language, "en") && !p.welcomed);
     snprintf(p.language, sizeof(p.language), "%s", "es");
+    p.welcomed = true;
     CHECK(prefsSave(&p, TMP_ROOT "/settings.txt"));
     Prefs q;
     prefsDefaults(&q);
     CHECK(prefsLoad(&q, TMP_ROOT "/settings.txt"));
     CHECK(q.text_size == 7 && q.theme == THEME_BLACK && !q.clock_24h && q.sort == SHELF_SORT_GENRE && q.turn == 2 && q.two_pages);
-    CHECK(!strcmp(q.language, "es"));
+    CHECK(!strcmp(q.language, "es") && q.welcomed);
 
     FILE *f = fopen(TMP_ROOT "/bad-settings.txt", "w");
     if (f) {

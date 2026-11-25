@@ -28,6 +28,7 @@ typedef struct {
     int upright;    // GFX_TURN_RIGHT or _LEFT: the side the quick button stands it on (the last one used).
     bool two_pages; // Two pages side by side, like an open book (with the console lying down).
     bool list_view; // The library as a list (small covers, more words) instead of a grid.
+    bool welcomed;  // The first run's welcome answered.
     char language[64]; // Its id (languages.h): "en", "es", or a file in the lang folder.
 } Prefs;
 

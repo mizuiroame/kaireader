@@ -54,6 +54,8 @@ bool appSourceSet(int tab)
            (tab == LIB_SERVER && opdsConfigured());
 }
 
+void appSavePrefs(App *app);
+
 static void savePrefs(App *app)
 {
     char file[APP_FOLDER_MAX + 16];
@@ -252,6 +254,8 @@ void appInit(App *app, const char *folder)
     appNetStart(app);
     appServerStart(app);
     appNetworkUse();
+    if (appWelcomeNeeded(app))  // The first run, with no books anywhere yet.
+        appOpenWelcome(app);
 }
 
 const ShelfBook *appSelectedBook(const App *app)
@@ -772,6 +776,7 @@ void appUpdate(App *app, uint64_t now_ns)
     appServerUpdate(app, now_ns);
     appServerTestUpdate(app, now_ns);
     appFreeUpdate(app, now_ns);
+    appWelcomeTick(app);
     if (app->view == VIEW_READER)
         followBook(app, now_ns);
     if (app->turn_from >= 0 && now_ns - app->turn_start_ns >= READ_TURN_NS)
@@ -941,6 +946,17 @@ static void openSettings(App *app)
     app->panel = PANEL_SETTINGS;
     app->settings_page = SETTINGS_PAGE_MAIN;
     app->settings_cursor = 0;
+}
+
+void appSavePrefs(App *app)
+{
+    savePrefs(app);
+}
+
+void appOpenSettingsPage(App *app, int page)
+{
+    openSettings(app);
+    app->settings_page = page;
 }
 
 // Settings at the network folder's page, as Back from it lands on its row of the main page.
@@ -1148,6 +1164,11 @@ static void settingsPick(App *app, int index, int dir, uint64_t now_ns)
 
 static void settingsBack(App *app)
 {
+    if (app->settings_from_welcome) {  // Opened from the welcome: back to it (or on, if set up).
+        app->panel = PANEL_NONE;
+        app->settings_from_welcome = false;
+        return;
+    }
     if (app->settings_page == SETTINGS_PAGE_MAIN) {
         app->panel = PANEL_NONE;
         return;
@@ -1410,6 +1431,10 @@ void appHandleButtons(App *app, uint64_t pressed, uint64_t now_ns)
         contentsButtons(app, pressed, now_ns);
         return;
     }
+    if (app->panel == PANEL_WELCOME) {
+        appWelcomeButtons(app, pressed, now_ns);
+        return;
+    }
     if (pressed & HidNpadButton_Plus) {
         app->panel = PANEL_MENU;
         app->menu_cursor = 0;
@@ -1482,8 +1507,12 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
         app->cursor = hit->arg;
         appOpenBook(app, hit->arg, now_ns);
         break;
-    case HIT_OVERLAY_OUT:
-        app->panel = PANEL_NONE;
+    case HIT_OVERLAY_OUT:  // Outside a panel: it closes (the welcome waits for an answer).
+        if (app->panel != PANEL_WELCOME)
+            app->panel = PANEL_NONE;
+        break;
+    case HIT_WELCOME_ROW:
+        appWelcomeChoose(app, hit->arg, now_ns);
         break;
     case HIT_MENU_ITEM: {
         MenuItem rows[MENU_COUNT];
