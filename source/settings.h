@@ -17,6 +17,7 @@ typedef enum {
     SETTINGS_PAGE_ABOUT,
     SETTINGS_PAGE_NETWORK,
     SETTINGS_PAGE_SERVER,
+    SETTINGS_PAGE_CREDITS,  // About's: who made it, and their licenses.
     SETTINGS_PAGE_COUNT,
 } SettingsPage;
 
@@ -46,6 +47,14 @@ typedef enum {
     SETTING_SRV_TEST,
     SETTING_SRV_FORGET,
     SETTING_LANGUAGE,      // The app's language (the app steps it: languages.h).
+    SETTING_RESUME,        // The last book opened again at start.
+    SETTING_SRV_CERTIFICATE,  // The book server's certificate checked, or any taken (its own).
+    SETTING_CREDITS,       // About: opens Credits and licenses.
+    SETTING_UPDATE_AUTO,   // Look for a new version once a day.
+    SETTING_UPDATE_NOW,    // Look now, or install what was found (app_update.c shows its value).
+    SETTING_ACCENT,        // The accent color.
+    SETTING_BACKGROUND,    // An image behind the library (the app steps it: the folder's files).
+    SETTING_BLUR,          // How soft that image is.
     SETTING_COUNT,
 } SettingRow;
 
@@ -58,6 +67,9 @@ typedef enum {
     SETTINGS_CHANGED_ORDER = 2,   // The library is sorted again.
     SETTINGS_CHANGED_SCREEN = 4,  // The screen turned.
     SETTINGS_RESCAN = 8,          // Look for books.
+    SETTINGS_CHANGED_CERTIFICATE = 16,  // The book server's certificate check.
+    SETTINGS_CHANGED_ACCENT = 32,       // The accent color.
+    SETTINGS_CHANGED_BLUR = 64,         // The background made again.
 } SettingsChange;
 
 // The rows of a page, into out; how many.

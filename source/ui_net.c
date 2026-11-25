@@ -39,13 +39,16 @@ int uiDrawSourcePill(const App *app)
     const char *label = uiSourceName(app->lib_tab);
     bool key = app->panel == PANEL_NONE;  // X switches it while no panel is open.
     int key_w = key ? uiButtonWidth("X") + 8 : 0;
+    const char *what = T("Source:");  // As the other Kai apps: "Source: SD card".
+    int what_w = fontTextWidth(FONT_REGULAR, 16, what) + 8;
     int x = MARGIN + 34 + fontTextWidth(FONT_BOLD, 26, "KaiReader") + PILL_GAP;
-    int w = 12 + key_w + SOURCE_DOT + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;
+    int w = 12 + key_w + what_w + SOURCE_DOT + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;
     float cy = PILL_Y + PILL_H / 2.0f;
     gfxFillRoundRect(x, PILL_Y, w, PILL_H, PILL_H / 2, COLOR_SURFACE_HI);
     if (key)
         uiDrawButton(x + 8, cy, "X", COLOR_SURFACE, COLOR_TEXT);
-    int dot_x = x + 12 + key_w;
+    fontDrawMiddle(FONT_REGULAR, 16, x + 12 + key_w, cy, what, COLOR_DIM);
+    int dot_x = x + 12 + key_w + what_w;
     gfxFillRoundRect(dot_x, (int)cy - SOURCE_DOT / 2, SOURCE_DOT, SOURCE_DOT, SOURCE_DOT / 2,
                      uiSourceColor(app->lib_tab));
     fontDrawMiddle(FONT_BOLD, 16, dot_x + SOURCE_DOT + 8, cy, label, COLOR_TEXT);

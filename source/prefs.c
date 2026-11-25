@@ -51,6 +51,16 @@ void prefsDefaults(Prefs *p)
     p->two_pages = false;
     p->list_view = false;
     p->welcomed = false;
+    p->resume = true;
+    p->last_tab = 0;
+    p->last_book[0] = '\0';
+    p->server_any_certificate = false;
+    p->update_check = true;
+    p->accent = 0;
+    p->background[0] = '\0';
+    p->background_blur = 2;  // Medium.
+    p->update_checked = 0;
+    p->update_tag[0] = '\0';
     snprintf(p->language, sizeof(p->language), "%s", "en");
 }
 
@@ -106,6 +116,29 @@ bool prefsLoad(Prefs *p, const char *file)
             p->list_view = v != 0;
         else if (!strcmp(key, "welcomed") && number(value, 0, 1, &v))
             p->welcomed = v != 0;
+        else if (!strcmp(key, "resume") && number(value, 0, 1, &v))
+            p->resume = v != 0;
+        else if (!strcmp(key, "last_tab") && number(value, 0, 3, &v))
+            p->last_tab = v;
+        else if (!strcmp(key, "last_book") && strlen(value) < sizeof(p->last_book) && !strpbrk(value, "\r\n"))
+            snprintf(p->last_book, sizeof(p->last_book), "%s", value);
+        else if (!strcmp(key, "server_any_certificate") && number(value, 0, 1, &v))
+            p->server_any_certificate = v != 0;
+        else if (!strcmp(key, "accent") && number(value, 0, 5, &v))
+            p->accent = v;
+        else if (!strcmp(key, "background_blur") && number(value, 0, 3, &v))
+            p->background_blur = v;
+        else if (!strcmp(key, "background") && strlen(value) < sizeof(p->background) && !strpbrk(value, "/\\\r\n"))
+            snprintf(p->background, sizeof(p->background), "%s", value);  // A file's name: never a path.
+        else if (!strcmp(key, "update_check") && number(value, 0, 1, &v))
+            p->update_check = v != 0;
+        else if (!strcmp(key, "update_checked")) {
+            char *end;
+            long long t = strtoll(value, &end, 10);
+            if (end != value && !*end && t >= 0)
+                p->update_checked = t;
+        } else if (!strcmp(key, "update_tag") && strlen(value) < sizeof(p->update_tag) && !strpbrk(value, "/\\\r\n"))
+            snprintf(p->update_tag, sizeof(p->update_tag), "%s", value);
         else if (!strcmp(key, "language") && value[0] && strlen(value) < sizeof(p->language) &&
                  !strpbrk(value, "/\\\r\n"))
             snprintf(p->language, sizeof(p->language), "%s", value);  // An id or a file's name: never a path.
@@ -128,6 +161,11 @@ bool prefsSave(const Prefs *p, const char *file)
             p->text_size, p->theme, p->clock_24h ? 1 : 0, p->sort, p->turn, p->two_pages ? 1 : 0);
     fprintf(f, "upright = %d\nlist_view = %d\nlanguage = %s\nwelcomed = %d\n", p->upright, p->list_view ? 1 : 0, p->language,
             p->welcomed ? 1 : 0);
+    fprintf(f, "resume = %d\nlast_tab = %d\nlast_book = %s\nserver_any_certificate = %d\n", p->resume ? 1 : 0,
+            p->last_tab, p->last_book, p->server_any_certificate ? 1 : 0);
+    fprintf(f, "accent = %d\nbackground = %s\nbackground_blur = %d\n", p->accent, p->background, p->background_blur);
+    fprintf(f, "update_check = %d\nupdate_checked = %lld\nupdate_tag = %s\n", p->update_check ? 1 : 0, p->update_checked,
+            p->update_tag);
     bool ok = !ferror(f);
     ok = fclose(f) == 0 && ok;
     if (!ok) {

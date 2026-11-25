@@ -14,6 +14,10 @@
 #define OPDS_ACCOUNT_FILE "server.txt"
 
 void opdsUseAccount(const DavAccount *a);
+// Off: the server's https certificate isn't checked (its own). Only for the server's address.
+void opdsCheckCertificate(bool check);
+// True when url is the server's and its certificate isn't to be checked.
+bool opdsAnyCertificate(const char *url);
 void opdsGetAccount(DavAccount *out);
 bool opdsConfigured(void);
 void opdsLoadAccount(const char *path);

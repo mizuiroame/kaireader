@@ -372,3 +372,13 @@ bool netJobTakeCatalogPage(char *url, size_t url_size, OpdsBook **books, int *co
 void appNetworkWantFree(void)
 {
 }
+
+// The update check: nothing asked in the preview.
+#include "updatefetch.h"
+void updateFetchInit(const char *nro_path) { (void)nro_path; }
+bool updateFetchCheck(void) { return false; }
+bool updateFetchInstall(void) { return false; }
+void updateFetchStatus(UpdateStatus *out) { memset(out, 0, sizeof(*out)); }
+void updateFetchExit(void) {}
+
+void opdsCheckCertificate(bool check) { (void)check; }

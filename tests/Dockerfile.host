@@ -3,7 +3,7 @@
 #   docker build -t kaireader-host -f tests/Dockerfile.host tests
 FROM debian:12
 RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ make libc6-dev ca-certificates curl \
-      python3 zip pkg-config libarchive-dev p7zip-full \
+      python3 zip pkg-config libarchive-dev libjansson-dev p7zip-full \
  && rm -rf /var/lib/apt/lists/*
 
 ARG MUPDF_VERSION=1.28.6

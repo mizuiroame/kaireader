@@ -24,12 +24,19 @@ void testPrefs(void)
     CHECK(!strcmp(p.language, "en") && !p.welcomed);
     snprintf(p.language, sizeof(p.language), "%s", "es");
     p.welcomed = true;
+    p.resume = false;
+    p.last_tab = 1;
+    snprintf(p.last_book, sizeof(p.last_book), "%s", "dav:/books/Dune.epub");
+    p.update_checked = 1790000000LL;
+    snprintf(p.update_tag, sizeof(p.update_tag), "%s", "v1.1.0");
     CHECK(prefsSave(&p, TMP_ROOT "/settings.txt"));
     Prefs q;
     prefsDefaults(&q);
     CHECK(prefsLoad(&q, TMP_ROOT "/settings.txt"));
     CHECK(q.text_size == 7 && q.theme == THEME_BLACK && !q.clock_24h && q.sort == SHELF_SORT_GENRE && q.turn == 2 && q.two_pages);
     CHECK(!strcmp(q.language, "es") && q.welcomed);
+    CHECK(!q.resume && q.last_tab == 1 && !strcmp(q.last_book, "dav:/books/Dune.epub") && q.update_check);
+    CHECK(q.update_checked == 1790000000LL && !strcmp(q.update_tag, "v1.1.0") && !q.server_any_certificate);
 
     FILE *f = fopen(TMP_ROOT "/bad-settings.txt", "w");
     if (f) {

@@ -54,6 +54,7 @@ typedef enum {
     PANEL_SETTINGS,  // Settings, in pages.
     PANEL_CONTENTS,  // The book's table of contents, or its bookmarks (contents_tab).
     PANEL_WELCOME,   // The first run's: where are the books? (app_welcome.c)
+    PANEL_EXIT,      // "Exit KaiReader?" (+ twice, or the X), as KaiRadio's.
 } Panel;
 
 typedef enum {
@@ -148,6 +149,9 @@ typedef struct {
     bool server_scanned;                 // The book server's catalog walked since KaiReader started.
     char server_problem[256];            // Why the server couldn't be read; "" if it could.
     int copy_tab;                        // The library of the book being copied to open.
+    bool resume_pending;                 // The last book to open again, on the first frame.
+    unsigned update_seen;                // The update status last said.
+    bool update_manual;                  // Asked from Settings: "up to date" and failures are said.
     int welcome_cursor;
     bool welcome_away;                   // Gone to a Settings page from the welcome: back to it if unset.
     bool settings_from_welcome;          // B on that page goes back to the welcome.
@@ -219,6 +223,14 @@ void appWelcomeTick(App *app);
 // Settings open at a page (B there closes it); and the settings written to the card.
 void appOpenSettingsPage(App *app, int page);
 void appSavePrefs(App *app);
+// "Exit KaiReader?": Exit or Cancel (+ there exits).
+void appAskExit(App *app);
+// Settings > About's updates (app_update.c): started with argv[0], stopped before the network.
+void appStartUpdates(App *app, const char *nro_path);
+void appStopUpdates(void);
+void appUpdatesTick(App *app, uint64_t now_ns);
+void appUpdatesActivate(App *app, uint64_t now_ns);
+void appUpdatesValue(const App *app, int row, char *out, size_t size);
 // The language in Settings put in use (at start, and when it changes).
 void appUseLanguage(App *app);
 // The book at a place in the library's order: a favorite, or not any more (with a notice).

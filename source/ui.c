@@ -15,6 +15,7 @@
 #include "ui_brand.h"
 #include "ui_buttons.h"
 #include "ui_common.h"
+#include "background.h"
 #include "ui_marks.h"
 #include "davnet.h"
 #include "ui_net.h"
@@ -291,7 +292,11 @@ static void drawEmpty(int w)
 static void drawLibrary(App *app, uint64_t now_ns)
 {
     int w = gfxLayoutWidth(), h = gfxLayoutHeight();
-    gfxClear(COLOR_BG);
+    const uint32_t *background = backgroundPixels();  // The user's picture, or the plain dark.
+    if (background)
+        gfxCopyFrame(background);
+    else
+        gfxClear(COLOR_BG);
     uiDrawHeader("KaiReader");
     int pill_end = uiDrawSourcePill(app);
     int status_x = uiDrawStatus(&app->sys, app->prefs.clock_24h, w - MARGIN, 18, COLOR_TEXT, COLOR_DIM);
@@ -563,6 +568,27 @@ static const char *menuLabel(const App *app, MenuItem item)
     }
 }
 
+// "Exit KaiReader?": Exit or Cancel, as KaiRadio's.
+static void drawExit(const App *app)
+{
+    static const char *const ANSWERS[2] = {N_("Exit"), N_("Cancel")};
+    dim();
+    int w = minInt(MENU_W, gfxLayoutWidth() - 40), h = 70 + 2 * MENU_ROW_H + 56;
+    int x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
+    gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
+    uiHitAdd(x, y, w, h, HIT_MENU_ITEM, -1);
+    fontDrawClipped(FONT_BOLD, 24, x + 28, y + 22, w - 56, T("Exit KaiReader?"), COLOR_TEXT);
+    for (int i = 0; i < 2; i++) {
+        int ry = y + 70 + i * MENU_ROW_H;
+        bool on = i == app->menu_cursor;
+        if (on)
+            gfxFillRoundRect(x + 12, ry, w - 24, MENU_ROW_H - 4, 12, COLOR_SURFACE_HI);
+        fontDrawMiddle(FONT_BOLD, 19, x + 28, ry + (MENU_ROW_H - 4) / 2.0f, T(ANSWERS[i]), on ? COLOR_ACCENT : COLOR_TEXT);
+        uiHitAdd(x + 12, ry, w - 24, MENU_ROW_H - 4, HIT_EXIT_ITEM, i);
+    }
+    uiDrawHelp(x + 28, y + h - 30.0f, w - 56, T("[A] Choose  [B] Cancel  [+] Exit"));
+}
+
 static void drawMenu(const App *app)
 {
     dim();
@@ -598,16 +624,18 @@ static int drawAboutText(int x, int y, int w, bool draw)
 {
     const char *paragraphs[] = {
         "KaiReader " KAIREADER_VERSION,
-        T("A book reader for Switch 2 homebrew. Your books from sdmc:/books, a network folder or a book server (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS."),
-        T("Pages are drawn with MuPDF (Artifex Software), under the GNU AGPL 3.0. KaiReader is free software under the same license; its code is on GitHub (mizuiroame/kaireader)."),
-        T("Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub."),
+        T("A book reader for Switch 2 homebrew, by Mizuiro. Free software under the GNU AGPL 3.0; its code is on GitHub (mizuiroame/kaireader)."),
+        T("Books: MuPDF (Artifex Software, AGPL 3.0), with FreeType, HarfBuzz, libjpeg, OpenJPEG, jbig2dec, lcms2, Gumbo, zlib and brotli. Comics in archives: libarchive, with XZ, LZ4, Zstandard, bzip2 and Expat."),
+        T("Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg and Standard Ebooks."),
+        T("Text: Noto Sans (SIL OFL 1.1) and the console's own fonts. Also stb, libnx, libounce and Mesa. Every license, in full, is in docs/legal.md on GitHub."),
+        T("Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened."),
     };
-    for (int p = 0; p < 4; p++) {
+    for (int p = 0; p < 6; p++) {
         char lines[6][160];
-        int n = wrapLines(p ? FONT_REGULAR : FONT_BOLD, p ? 18 : 22, paragraphs[p], w, lines, 6);
-        for (int i = 0; i < n; i++, y += p ? 27 : 32)
+        int n = wrapLines(p ? FONT_REGULAR : FONT_BOLD, p ? 17 : 22, paragraphs[p], w, lines, 6);
+        for (int i = 0; i < n; i++, y += p ? 25 : 32)
             if (draw)
-                fontDraw(p ? FONT_REGULAR : FONT_BOLD, p ? 18 : 22, x, y, lines[i],
+                fontDraw(p ? FONT_REGULAR : FONT_BOLD, p ? 17 : 22, x, y, lines[i],
                          p == 0 ? COLOR_ACCENT : p == 1 ? COLOR_TEXT : COLOR_DIM);
         y += 14;
     }
@@ -619,7 +647,7 @@ static void drawSettings(const App *app)
     dim();
     SettingRow rows[SETTINGS_ROWS_MAX];
     int n = settingsRows(app->settings_page, rows);
-    bool about = app->settings_page == SETTINGS_PAGE_ABOUT;
+    bool about = app->settings_page == SETTINGS_PAGE_CREDITS;
     int w = minInt(SETTINGS_W_MAX, gfxLayoutWidth() - 40);
     int about_text = about ? drawAboutText(0, 0, w - 64, false) : 0;  // Its height, to fit the page to it.
     int h = about ? 90 + about_text + ABOUT_GAP + ABOUT_BRAND_H + 64 : 84 + n * SETTINGS_ROW_H + 110;
@@ -655,7 +683,12 @@ static void drawSettings(const App *app)
         if (settingsPickedValue(rows[i])) {  // A value picked with A (the keyboard): no arrows.
             char value[160];
             bool name;
-            settingsValue(&app->prefs, rows[i], value, sizeof(value), &name);
+            if (rows[i] == SETTING_UPDATE_NOW) {
+                appUpdatesValue(app, rows[i], value, sizeof(value));
+                name = false;
+            } else {
+                settingsValue(&app->prefs, rows[i], value, sizeof(value), &name);
+            }
             const char *shown = name ? T(value) : value;
             int vw = fontTextWidth(FONT_BOLD, 18, shown), max_vw = w / 2 - 40;
             vw = vw > max_vw ? max_vw : vw;
@@ -810,6 +843,8 @@ void uiDraw(App *app, uint64_t now_ns)
         drawContents(app);
     else if (app->panel == PANEL_WELCOME)
         drawWelcome(app);
+    else if (app->panel == PANEL_EXIT)
+        drawExit(app);
     NoticeView views[NOTICE_STACK + 1];
     int n = noticeVisible(&app->notices, now_ns, views);
     uiDrawNotices(views, n);

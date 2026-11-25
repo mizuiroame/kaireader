@@ -90,9 +90,6 @@ Un libro
 A book is being copied already.
 Ya se está copiando un libro.
 
-A book reader for Switch 2 homebrew. Your books from sdmc:/books, a network folder or a book server (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS.
-Un lector de libros para homebrew de Switch 2. Tus libros de sdmc:/books, una carpeta de red o un servidor de libros (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT y XPS.
-
 A grid
 Cuadrícula
 
@@ -161,9 +158,6 @@ Marcadores
 
 Books are EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files, in it or its folders.
 Los libros son archivos EPUB, PDF, CBZ, CBR, FB2, MOBI o TXT, en ella o en sus carpetas.
-
-Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub.
-Los libros con DRM no se pueden abrir: solo los que puedes leer en cualquier lugar. Los cómics en archivos comprimidos usan libarchive; las carpetas de red, libsmb2 (LGPL 2.1), curl, libssh2 y Mbed TLS. Sus licencias están en docs/legal.md en GitHub.
 
 Calibre-Web, Kavita, Komga or another OPDS catalog on your network: X in the library goes to its books.
 Calibre-Web, Kavita, Komga u otro catálogo OPDS de tu red: X en la biblioteca lleva a sus libros.
@@ -422,9 +416,6 @@ p. %d
 
 Pages
 Páginas
-
-Pages are drawn with MuPDF (Artifex Software), under the GNU AGPL 3.0. KaiReader is free software under the same license; its code is on GitHub (mizuiroame/kaireader).
-Las páginas se dibujan con MuPDF (Artifex Software), bajo la GNU AGPL 3.0. KaiReader es software libre con la misma licencia; su código está en GitHub (mizuiroame/kaireader).
 
 Password
 Contraseña
@@ -794,3 +785,189 @@ Welcome! Where are your books?
 
 You can change it any time in + > Settings.
 Puedes cambiarlo cuando quieras en + > Configuración.
+
+%s installed: open KaiReader again
+%s instalada: abre KaiReader de nuevo
+
+%s is out
+Salió la %s
+
+%s is out, in Brewstore
+Salió la %s, en Brewstore
+
+%s is out: A installs it
+Salió la %s: A la instala
+
+%s is out: A looks again
+Salió la %s: A vuelve a buscar
+
+Accent color
+Color de acento
+
+Already on it.
+Ya está en eso.
+
+Background
+Fondo
+
+Background blur
+Desenfoque del fondo
+
+Blue
+Azul
+
+Cancel
+Cancelar
+
+Certificate check
+Verificar certificado
+
+Check once a day
+Buscar una vez al día
+
+Close KaiReader and open it again to use the new version.
+Cierra KaiReader y ábrelo de nuevo para usar la versión nueva.
+
+Couldn't look: A tries again
+No se pudo buscar: A lo intenta de nuevo
+
+Credits and licenses
+Créditos y licencias
+
+Downloading %s... %d%%
+Descargando la %s... %d%%
+
+Exit
+Salir
+
+Exit KaiReader?
+¿Salir de KaiReader?
+
+GitHub couldn't be reached.
+No se pudo conectar con GitHub.
+
+GitHub's answer about the latest version couldn't be used.
+No se pudo usar la respuesta de GitHub sobre la última versión.
+
+Green
+Verde
+
+High
+Alta
+
+How soft the background image is.
+Qué tan suave se ve la imagen de fondo.
+
+KaiReader %s is installed: it runs from the next start.
+KaiReader %s está instalada: se usa desde el próximo inicio.
+
+KaiReader %s is out, on its GitHub page.
+Salió KaiReader %s, en su página de GitHub.
+
+KaiReader %s is out: Settings > About installs it.
+Salió KaiReader %s: Configuración > Acerca de lo instala.
+
+KaiReader %s is out: update it in Brewstore.
+Salió KaiReader %s: actualízalo en Brewstore.
+
+KaiReader is up to date.
+KaiReader está al día.
+
+Look for an update
+Buscar una actualización
+
+Looking...
+Buscando...
+
+Low
+Baja
+
+Medium
+Mediano
+
+Not installed: A tries again
+No se instaló: A lo intenta de nuevo
+
+Off: any certificate
+No: cualquier certificado
+
+Pink
+Rosa
+
+Purple
+Morado
+
+Red
+Rojo
+
+The download didn't match GitHub's checksum: nothing was changed.
+La descarga no coincidió con la suma de verificación de GitHub: no se cambió nada.
+
+The new version couldn't be downloaded.
+No se pudo descargar la versión nueva.
+
+The new version couldn't be written to the card: nothing was changed.
+No se pudo escribir la versión nueva en la tarjeta: no se cambió nada.
+
+This is %s: A looks now
+Esta es la %s: A busca ahora
+
+Up to date
+Al día
+
+Update it in Brewstore.
+Actualízalo en Brewstore.
+
+Who made KaiReader and what it's built with, and their licenses.
+Quién hizo KaiReader, con qué está hecho y sus licencias.
+
+[A] Choose  [B] Cancel  [+] Exit
+[A] Elegir  [B] Cancelar  [+] Salir
+
+A book reader for Switch 2 homebrew, by Mizuiro. Free software under the GNU AGPL 3.0; its code is on GitHub (mizuiroame/kaireader).
+Un lector de libros para homebrew de Switch 2, de Mizuiro. Software libre bajo la GNU AGPL 3.0; su código está en GitHub (mizuiroame/kaireader).
+
+Amber
+Ámbar
+
+Books: MuPDF (Artifex Software, AGPL 3.0), with FreeType, HarfBuzz, libjpeg, OpenJPEG, jbig2dec, lcms2, Gumbo, zlib and brotli. Comics in archives: libarchive, with XZ, LZ4, Zstandard, bzip2 and Expat.
+Libros: MuPDF (Artifex Software, AGPL 3.0), con FreeType, HarfBuzz, libjpeg, OpenJPEG, jbig2dec, lcms2, Gumbo, zlib y brotli. Cómics en archivos: libarchive, con XZ, LZ4, Zstandard, bzip2 y Expat.
+
+Highlights, buttons and the selected book.
+Resaltados, botones y el libro seleccionado.
+
+JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader), behind the library.
+Imágenes JPEG o PNG en la carpeta Backgrounds de la carpeta de KaiReader (sdmc:/switch/kaireader), detrás de la biblioteca.
+
+Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore updates it.
+Busca ahora. En sdmc:/switch, A instala lo que encontró; desde Brewstore, lo actualiza Brewstore.
+
+Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
+Busca en GitHub una nueva versión de KaiReader una vez al día, al abrirse, y avisa.
+
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg and Standard Ebooks.
+Red: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) y los certificados raíz de Mozilla (MPL 2.0). Actualizaciones: Jansson (MIT). Libros gratis: Project Gutenberg y Standard Ebooks.
+
+Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened.
+Sin relación con Nintendo, Amazon, Project Gutenberg ni Standard Ebooks. Los libros con DRM no se pueden abrir.
+
+Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
+Desactívalo solo para un servidor tuyo con un certificado propio (https). El inicio de sesión del servidor sigue yendo solo a él.
+
+Opens the book you were reading, at its page, when KaiReader starts.
+Abre el libro que estabas leyendo, en su página, al iniciar KaiReader.
+
+Put JPEG or PNG images in the Backgrounds folder of KaiReader's folder first.
+Primero pon imágenes JPEG o PNG en la carpeta Backgrounds de la carpeta de KaiReader.
+
+Resume the last book
+Retomar el último libro
+
+Source:
+Fuente:
+
+Text: Noto Sans (SIL OFL 1.1) and the console's own fonts. Also stb, libnx, libounce and Mesa. Every license, in full, is in docs/legal.md on GitHub.
+Texto: Noto Sans (SIL OFL 1.1) y las fuentes de la consola. También stb, libnx, libounce y Mesa. Todas las licencias, completas, están en docs/legal.md en GitHub.
+
+That image couldn't be read.
+No se pudo leer esa imagen.

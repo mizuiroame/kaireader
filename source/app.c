@@ -11,6 +11,9 @@
 #include "davnet.h"
 #include "languages.h"
 #include "opdsnet.h"
+#include "background.h"
+#include "theme.h"
+#include "opdsnet.h"
 #include "gfx.h"
 #include "lang.h"
 #include "motion.h"
@@ -55,6 +58,7 @@ bool appSourceSet(int tab)
 }
 
 void appSavePrefs(App *app);
+static void resumeLastBook(App *app, uint64_t now_ns);
 
 static void savePrefs(App *app)
 {
@@ -253,9 +257,14 @@ void appInit(App *app, const char *folder)
     appNetworkStart(app);
     appNetStart(app);
     appServerStart(app);
+    opdsCheckCertificate(!app->prefs.server_any_certificate);
+    themeApply(app->prefs.accent);
+    backgroundLoad(app->folder, app->prefs.background, app->prefs.background_blur);
     appNetworkUse();
     if (appWelcomeNeeded(app))  // The first run, with no books anywhere yet.
         appOpenWelcome(app);
+    else
+        app->resume_pending = app->prefs.resume && app->prefs.last_book[0];
 }
 
 const ShelfBook *appSelectedBook(const App *app)
@@ -387,6 +396,13 @@ static void rememberPlace(App *app)
 // The network is left for main.c to stop, after the reading thread (it may be reading a cover over it).
 void appFree(App *app)
 {
+    // The book open (or none), to open again next time.
+    if (app->book >= 0 && app->book < app->shelf.count) {
+        app->prefs.last_tab = app->lib_tab;
+        snprintf(app->prefs.last_book, sizeof(app->prefs.last_book), "%s", app->shelf.items[app->book].path);
+    } else {
+        app->prefs.last_book[0] = '\0';
+    }
     rememberPlace(app);
     saveShelf(app);
     savePrefs(app);
@@ -777,6 +793,9 @@ void appUpdate(App *app, uint64_t now_ns)
     appServerTestUpdate(app, now_ns);
     appFreeUpdate(app, now_ns);
     appWelcomeTick(app);
+    appUpdatesTick(app, now_ns);
+    if (app->resume_pending)
+        resumeLastBook(app, now_ns);
     if (app->view == VIEW_READER)
         followBook(app, now_ns);
     if (app->turn_from >= 0 && now_ns - app->turn_start_ns >= READ_TURN_NS)
@@ -815,6 +834,12 @@ static void applyChange(App *app, int changed, uint64_t now_ns)
         relayout(app);
     if (changed & SETTINGS_RESCAN)
         appRescan(app, now_ns);
+    if (changed & SETTINGS_CHANGED_CERTIFICATE)
+        opdsCheckCertificate(!app->prefs.server_any_certificate);
+    if (changed & SETTINGS_CHANGED_ACCENT)
+        themeApply(app->prefs.accent);
+    if (changed & SETTINGS_CHANGED_BLUR)
+        backgroundSetBlur(app->prefs.background_blur);
 }
 
 static void stepSetting(App *app, SettingRow row, int dir, uint64_t now_ns)
@@ -948,6 +973,28 @@ static void openSettings(App *app)
     app->settings_cursor = 0;
 }
 
+void appAskExit(App *app)
+{
+    app->panel = PANEL_EXIT;
+    app->menu_cursor = 0;  // Exit (+ there exits too); Cancel below.
+}
+
+static void exitButtons(App *app, uint64_t pressed)
+{
+    if (pressed & HidNpadButton_Plus)
+        app->quit = true;
+    else if (pressed & HidNpadButton_B)
+        app->panel = PANEL_NONE;
+    else if (pressed & (BUTTONS_UP | BUTTONS_DOWN))
+        app->menu_cursor = !app->menu_cursor;
+    else if (pressed & HidNpadButton_A) {
+        if (app->menu_cursor == 0)
+            app->quit = true;
+        else
+            app->panel = PANEL_NONE;
+    }
+}
+
 void appSavePrefs(App *app)
 {
     savePrefs(app);
@@ -997,6 +1044,24 @@ void appLibTab(App *app, int tab, uint64_t now_ns)
         appServerScan(app, now_ns);
     if (tab == LIB_FREE)
         appFreeEntered(app, now_ns);
+}
+
+// The book open when KaiReader last closed, in its library, opened again (if it's still there).
+static void resumeLastBook(App *app, uint64_t now_ns)
+{
+    app->resume_pending = false;
+    int tab = app->prefs.last_tab;
+    if (tab == LIB_FREE || !appSourceSet(tab))
+        return;
+    if (tab != app->lib_tab)
+        appLibTab(app, tab, now_ns);
+    for (int i = 0; i < app->order_count; i++)
+        if (!strcmp(app->shelf.items[app->order[i]].path, app->prefs.last_book)) {
+            app->cursor = i;
+            keepCursorVisible(app);
+            appOpenBook(app, i, now_ns);
+            return;
+        }
 }
 
 void appOpenCardBook(App *app, const char *path, uint64_t now_ns)
@@ -1099,7 +1164,7 @@ static void menuPick(App *app, MenuItem item, uint64_t now_ns)
         appRescan(app, now_ns);
         break;
     case MENU_EXIT:
-        app->quit = true;
+        appAskExit(app);
         break;
     default:
         break;
@@ -1112,7 +1177,9 @@ static void menuButtons(App *app, uint64_t pressed, uint64_t now_ns)
     int n = appMenuRows(app, rows);
     if (app->menu_cursor >= n)
         app->menu_cursor = n - 1;
-    if (pressed & (HidNpadButton_B | HidNpadButton_Plus))
+    if (pressed & HidNpadButton_Plus)  // + in the menu: "Exit KaiReader?", as KaiRadio's.
+        appAskExit(app);
+    else if (pressed & HidNpadButton_B)
         app->panel = PANEL_NONE;
     else if (pressed & BUTTONS_UP)
         app->menu_cursor = (app->menu_cursor + n - 1) % n;
@@ -1125,6 +1192,27 @@ static void menuButtons(App *app, uint64_t pressed, uint64_t now_ns)
 // --- Settings ---
 
 // A row of the page open: it opens its page, does its action, or steps its value.
+// The next image in the Backgrounds folder (or none), loaded and kept.
+static void stepBackground(App *app, int dir, uint64_t now_ns)
+{
+    static char names[BACKGROUND_MAX_IMAGES][BACKGROUND_NAME_MAX];
+    int count = (int)backgroundList(app->folder, names, BACKGROUND_MAX_IMAGES), at = 0;
+    if (count == 0) {
+        appNotify(app, NOTICE_INFO, T("Put JPEG or PNG images in the Backgrounds folder of KaiReader's folder first."),
+                  now_ns);
+        if (!app->prefs.background[0])
+            return;
+    }
+    for (int i = 0; i < count; i++)
+        if (!strcmp(names[i], app->prefs.background))
+            at = i + 1;
+    at = ((at + dir) % (count + 1) + count + 1) % (count + 1);
+    snprintf(app->prefs.background, sizeof(app->prefs.background), "%s", at ? names[at - 1] : "");
+    if (!backgroundLoad(app->folder, app->prefs.background, app->prefs.background_blur))
+        appNotify(app, NOTICE_ERROR, T("That image couldn't be read."), now_ns);
+    savePrefs(app);
+}
+
 static void settingsPick(App *app, int index, int dir, uint64_t now_ns)
 {
     SettingRow rows[SETTINGS_ROWS_MAX];
@@ -1135,6 +1223,15 @@ static void settingsPick(App *app, int index, int dir, uint64_t now_ns)
     SettingRow row = rows[index];
     if (row == SETTING_LANGUAGE) {
         stepLanguage(app, dir);
+        return;
+    }
+    if (row == SETTING_BACKGROUND) {
+        stepBackground(app, dir ? dir : 1, now_ns);
+        return;
+    }
+    if (row == SETTING_UPDATE_NOW) {
+        if (!dir)
+            appUpdatesActivate(app, now_ns);
         return;
     }
     if (settingsIsServer(row)) {  // The book server's rows: the keyboard, the test, forgetting it.
@@ -1169,6 +1266,11 @@ static void settingsBack(App *app)
         app->settings_from_welcome = false;
         return;
     }
+    if (app->settings_page == SETTINGS_PAGE_CREDITS) {  // Back to About, on its row.
+        app->settings_page = SETTINGS_PAGE_ABOUT;
+        app->settings_cursor = 0;
+        return;
+    }
     if (app->settings_page == SETTINGS_PAGE_MAIN) {
         app->panel = PANEL_NONE;
         return;
@@ -1190,7 +1292,7 @@ static void settingsButtons(App *app, uint64_t pressed, uint64_t now_ns)
         app->panel = PANEL_NONE;
     } else if (pressed & HidNpadButton_B) {
         settingsBack(app);
-    } else if (n == 0) {  // About: only back.
+    } else if (n == 0) {  // Credits: only back.
         if (pressed & HidNpadButton_A)
             settingsBack(app);
     } else if (pressed & BUTTONS_UP) {
@@ -1435,6 +1537,10 @@ void appHandleButtons(App *app, uint64_t pressed, uint64_t now_ns)
         appWelcomeButtons(app, pressed, now_ns);
         return;
     }
+    if (app->panel == PANEL_EXIT) {
+        exitButtons(app, pressed);
+        return;
+    }
     if (pressed & HidNpadButton_Plus) {
         app->panel = PANEL_MENU;
         app->menu_cursor = 0;
@@ -1475,8 +1581,8 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
     case HIT_NOTICE:
         noticeDismiss(&app->notices, (uint64_t)hit->arg, now_ns);
         break;
-    case HIT_EXIT:
-        app->quit = true;
+    case HIT_EXIT:  // As + twice: "Exit KaiReader?" first.
+        appAskExit(app);
         break;
     case HIT_MENU_BUTTON:
         app->panel = PANEL_MENU;
@@ -1513,6 +1619,12 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
         break;
     case HIT_WELCOME_ROW:
         appWelcomeChoose(app, hit->arg, now_ns);
+        break;
+    case HIT_EXIT_ITEM:  // "Exit KaiReader?": Exit, or Cancel.
+        if (hit->arg == 0)
+            app->quit = true;
+        else
+            app->panel = PANEL_NONE;
         break;
     case HIT_MENU_ITEM: {
         MenuItem rows[MENU_COUNT];

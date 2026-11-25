@@ -89,9 +89,6 @@ A book
 A book is being copied already.
 이미 다른 책을 복사하고 있어요.
 
-A book reader for Switch 2 homebrew. Your books from sdmc:/books, a network folder or a book server (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS.
-Switch 2 홈브루용 책 리더. sdmc:/books, 네트워크 폴더, 책 서버(OPDS)의 책을 읽어요: EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT, XPS.
-
 A grid
 격자
 
@@ -160,9 +157,6 @@ Bookmarks
 
 Books are EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files, in it or its folders.
 책은 이 폴더나 하위 폴더의 EPUB, PDF, CBZ, CBR, FB2, MOBI, TXT 파일이에요.
-
-Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub.
-DRM으로 잠긴 책은 열 수 없어요: 어디서나 읽을 수 있는 책만 열려요. 압축 파일 속 만화는 libarchive, 네트워크 폴더는 libsmb2(LGPL 2.1), curl, libssh2, Mbed TLS를 써요. 라이선스는 GitHub의 docs/legal.md에 있어요.
 
 Calibre-Web, Kavita, Komga or another OPDS catalog on your network: X in the library goes to its books.
 네트워크의 Calibre-Web, Kavita, Komga 또는 다른 OPDS 카탈로그: 서재에서 X를 누르면 그 책으로 가요.
@@ -421,9 +415,6 @@ p. %d
 
 Pages
 페이지
-
-Pages are drawn with MuPDF (Artifex Software), under the GNU AGPL 3.0. KaiReader is free software under the same license; its code is on GitHub (mizuiroame/kaireader).
-페이지는 MuPDF(Artifex Software, GNU AGPL 3.0)로 그려요. KaiReader도 같은 라이선스의 자유 소프트웨어이며, 코드는 GitHub(mizuiroame/kaireader)에 있어요.
 
 Password
 비밀번호
@@ -793,3 +784,189 @@ Welcome! Where are your books?
 
 You can change it any time in + > Settings.
 + > 설정에서 언제든지 바꿀 수 있습니다.
+
+%s installed: open KaiReader again
+%s 설치됨: KaiReader를 다시 여세요
+
+%s is out
+%s 출시됨
+
+%s is out, in Brewstore
+%s 출시됨, Brewstore에서
+
+%s is out: A installs it
+%s 출시됨: A로 설치
+
+%s is out: A looks again
+%s 출시됨: A로 다시 확인
+
+Accent color
+강조 색상
+
+Already on it.
+이미 진행 중입니다.
+
+Background
+배경
+
+Background blur
+배경 흐림
+
+Blue
+파란색
+
+Cancel
+취소
+
+Certificate check
+인증서 확인
+
+Check once a day
+하루에 한 번 확인
+
+Close KaiReader and open it again to use the new version.
+새 버전을 쓰려면 KaiReader를 닫고 다시 여세요.
+
+Couldn't look: A tries again
+확인하지 못했습니다: A로 다시 시도
+
+Credits and licenses
+크레딧과 라이선스
+
+Downloading %s... %d%%
+%s 내려받는 중... %d%%
+
+Exit
+종료
+
+Exit KaiReader?
+KaiReader를 종료하시겠습니까?
+
+GitHub couldn't be reached.
+GitHub에 연결할 수 없었습니다.
+
+GitHub's answer about the latest version couldn't be used.
+최신 버전에 대한 GitHub의 응답을 쓸 수 없었습니다.
+
+Green
+초록색
+
+High
+높음
+
+How soft the background image is.
+배경 이미지를 얼마나 흐리게 할지 정합니다.
+
+KaiReader %s is installed: it runs from the next start.
+KaiReader %s 설치됨: 다음 실행부터 쓰입니다.
+
+KaiReader %s is out, on its GitHub page.
+KaiReader %s 출시됨, GitHub 페이지에서.
+
+KaiReader %s is out: Settings > About installs it.
+KaiReader %s 출시됨: 설정 > 정보에서 설치합니다.
+
+KaiReader %s is out: update it in Brewstore.
+KaiReader %s 출시됨: Brewstore에서 업데이트하세요.
+
+KaiReader is up to date.
+KaiReader는 최신입니다.
+
+Look for an update
+업데이트 확인
+
+Looking...
+확인 중...
+
+Low
+낮음
+
+Medium
+보통
+
+Not installed: A tries again
+설치하지 못했습니다: A로 다시 시도
+
+Off: any certificate
+끔: 모든 인증서 허용
+
+Pink
+분홍색
+
+Purple
+보라색
+
+Red
+빨간색
+
+The download didn't match GitHub's checksum: nothing was changed.
+내려받은 파일이 GitHub의 체크섬과 맞지 않습니다: 아무것도 바꾸지 않았습니다.
+
+The new version couldn't be downloaded.
+새 버전을 내려받을 수 없었습니다.
+
+The new version couldn't be written to the card: nothing was changed.
+새 버전을 SD 카드에 쓸 수 없었습니다: 아무것도 바꾸지 않았습니다.
+
+This is %s: A looks now
+현재 %s: A로 지금 확인
+
+Up to date
+최신
+
+Update it in Brewstore.
+Brewstore에서 업데이트하세요.
+
+Who made KaiReader and what it's built with, and their licenses.
+KaiReader를 만든 사람, 사용한 것들과 그 라이선스입니다.
+
+[A] Choose  [B] Cancel  [+] Exit
+[A] 선택  [B] 취소  [+] 종료
+
+A book reader for Switch 2 homebrew, by Mizuiro. Free software under the GNU AGPL 3.0; its code is on GitHub (mizuiroame/kaireader).
+Mizuiro가 만든 Switch 2 홈브루용 책 리더. GNU AGPL 3.0 자유 소프트웨어이며, 코드는 GitHub(mizuiroame/kaireader)에 있어요.
+
+Amber
+호박색
+
+Books: MuPDF (Artifex Software, AGPL 3.0), with FreeType, HarfBuzz, libjpeg, OpenJPEG, jbig2dec, lcms2, Gumbo, zlib and brotli. Comics in archives: libarchive, with XZ, LZ4, Zstandard, bzip2 and Expat.
+책: MuPDF(Artifex Software, AGPL 3.0)와 FreeType, HarfBuzz, libjpeg, OpenJPEG, jbig2dec, lcms2, Gumbo, zlib, brotli. 압축 파일 만화: libarchive와 XZ, LZ4, Zstandard, bzip2, Expat.
+
+Highlights, buttons and the selected book.
+강조 표시, 버튼, 선택한 책.
+
+JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader), behind the library.
+KaiReader 폴더(sdmc:/switch/kaireader)의 Backgrounds 폴더에 있는 JPEG·PNG 이미지를 서재 뒤에 보여 줘요.
+
+Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore updates it.
+지금 찾아요. sdmc:/switch에 있으면 A로 찾은 버전을 설치하고, Brewstore에서 받았다면 Brewstore가 업데이트해요.
+
+Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
+하루에 한 번, 열 때 GitHub에서 새 KaiReader를 찾아 알려 줘요.
+
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg and Standard Ebooks.
+네트워크: libsmb2(LGPL 2.1), curl, libssh2, Mbed TLS(Apache 2.0), Mozilla 루트 인증서(MPL 2.0). 업데이트: Jansson(MIT). 무료 책: Project Gutenberg, Standard Ebooks.
+
+Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened.
+Nintendo, Amazon, Project Gutenberg, Standard Ebooks와 관련이 없어요. DRM이 걸린 책은 열 수 없어요.
+
+Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
+자체 인증서(https)를 쓰는 내 서버일 때만 끄세요. 로그인 정보는 여전히 그 서버로만 가요.
+
+Opens the book you were reading, at its page, when KaiReader starts.
+KaiReader를 시작할 때 읽던 책을 그 페이지에서 열어요.
+
+Put JPEG or PNG images in the Backgrounds folder of KaiReader's folder first.
+먼저 KaiReader 폴더의 Backgrounds 폴더에 JPEG나 PNG 이미지를 넣어 주세요.
+
+Resume the last book
+마지막 책 이어 읽기
+
+Source:
+소스:
+
+Text: Noto Sans (SIL OFL 1.1) and the console's own fonts. Also stb, libnx, libounce and Mesa. Every license, in full, is in docs/legal.md on GitHub.
+글꼴: Noto Sans(SIL OFL 1.1)와 본체 글꼴. 그 밖에 stb, libnx, libounce, Mesa. 모든 라이선스 전문은 GitHub의 docs/legal.md에 있어요.
+
+That image couldn't be read.
+그 이미지를 읽을 수 없어요.

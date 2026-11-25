@@ -496,7 +496,7 @@ static bool copyByFile(const char *location, FILE *out, char *why, size_t why_si
 }
 
 // One GET of url, with auth ("" for none), into out.
-static bool copyByUrl(const char *url, char *auth, FILE *out, char *why, size_t why_size)
+static bool copyByUrl(const char *url, char *auth, FILE *out, char *why, size_t why_size, bool any_certificate)
 {
     NetClient *c = netClientOpen();
     if (!c) {
@@ -504,7 +504,8 @@ static bool copyByUrl(const char *url, char *auth, FILE *out, char *why, size_t 
         return false;
     }
     Sink sink = {out, 0, false};
-    NetRequest r = {.url = url, .authorization = auth[0] ? auth : NULL, .cancel = &g_cancel, .stall_s = COPY_STALL_S};
+    NetRequest r = {.url = url, .authorization = auth[0] ? auth : NULL, .cancel = &g_cancel, .stall_s = COPY_STALL_S,
+                    .any_certificate = any_certificate};
     long status = 0;
     bool ok = netFetch(c, &r, toFile, &sink, &status, why, why_size) && !sink.failed;
     netClientClose(c);
@@ -522,7 +523,7 @@ static bool copyByHttp(const char *location, FILE *out, char *why, size_t why_si
         snprintf(why, why_size, "%s", T("Set up the network folder in Settings first."));
         return false;
     }
-    return copyByUrl(url, auth, out, why, why_size);
+    return copyByUrl(url, auth, out, why, why_size, false);
 }
 
 // A book server's book: its link, with the server's sign-in.
@@ -531,7 +532,7 @@ static bool copyByLink(const char *link, FILE *out, char *why, size_t why_size)
     char auth[AUTH_MAX];
     if (!opdsAuthorization(link, auth, sizeof(auth)))
         auth[0] = '\0';
-    return copyByUrl(link, auth, out, why, why_size);
+    return copyByUrl(link, auth, out, why, why_size, opdsAnyCertificate(link));
 }
 
 // The local file's folder made.

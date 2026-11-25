@@ -89,9 +89,6 @@ A book
 A book is being copied already.
 已有一本书正在复制。
 
-A book reader for Switch 2 homebrew. Your books from sdmc:/books, a network folder or a book server (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS.
-Switch 2 自制软件的阅读器。阅读来自 sdmc:/books、网络文件夹或书籍服务器（OPDS）的书：EPUB、PDF、CBZ、CBR、CB7、FB2、MOBI、TXT 和 XPS。
-
 A grid
 网格
 
@@ -160,9 +157,6 @@ Bookmarks
 
 Books are EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files, in it or its folders.
 书是该文件夹或其子文件夹中的 EPUB、PDF、CBZ、CBR、FB2、MOBI 或 TXT 文件。
-
-Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub.
-带 DRM 的书无法打开：只能打开在任何地方都能读的书。压缩包中的漫画使用 libarchive；网络文件夹使用 libsmb2（LGPL 2.1）、curl、libssh2 和 Mbed TLS。它们的许可证在 GitHub 的 docs/legal.md 中。
 
 Calibre-Web, Kavita, Komga or another OPDS catalog on your network: X in the library goes to its books.
 你网络中的 Calibre-Web、Kavita、Komga 或其他 OPDS 目录：在书库中按 X 前往它的书。
@@ -421,9 +415,6 @@ p. %d
 
 Pages
 页面
-
-Pages are drawn with MuPDF (Artifex Software), under the GNU AGPL 3.0. KaiReader is free software under the same license; its code is on GitHub (mizuiroame/kaireader).
-页面由 MuPDF（Artifex Software，GNU AGPL 3.0）绘制。KaiReader 是同一许可证下的自由软件；代码在 GitHub（mizuiroame/kaireader）。
 
 Password
 密码
@@ -793,3 +784,189 @@ Welcome! Where are your books?
 
 You can change it any time in + > Settings.
 随时可在+ > 设置中更改。
+
+%s installed: open KaiReader again
+%s 已安装：请重新打开 KaiReader
+
+%s is out
+%s 已发布
+
+%s is out, in Brewstore
+%s 已发布，在 Brewstore 中
+
+%s is out: A installs it
+%s 已发布：按 A 安装
+
+%s is out: A looks again
+%s 已发布：按 A 重新检查
+
+Accent color
+强调色
+
+Already on it.
+已在进行中。
+
+Background
+背景
+
+Background blur
+背景模糊
+
+Blue
+蓝色
+
+Cancel
+取消
+
+Certificate check
+证书验证
+
+Check once a day
+每天检查一次
+
+Close KaiReader and open it again to use the new version.
+关闭 KaiReader 后重新打开即可使用新版本。
+
+Couldn't look: A tries again
+无法检查：按 A 重试
+
+Credits and licenses
+致谢和许可证
+
+Downloading %s... %d%%
+正在下载 %s... %d%%
+
+Exit
+退出
+
+Exit KaiReader?
+要退出KaiReader吗？
+
+GitHub couldn't be reached.
+无法连接到 GitHub。
+
+GitHub's answer about the latest version couldn't be used.
+无法使用 GitHub 关于最新版本的回复。
+
+Green
+绿色
+
+High
+高
+
+How soft the background image is.
+背景图片的模糊程度。
+
+KaiReader %s is installed: it runs from the next start.
+KaiReader %s 已安装：下次启动时生效。
+
+KaiReader %s is out, on its GitHub page.
+KaiReader %s 已发布，见其 GitHub 页面。
+
+KaiReader %s is out: Settings > About installs it.
+KaiReader %s 已发布：在“设置 > 关于”中安装。
+
+KaiReader %s is out: update it in Brewstore.
+KaiReader %s 已发布：请在 Brewstore 中更新。
+
+KaiReader is up to date.
+KaiReader 已是最新版本。
+
+Look for an update
+检查更新
+
+Looking...
+正在检查...
+
+Low
+低
+
+Medium
+中
+
+Not installed: A tries again
+未安装：按 A 重试
+
+Off: any certificate
+关：接受任何证书
+
+Pink
+粉色
+
+Purple
+紫色
+
+Red
+红色
+
+The download didn't match GitHub's checksum: nothing was changed.
+下载内容与 GitHub 的校验和不符：未做任何更改。
+
+The new version couldn't be downloaded.
+无法下载新版本。
+
+The new version couldn't be written to the card: nothing was changed.
+无法将新版本写入SD卡：未做任何更改。
+
+This is %s: A looks now
+当前为 %s：按 A 立即检查
+
+Up to date
+已是最新
+
+Update it in Brewstore.
+请在 Brewstore 中更新。
+
+Who made KaiReader and what it's built with, and their licenses.
+KaiReader 的作者、所用的组件及其许可证。
+
+[A] Choose  [B] Cancel  [+] Exit
+[A] 选择  [B] 取消  [+] 退出
+
+A book reader for Switch 2 homebrew, by Mizuiro. Free software under the GNU AGPL 3.0; its code is on GitHub (mizuiroame/kaireader).
+Mizuiro 制作的 Switch 2 自制软件阅读器。GNU AGPL 3.0 自由软件，代码在 GitHub（mizuiroame/kaireader）上。
+
+Amber
+琥珀色
+
+Books: MuPDF (Artifex Software, AGPL 3.0), with FreeType, HarfBuzz, libjpeg, OpenJPEG, jbig2dec, lcms2, Gumbo, zlib and brotli. Comics in archives: libarchive, with XZ, LZ4, Zstandard, bzip2 and Expat.
+书籍：MuPDF（Artifex Software，AGPL 3.0），以及 FreeType、HarfBuzz、libjpeg、OpenJPEG、jbig2dec、lcms2、Gumbo、zlib 和 brotli。压缩包漫画：libarchive，以及 XZ、LZ4、Zstandard、bzip2 和 Expat。
+
+Highlights, buttons and the selected book.
+高亮、按钮和所选书籍。
+
+JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader), behind the library.
+KaiReader 文件夹（sdmc:/switch/kaireader）中 Backgrounds 文件夹里的 JPEG 或 PNG 图片，显示在书库后面。
+
+Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore updates it.
+立即查找。在 sdmc:/switch 中按 A 安装找到的版本；来自 Brewstore 的由 Brewstore 更新。
+
+Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
+每天在打开时到 GitHub 查找一次新版 KaiReader，并给出提示。
+
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg and Standard Ebooks.
+网络：libsmb2（LGPL 2.1）、curl、libssh2、Mbed TLS（Apache 2.0）和 Mozilla 根证书（MPL 2.0）。更新：Jansson（MIT）。免费书籍：Project Gutenberg 和 Standard Ebooks。
+
+Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened.
+与 Nintendo、Amazon、Project Gutenberg 和 Standard Ebooks 无关。带 DRM 的书无法打开。
+
+Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
+仅对使用自签名证书（https）的自有服务器关闭。登录信息仍只发送给该服务器。
+
+Opens the book you were reading, at its page, when KaiReader starts.
+启动 KaiReader 时打开你正在读的书，并停在那一页。
+
+Put JPEG or PNG images in the Backgrounds folder of KaiReader's folder first.
+请先把 JPEG 或 PNG 图片放进 KaiReader 文件夹中的 Backgrounds 文件夹。
+
+Resume the last book
+继续上次的书
+
+Source:
+来源：
+
+Text: Noto Sans (SIL OFL 1.1) and the console's own fonts. Also stb, libnx, libounce and Mesa. Every license, in full, is in docs/legal.md on GitHub.
+文字：Noto Sans（SIL OFL 1.1）和主机自带字体。另有 stb、libnx、libounce 和 Mesa。所有许可证全文见 GitHub 上的 docs/legal.md。
+
+That image couldn't be read.
+无法读取该图片。

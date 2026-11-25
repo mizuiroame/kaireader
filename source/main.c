@@ -151,11 +151,13 @@ int main(int argc, char **argv)
     sysinfoInit();
     static App app;
     appInit(&app, g_folder);
+    appStartUpdates(&app, argc > 0 ? argv[0] : NULL);
 
     runLoop(&app);
 
     appFree(&app);  // Where the book was left, and the settings.
     readingStop();
+    appStopUpdates();  // Its download cancelled, its thread joined, before the network goes.
     appNetworkExit();  // After the reading thread: it may have been reading a cover over the network.
     sysinfoExit();
     fontExit();

@@ -26,6 +26,23 @@ void opdsUseAccount(const DavAccount *a)
     pthread_mutex_unlock(&g_lock);
 }
 
+static bool g_any_certificate;
+
+void opdsCheckCertificate(bool check)
+{
+    pthread_mutex_lock(&g_lock);
+    g_any_certificate = !check;
+    pthread_mutex_unlock(&g_lock);
+}
+
+bool opdsAnyCertificate(const char *url)
+{
+    pthread_mutex_lock(&g_lock);
+    bool any = g_any_certificate && g_account.address[0] && davSameServer(url, g_account.address);
+    pthread_mutex_unlock(&g_lock);
+    return any;
+}
+
 void opdsGetAccount(DavAccount *out)
 {
     pthread_mutex_lock(&g_lock);
@@ -117,7 +134,7 @@ static bool fetch(const char *url, size_t max, NetResponse *r)
         return false;
     }
     NetRequest q = {.url = url, .authorization = auth[0] ? auth : NULL, .stall_s = FEED_STALL_S,
-                    .timeout_s = FEED_TIMEOUT_S};
+                    .timeout_s = FEED_TIMEOUT_S, .any_certificate = opdsAnyCertificate(url)};
     bool ok = netFetchText(c, &q, max, r);
     netClientClose(c);
     memset(auth, 0, sizeof(auth));

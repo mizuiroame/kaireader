@@ -11,6 +11,8 @@
 #include <time.h>
 
 #include "app.h"
+#include "background.h"
+#include "theme.h"
 #include "buttons.h"
 #include "font.h"
 #include "gfx.h"
@@ -158,9 +160,9 @@ static void settingsShots(App *app, const char *dir, const char *prefix)
     snprintf(name, sizeof(name), "%ssettings", prefix);
     render(app, dir, name);
     static const SettingsPage PAGES[] = {SETTINGS_PAGE_READING, SETTINGS_PAGE_LIBRARY, SETTINGS_PAGE_DISPLAY,
-                                         SETTINGS_PAGE_ABOUT};
-    static const char *const NAMES[] = {"reading", "library", "display", "about"};
-    for (int i = 0; i < 4; i++) {
+                                         SETTINGS_PAGE_ABOUT, SETTINGS_PAGE_CREDITS};
+    static const char *const NAMES[] = {"reading", "library", "display", "about", "credits"};
+    for (int i = 0; i < 5; i++) {
         app->settings_page = PAGES[i];
         app->settings_cursor = 0;
         snprintf(name, sizeof(name), "%ssettings-%s", prefix, NAMES[i]);
@@ -253,7 +255,8 @@ int main(int argc, char **argv)
 {
     const char *dir = argc > 1 ? argv[1] : ".";
     mkdir(dir, 0755);
-    if (system("rm -rf /tmp/kaireader_preview && mkdir -p /tmp/kaireader_preview") != 0)
+    if (system("rm -rf /tmp/kaireader_preview && mkdir -p /tmp/kaireader_preview/Backgrounds && python3 "
+               "../make_background.py /tmp/kaireader_preview/Backgrounds/dusk.png") != 0)
         return 1;
     if (!fontInit() || !readingStart())
         return 1;
@@ -276,6 +279,23 @@ int main(int argc, char **argv)
     render(&app, dir, "welcome");
     app.welcome_cursor = WELCOME_FREE;
     render(&app, dir, "welcome-free");
+    appAskExit(&app);  // + twice: "Exit KaiReader?".
+    render(&app, dir, "exit");
+    // The looks: a picture behind the library (made by the Makefile), pink.
+    app.prefs.accent = 1;
+    themeApply(app.prefs.accent);
+    snprintf(app.prefs.background, sizeof(app.prefs.background), "%s", "dusk.png");
+    backgroundLoad(app.folder, app.prefs.background, app.prefs.background_blur);
+    app.panel = PANEL_NONE;
+    render(&app, dir, "looks-library");
+    app.panel = PANEL_SETTINGS;
+    app.settings_page = SETTINGS_PAGE_DISPLAY;
+    app.settings_cursor = 1;
+    render(&app, dir, "looks-display");
+    app.prefs.accent = 0;
+    themeApply(0);
+    app.prefs.background[0] = '\0';
+    backgroundLoad(app.folder, "", 0);
     app.panel = PANEL_NONE;
     app.covers_busy_ns = 1234567890ull;
     render(&app, dir, "library-covers-loading");
@@ -478,6 +498,15 @@ int main(int argc, char **argv)
         render(&app, dir, name);
         app.settings_page = SETTINGS_PAGE_DISPLAY;
         snprintf(name, sizeof(name), "%s-settings-display", LANGS[i]);
+        render(&app, dir, name);
+        app.settings_page = SETTINGS_PAGE_ABOUT;
+        snprintf(name, sizeof(name), "%s-settings-about", LANGS[i]);
+        render(&app, dir, name);
+        app.settings_page = SETTINGS_PAGE_CREDITS;
+        snprintf(name, sizeof(name), "%s-credits", LANGS[i]);
+        render(&app, dir, name);
+        appAskExit(&app);
+        snprintf(name, sizeof(name), "%s-exit", LANGS[i]);
         render(&app, dir, name);
         app.panel = PANEL_NONE;
         appOpenBook(&app, indexOfBook(&app, "quiet.epub"), 12);

@@ -4,6 +4,7 @@
 
 #include "gfx.h"
 #include "lang.h"
+#include "theme.h"
 
 static const char *const PAGE_TITLES[SETTINGS_PAGE_COUNT] = {
     N_("Settings"),
@@ -13,6 +14,7 @@ static const char *const PAGE_TITLES[SETTINGS_PAGE_COUNT] = {
     N_("About KaiReader"),
     N_("Network folder"),
     N_("Book server"),
+    N_("Credits and licenses"),
 };
 
 static const char *const LABELS[SETTING_COUNT] = {
@@ -41,6 +43,14 @@ static const char *const LABELS[SETTING_COUNT] = {
     N_("Test the connection"),
     N_("Forget this server"),
     N_("Language"),
+    N_("Resume the last book"),
+    N_("Certificate check"),
+    N_("Credits and licenses"),
+    N_("Check once a day"),
+    N_("Look for an update"),
+    N_("Accent color"),
+    N_("Background"),
+    N_("Background blur"),
 };
 
 static const char *const HELP[SETTING_COUNT] = {
@@ -69,6 +79,14 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("Asks the server for its catalog: whether it answers, and what's at its start."),
     N_("Its address, user and password are taken off the card. The books already downloaded stay."),
     N_("The language of KaiReader's words (not of your books). More can be added as files in the lang folder."),
+    N_("Opens the book you were reading, at its page, when KaiReader starts."),
+    N_("Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it."),
+    N_("Who made KaiReader and what it's built with, and their licenses."),
+    N_("Looks on GitHub for a new KaiReader once a day, when it opens, and says so."),
+    N_("Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore updates it."),
+    N_("Highlights, buttons and the selected book."),
+    N_("JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader), behind the library."),
+    N_("How soft the background image is."),
 };
 
 static char g_language_name[64] = "English";
@@ -88,7 +106,7 @@ void settingsSetServer(const char *address, const char *user)
 
 bool settingsIsServer(SettingRow row)
 {
-    return row >= SETTING_SRV_ADDRESS && row <= SETTING_SRV_FORGET;
+    return row >= SETTING_SRV_ADDRESS && row <= SETTING_SRV_FORGET;  // Its account's rows (not its certificate's).
 }
 
 static char g_net_address[256], g_net_user[128];
@@ -110,7 +128,7 @@ bool settingsIsNetwork(SettingRow row)
 
 bool settingsPickedValue(SettingRow row)
 {
-    return row == SETTING_OPEN_NETWORK || row == SETTING_NET_ADDRESS || row == SETTING_NET_ACCOUNT ||
+    return row == SETTING_UPDATE_NOW || row == SETTING_OPEN_NETWORK || row == SETTING_NET_ADDRESS || row == SETTING_NET_ACCOUNT ||
            row == SETTING_OPEN_SERVER || row == SETTING_SRV_ADDRESS || row == SETTING_SRV_ACCOUNT;
 }
 
@@ -130,6 +148,7 @@ int settingsRows(SettingsPage page, SettingRow *out)
         out[n++] = SETTING_TEXT_SIZE;
         out[n++] = SETTING_COLORS;
         out[n++] = SETTING_PAGES;
+        out[n++] = SETTING_RESUME;
         break;
     case SETTINGS_PAGE_LIBRARY:
         out[n++] = SETTING_SORT;
@@ -138,6 +157,9 @@ int settingsRows(SettingsPage page, SettingRow *out)
         break;
     case SETTINGS_PAGE_DISPLAY:
         out[n++] = SETTING_LANGUAGE;
+        out[n++] = SETTING_ACCENT;
+        out[n++] = SETTING_BACKGROUND;
+        out[n++] = SETTING_BLUR;
         out[n++] = SETTING_SCREEN;
         out[n++] = SETTING_CLOCK;
         break;
@@ -153,7 +175,13 @@ int settingsRows(SettingsPage page, SettingRow *out)
         out[n++] = SETTING_SRV_ADDRESS;
         out[n++] = SETTING_SRV_ACCOUNT;
         out[n++] = SETTING_SRV_TEST;
+        out[n++] = SETTING_SRV_CERTIFICATE;
         out[n++] = SETTING_SRV_FORGET;
+        break;
+    case SETTINGS_PAGE_ABOUT:
+        out[n++] = SETTING_CREDITS;
+        out[n++] = SETTING_UPDATE_AUTO;
+        out[n++] = SETTING_UPDATE_NOW;
         break;
     default:
         break;
@@ -187,6 +215,8 @@ SettingsPage settingsOpens(SettingRow row)
         return SETTINGS_PAGE_DISPLAY;
     case SETTING_OPEN_ABOUT:
         return SETTINGS_PAGE_ABOUT;
+    case SETTING_CREDITS:
+        return SETTINGS_PAGE_CREDITS;
     case SETTING_OPEN_NETWORK:
         return SETTINGS_PAGE_NETWORK;
     case SETTING_OPEN_SERVER:
@@ -199,7 +229,8 @@ SettingsPage settingsOpens(SettingRow row)
 bool settingsHasValue(SettingRow row)
 {
     return row == SETTING_TEXT_SIZE || row == SETTING_COLORS || row == SETTING_PAGES || row == SETTING_SORT ||
-           row == SETTING_VIEW || row == SETTING_LANGUAGE ||
+           row == SETTING_VIEW || row == SETTING_LANGUAGE || row == SETTING_RESUME || row == SETTING_SRV_CERTIFICATE || row == SETTING_UPDATE_AUTO || row == SETTING_ACCENT ||
+           row == SETTING_BACKGROUND || row == SETTING_BLUR ||
            row == SETTING_SCREEN || row == SETTING_CLOCK || row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED ||
            settingsPickedValue(row);
 }
@@ -223,6 +254,27 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
         break;
     case SETTING_VIEW:
         snprintf(out, size, "%s", p->list_view ? N_("A list") : N_("A grid"));
+        break;
+    case SETTING_RESUME:
+        snprintf(out, size, "%s", p->resume ? N_("On") : N_("Off"));
+        break;
+    case SETTING_UPDATE_AUTO:
+        snprintf(out, size, "%s", p->update_check ? N_("On") : N_("Off"));
+        break;
+    case SETTING_ACCENT:
+        snprintf(out, size, "%s", themeAccentName(p->accent));
+        break;
+    case SETTING_BACKGROUND:  // A file's name, as it is; or None.
+        *translate_name = !p->background[0];
+        snprintf(out, size, "%s", p->background[0] ? p->background : N_("None"));
+        break;
+    case SETTING_BLUR: {
+        static const char *const BLURS[4] = {N_("Off"), N_("Low"), N_("Medium"), N_("High")};
+        snprintf(out, size, "%s", BLURS[p->background_blur >= 0 && p->background_blur < 4 ? p->background_blur : 2]);
+        break;
+    }
+    case SETTING_SRV_CERTIFICATE:
+        snprintf(out, size, "%s", p->server_any_certificate ? N_("Off: any certificate") : N_("On"));
         break;
     case SETTING_LANGUAGE:  // Its own name, in itself: not translated.
         *translate_name = false;
@@ -313,6 +365,21 @@ int settingsStep(Prefs *p, SettingRow row, int dir)
     case SETTING_CLOCK:
         p->clock_24h = !p->clock_24h;
         return SETTINGS_CHANGED_NOTHING;
+    case SETTING_RESUME:
+        p->resume = !p->resume;
+        return SETTINGS_CHANGED_NOTHING;
+    case SETTING_UPDATE_AUTO:
+        p->update_check = !p->update_check;
+        return SETTINGS_CHANGED_NOTHING;
+    case SETTING_ACCENT:
+        p->accent = around(p->accent, dir, THEME_ACCENT_COUNT);
+        return SETTINGS_CHANGED_ACCENT;
+    case SETTING_BLUR:
+        p->background_blur = around(p->background_blur, dir, 4);
+        return SETTINGS_CHANGED_BLUR;
+    case SETTING_SRV_CERTIFICATE:
+        p->server_any_certificate = !p->server_any_certificate;
+        return SETTINGS_CHANGED_CERTIFICATE;
     case SETTING_RESCAN:
         return dir ? SETTINGS_CHANGED_NOTHING : SETTINGS_RESCAN;
     default:

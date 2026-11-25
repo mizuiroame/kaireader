@@ -51,6 +51,7 @@ source code under the same license. Its source code is at
 | [libsmb2](https://github.com/sahlberg/libsmb2) | Network folders over SMB | LGPL-2.1 | [third_party/libsmb2-LGPL-2.1.txt](../third_party/libsmb2-LGPL-2.1.txt) ([its notice](../third_party/libsmb2-COPYING.txt)) |
 | [curl](https://curl.se/) | Network folders over WebDAV and FTP | curl | [third_party/curl-LICENSE.txt](../third_party/curl-LICENSE.txt) |
 | [libssh2](https://libssh2.org/) | Network folders over SFTP | BSD-3-Clause | [third_party/libssh2-BSD-3-Clause.txt](../third_party/libssh2-BSD-3-Clause.txt) |
+| [Jansson](https://github.com/akheron/jansson) | Reading GitHub's answer when looking for an update | MIT | [third_party/Jansson-MIT.txt](../third_party/Jansson-MIT.txt) |
 | [Mbed TLS](https://www.trustedfirmware.org/projects/mbed-tls/) | Encryption (SFTP, https) | Apache-2.0 | [third_party/MbedTLS-Apache-2.0.txt](../third_party/MbedTLS-Apache-2.0.txt) |
 | Two root certificates (SSL.com) from [Mozilla's CA list](https://wiki.mozilla.org/CA), as [curl publishes it](https://curl.se/docs/caextract.html) | Project Gutenberg's secure connection, whose roots the console lacks (`data/roots_sslcom.pem`) | MPL-2.0 | <https://www.mozilla.org/MPL/2.0/> |
 | [Noto Sans](https://fonts.google.com/noto) | The app's own text | SIL OFL 1.1 | [third_party/NotoSans-OFL.txt](../third_party/NotoSans-OFL.txt) |

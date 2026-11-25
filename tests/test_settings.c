@@ -4,6 +4,7 @@
 #include "check.h"
 #include "gfx.h"
 #include "settings.h"
+#include "theme.h"
 
 void testSettings(void)
 {
@@ -11,11 +12,35 @@ void testSettings(void)
     CHECK(settingsRows(SETTINGS_PAGE_MAIN, rows) == 6 && rows[0] == SETTING_OPEN_LIBRARY);
     CHECK(settingsOpens(rows[1]) == SETTINGS_PAGE_NETWORK && settingsOpens(rows[2]) == SETTINGS_PAGE_SERVER);
     CHECK(settingsOpens(rows[3]) == SETTINGS_PAGE_READING && settingsOpens(rows[5]) == SETTINGS_PAGE_ABOUT);
-    CHECK(settingsRows(SETTINGS_PAGE_SERVER, rows) == 4 && rows[0] == SETTING_SRV_ADDRESS && settingsIsServer(rows[3]));
+    CHECK(settingsRows(SETTINGS_PAGE_SERVER, rows) == 5 && rows[0] == SETTING_SRV_ADDRESS && settingsIsServer(rows[4]));
+    CHECK(rows[3] == SETTING_SRV_CERTIFICATE && !settingsIsServer(rows[3]) && settingsHasValue(rows[3]));
+    Prefs cert;
+    prefsDefaults(&cert);
+    CHECK(settingsStep(&cert, SETTING_SRV_CERTIFICATE, 1) == SETTINGS_CHANGED_CERTIFICATE && cert.server_any_certificate);
+    CHECK(settingsStep(&cert, SETTING_RESUME, 1) == SETTINGS_CHANGED_NOTHING && !cert.resume);
+    CHECK(settingsStep(&cert, SETTING_UPDATE_AUTO, 1) == SETTINGS_CHANGED_NOTHING && !cert.update_check);
     CHECK(!settingsIsServer(SETTING_NET_TEST) && !settingsIsNetwork(SETTING_SRV_TEST) && settingsPickedValue(SETTING_SRV_ADDRESS));
     CHECK(settingsOpens(SETTING_CLOCK) == SETTINGS_PAGE_MAIN);
     // Display: the language first, its name as given (in itself, not translated).
-    CHECK(settingsRows(SETTINGS_PAGE_DISPLAY, rows) == 3 && rows[0] == SETTING_LANGUAGE && settingsHasValue(SETTING_LANGUAGE));
+    CHECK(settingsRows(SETTINGS_PAGE_DISPLAY, rows) == 6 && rows[0] == SETTING_LANGUAGE && settingsHasValue(SETTING_LANGUAGE));
+    CHECK(rows[1] == SETTING_ACCENT && rows[2] == SETTING_BACKGROUND && rows[3] == SETTING_BLUR);
+    {
+        Prefs lk;
+        prefsDefaults(&lk);
+        char v[64];
+        bool named;
+        CHECK(settingsStep(&lk, SETTING_ACCENT, -1) == SETTINGS_CHANGED_ACCENT && lk.accent == THEME_ACCENT_COUNT - 1);
+        settingsValue(&lk, SETTING_ACCENT, v, sizeof(v), &named);
+        CHECK(!strcmp(v, "Red") && named);
+        settingsValue(&lk, SETTING_BACKGROUND, v, sizeof(v), &named);
+        CHECK(!strcmp(v, "None") && named);
+        snprintf(lk.background, sizeof(lk.background), "%s", "lake.jpg");
+        settingsValue(&lk, SETTING_BACKGROUND, v, sizeof(v), &named);
+        CHECK(!strcmp(v, "lake.jpg") && !named);
+        CHECK(settingsStep(&lk, SETTING_BLUR, 1) == SETTINGS_CHANGED_BLUR && lk.background_blur == 3);
+        settingsValue(&lk, SETTING_BLUR, v, sizeof(v), &named);
+        CHECK(!strcmp(v, "High"));
+    }
     {
         Prefs lp;
         prefsDefaults(&lp);
@@ -63,7 +88,8 @@ void testSettings(void)
         CHECK(strcmp(v, "On: not signed") == 0);
         settingsSetNetwork("", "", true, false, false);
     }
-    CHECK(settingsRows(SETTINGS_PAGE_ABOUT, rows) == 0);
+    CHECK(settingsRows(SETTINGS_PAGE_ABOUT, rows) == 3 && settingsOpens(rows[0]) == SETTINGS_PAGE_CREDITS);
+    CHECK(rows[1] == SETTING_UPDATE_AUTO && settingsPickedValue(rows[2]) && settingsRows(SETTINGS_PAGE_CREDITS, rows) == 0);
     for (int page = 0; page < SETTINGS_PAGE_COUNT; page++) {
         int n = settingsRows((SettingsPage)page, rows);
         CHECK(n <= SETTINGS_ROWS_MAX && settingsPageTitle((SettingsPage)page)[0]);

@@ -6,13 +6,14 @@
 
 #include "font.h"
 #include "gfx.h"
+#include "theme.h"
 #include "sysinfo.h"
 
 #define COLOR_BG GFX_RGB(0x12, 0x12, 0x14)
 #define COLOR_SURFACE GFX_RGB(0x1C, 0x1C, 0x21)
 #define COLOR_SURFACE_HI GFX_RGB(0x2C, 0x2C, 0x34)
 // KaiReader's color: the warm light of a reading lamp.
-#define COLOR_ACCENT GFX_RGB(0xF2, 0xB5, 0x4A)
+#define COLOR_ACCENT g_accent  // Chosen in Settings (theme.h).
 #define COLOR_TEXT GFX_RGB(0xF2, 0xF2, 0xF5)
 #define COLOR_DIM GFX_RGB(0xA4, 0xA4, 0xB0)
 #define COLOR_FAINT GFX_RGB(0x5E, 0x5E, 0x6A)

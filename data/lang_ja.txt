@@ -89,9 +89,6 @@ A book
 A book is being copied already.
 すでに別の本をコピー中です。
 
-A book reader for Switch 2 homebrew. Your books from sdmc:/books, a network folder or a book server (OPDS): EPUB, PDF, CBZ, CBR, CB7, FB2, MOBI, TXT and XPS.
-Switch 2 の自作ソフト用の電子書籍リーダー。sdmc:/books、ネットワークフォルダ、ブックサーバー（OPDS）の本を読めます：EPUB、PDF、CBZ、CBR、CB7、FB2、MOBI、TXT、XPS。
-
 A grid
 グリッド
 
@@ -160,9 +157,6 @@ Bookmarks
 
 Books are EPUB, PDF, CBZ, CBR, FB2, MOBI or TXT files, in it or its folders.
 本は EPUB、PDF、CBZ、CBR、FB2、MOBI、TXT ファイルで、このフォルダかその中のフォルダに置きます。
-
-Books locked with DRM can't be opened: only books you can read anywhere. Comics in archives use libarchive; network folders use libsmb2 (LGPL 2.1), curl, libssh2 and Mbed TLS. Their licenses are in docs/legal.md on GitHub.
-DRM で保護された本は開けません：どこでも読める本だけです。アーカイブ形式のコミックには libarchive、ネットワークフォルダには libsmb2（LGPL 2.1）、curl、libssh2、Mbed TLS を使用しています。ライセンスは GitHub の docs/legal.md にあります。
 
 Calibre-Web, Kavita, Komga or another OPDS catalog on your network: X in the library goes to its books.
 ネットワーク上の Calibre-Web、Kavita、Komga などの OPDS カタログ。ライブラリーで X を押すとその本へ移ります。
@@ -421,9 +415,6 @@ p. %d
 
 Pages
 ページ
-
-Pages are drawn with MuPDF (Artifex Software), under the GNU AGPL 3.0. KaiReader is free software under the same license; its code is on GitHub (mizuiroame/kaireader).
-ページは MuPDF（Artifex Software、GNU AGPL 3.0）で描画しています。KaiReader も同じライセンスのフリーソフトウェアで、コードは GitHub（mizuiroame/kaireader）にあります。
 
 Password
 パスワード
@@ -793,3 +784,189 @@ Welcome! Where are your books?
 
 You can change it any time in + > Settings.
 「+ > 設定」でいつでも変更できます。
+
+%s installed: open KaiReader again
+%s をインストールしました：KaiReaderを開き直してください
+
+%s is out
+%s が出ました
+
+%s is out, in Brewstore
+%s が出ました（Brewstore）
+
+%s is out: A installs it
+%s が出ました：Aでインストール
+
+%s is out: A looks again
+%s が出ました：Aでもう一度確認
+
+Accent color
+アクセントカラー
+
+Already on it.
+すでに実行中です。
+
+Background
+背景
+
+Background blur
+背景のぼかし
+
+Blue
+ブルー
+
+Cancel
+キャンセル
+
+Certificate check
+証明書の確認
+
+Check once a day
+1日1回確認
+
+Close KaiReader and open it again to use the new version.
+新しいバージョンを使うには、KaiReaderを閉じてもう一度開いてください。
+
+Couldn't look: A tries again
+確認できませんでした：Aで再試行
+
+Credits and licenses
+クレジットとライセンス
+
+Downloading %s... %d%%
+%s をダウンロード中... %d%%
+
+Exit
+終了
+
+Exit KaiReader?
+KaiReaderを終了しますか？
+
+GitHub couldn't be reached.
+GitHubに接続できませんでした。
+
+GitHub's answer about the latest version couldn't be used.
+最新バージョンについてのGitHubの応答を使えませんでした。
+
+Green
+グリーン
+
+High
+高
+
+How soft the background image is.
+背景画像をぼかす強さです。
+
+KaiReader %s is installed: it runs from the next start.
+KaiReader %s をインストールしました：次回の起動から使われます。
+
+KaiReader %s is out, on its GitHub page.
+KaiReader %s が出ました（GitHubのページ）。
+
+KaiReader %s is out: Settings > About installs it.
+KaiReader %s が出ました：設定 > このアプリについて でインストールできます。
+
+KaiReader %s is out: update it in Brewstore.
+KaiReader %s が出ました：Brewstoreでアップデートしてください。
+
+KaiReader is up to date.
+KaiReaderは最新です。
+
+Look for an update
+アップデートを確認
+
+Looking...
+確認中...
+
+Low
+低
+
+Medium
+中
+
+Not installed: A tries again
+インストールできませんでした：Aで再試行
+
+Off: any certificate
+オフ：どの証明書も許可
+
+Pink
+ピンク
+
+Purple
+パープル
+
+Red
+レッド
+
+The download didn't match GitHub's checksum: nothing was changed.
+ダウンロードがGitHubのチェックサムと一致しませんでした：何も変更していません。
+
+The new version couldn't be downloaded.
+新しいバージョンをダウンロードできませんでした。
+
+The new version couldn't be written to the card: nothing was changed.
+新しいバージョンをSDカードに書き込めませんでした：何も変更していません。
+
+This is %s: A looks now
+現在は %s：Aで今すぐ確認
+
+Up to date
+最新です
+
+Update it in Brewstore.
+Brewstoreでアップデートしてください。
+
+Who made KaiReader and what it's built with, and their licenses.
+KaiReaderを作った人、使っているもの、そのライセンスです。
+
+[A] Choose  [B] Cancel  [+] Exit
+[A] 選択  [B] キャンセル  [+] 終了
+
+A book reader for Switch 2 homebrew, by Mizuiro. Free software under the GNU AGPL 3.0; its code is on GitHub (mizuiroame/kaireader).
+Mizuiro による Switch 2 自作ソフト用の読書アプリ。GNU AGPL 3.0 のフリーソフトウェアで、コードは GitHub（mizuiroame/kaireader）にあります。
+
+Amber
+アンバー
+
+Books: MuPDF (Artifex Software, AGPL 3.0), with FreeType, HarfBuzz, libjpeg, OpenJPEG, jbig2dec, lcms2, Gumbo, zlib and brotli. Comics in archives: libarchive, with XZ, LZ4, Zstandard, bzip2 and Expat.
+本：MuPDF（Artifex Software、AGPL 3.0）と FreeType、HarfBuzz、libjpeg、OpenJPEG、jbig2dec、lcms2、Gumbo、zlib、brotli。アーカイブのコミック：libarchive と XZ、LZ4、Zstandard、bzip2、Expat。
+
+Highlights, buttons and the selected book.
+ハイライト、ボタン、選択中の本。
+
+JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader), behind the library.
+KaiReader のフォルダー（sdmc:/switch/kaireader）内の Backgrounds フォルダーの JPEG・PNG 画像を、ライブラリーの背景にします。
+
+Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore updates it.
+今すぐ探します。sdmc:/switch にあれば A で見つけたものをインストール、Brewstore からなら Brewstore が更新します。
+
+Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
+1 日 1 回、起動時に GitHub で新しい KaiReader を探してお知らせします。
+
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg and Standard Ebooks.
+ネットワーク：libsmb2（LGPL 2.1）、curl、libssh2、Mbed TLS（Apache 2.0）、Mozilla のルート証明書（MPL 2.0）。アップデート：Jansson（MIT）。無料の本：Project Gutenberg、Standard Ebooks。
+
+Not affiliated with Nintendo, Amazon, Project Gutenberg or Standard Ebooks. Books locked with DRM can't be opened.
+Nintendo、Amazon、Project Gutenberg、Standard Ebooks とは無関係です。DRM 付きの本は開けません。
+
+Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
+自前の証明書を使う自分のサーバー（https）のときだけオフにします。サインイン情報はそのサーバーにだけ送られます。
+
+Opens the book you were reading, at its page, when KaiReader starts.
+KaiReader の起動時に、読んでいた本をそのページで開きます。
+
+Put JPEG or PNG images in the Backgrounds folder of KaiReader's folder first.
+先に KaiReader のフォルダー内の Backgrounds フォルダーに JPEG か PNG 画像を入れてください。
+
+Resume the last book
+最後の本を再開
+
+Source:
+ソース：
+
+Text: Noto Sans (SIL OFL 1.1) and the console's own fonts. Also stb, libnx, libounce and Mesa. Every license, in full, is in docs/legal.md on GitHub.
+文字：Noto Sans（SIL OFL 1.1）と本体のフォント。ほかに stb、libnx、libounce、Mesa。すべてのライセンス全文は GitHub の docs/legal.md にあります。
+
+That image couldn't be read.
+その画像を読み込めませんでした。

@@ -29,6 +29,16 @@ typedef struct {
     bool two_pages; // Two pages side by side, like an open book (with the console lying down).
     bool list_view; // The library as a list (small covers, more words) instead of a grid.
     bool welcomed;  // The first run's welcome answered.
+    bool resume;    // The book open when KaiReader closed, opened again when it starts.
+    int last_tab;   // That book's library (app.h's LIB_*), and its path there; "" none.
+    char last_book[512];
+    int accent;             // theme.h's accent.
+    char background[128];   // An image in the Backgrounds folder, "" none.
+    int background_blur;    // background.h's BackgroundBlur.
+    bool update_check;      // Look for a new version once a day.
+    long long update_checked;  // When it last looked (seconds since 1970), 0 never.
+    char update_tag[32];    // The newer version it found ("v1.1.0"), "" none.
+    bool server_any_certificate;  // The book server's https certificate isn't checked (its own).
     char language[64]; // Its id (languages.h): "en", "es", or a file in the lang folder.
 } Prefs;
 
