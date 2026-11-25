@@ -564,7 +564,7 @@ static const char *menuLabel(const App *app, MenuItem item)
                : appNextSource(app) == LIB_FREE   ? T("Go to free books")
                                                   : T("Go to the SD card library");
     case MENU_FREE_SEARCH:
-        return T("Search Project Gutenberg");
+        return appFreeSearchLine(app);
     case MENU_FREE_LIST:
         return appFreeNextListLine(app);
     case MENU_NET_SETUP:
@@ -635,9 +635,9 @@ static int drawAboutText(int x, int y, int w, bool draw)
         "KaiReader " KAIREADER_VERSION,
         T("A book reader for Switch 2 homebrew, by Mizuiro. Free software under the GNU AGPL 3.0; its code is on GitHub (mizuiroame/kaireader)."),
         T("Books: MuPDF (Artifex Software, AGPL 3.0), with FreeType, HarfBuzz, libjpeg, OpenJPEG, jbig2dec, lcms2, Gumbo, zlib and brotli. Comics in archives: libarchive, with XZ, LZ4, Zstandard, bzip2 and Expat."),
-        T("Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits."),
+        T("Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits and unglue.it."),
         T("Text: Noto Sans (SIL OFL 1.1) and the console's own fonts. Also stb, libnx, libounce and Mesa. Every license, in full, is in docs/legal.md on GitHub."),
-        T("Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened."),
+        T("Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits or unglue.it. Books locked with DRM can't be opened."),
     };
     for (int p = 1; p < 6; p++) {  // The first (the name and version) is the page's header.
         char lines[6][160];

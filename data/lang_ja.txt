@@ -941,11 +941,11 @@ Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore 
 Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
 1 日 1 回、起動時に GitHub で新しい KaiReader を探してお知らせします。
 
-Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits.
-ネットワーク：libsmb2（LGPL 2.1）、curl、libssh2、Mbed TLS（Apache 2.0）、Mozilla のルート証明書（MPL 2.0）。アップデート：Jansson（MIT）。無料の本：Project Gutenberg、Standard Ebooks、textos.info、Ebooks libres et gratuits。
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits and unglue.it.
+ネットワーク：libsmb2（LGPL 2.1）、curl、libssh2、Mbed TLS（Apache 2.0）、Mozilla のルート証明書（MPL 2.0）。アップデート：Jansson（MIT）。無料の本：Project Gutenberg、Standard Ebooks、textos.info、Ebooks libres et gratuits、unglue.it。
 
-Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened.
-Nintendo、Amazon、Project Gutenberg、Standard Ebooks、textos.info、Ebooks libres et gratuits とは無関係です。DRM 付きの本は開けません。
+Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits or unglue.it. Books locked with DRM can't be opened.
+Nintendo、Amazon、Project Gutenberg、Standard Ebooks、textos.info、Ebooks libres et gratuits、unglue.it とは無関係です。DRM 付きの本は開けません。
 
 Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
 自前の証明書を使う自分のサーバー（https）のときだけオフにします。サインイン情報はそのサーバーにだけ送られます。
@@ -1003,3 +1003,36 @@ The server's certificate isn't trusted. If the server has its own certificate, t
 
 Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's sign-in still only goes to it.
 自前の証明書を使う自分の WebDAV フォルダー（https）のときだけオフにします。サインイン情報はそのフォルダーにだけ送られます。
+
+Search Standard Ebooks
+Standard Ebooks を検索
+
+Search Standard Ebooks: a title, an author, a subject
+Standard Ebooks を検索：タイトル、著者、主題
+
+Search textos.info
+textos.info を検索
+
+Search textos.info: a title or an author, in Spanish
+textos.info を検索：タイトルか著者をスペイン語で
+
+Search Ebooks libres et gratuits
+Ebooks libres et gratuits を検索
+
+Search Ebooks libres et gratuits: words of a title, in French
+Ebooks libres et gratuits を検索：タイトルの言葉をフランス語で
+
+Search unglue.it
+unglue.it を検索
+
+Search unglue.it: a title, an author, a subject
+unglue.it を検索：タイトル、著者、主題
+
+Try other words: a title or an author, in Spanish.
+別の言葉で試してください：タイトルか著者をスペイン語で。
+
+Try other words from a title, in French.
+タイトルの別の言葉をフランス語で試してください。
+
+Show unglue.it's most popular, under Creative Commons
+unglue.it の人気の本を表示（クリエイティブ・コモンズ）

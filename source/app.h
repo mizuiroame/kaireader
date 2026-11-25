@@ -76,7 +76,7 @@ typedef enum {
     MENU_NET_SETUP,   // No other source yet: Settings, at the network folder and the book server.
     MENU_SETTINGS,
     MENU_RESCAN,      // The card's books looked for again, or the network folder read again.
-    MENU_FREE_SEARCH, // Free books: search Project Gutenberg.
+    MENU_FREE_SEARCH, // Free books: search the shown list's catalog.
     MENU_FREE_LIST,   // Free books: the next list.
     MENU_EXIT,
     MENU_COUNT,
@@ -157,6 +157,7 @@ typedef struct {
     bool settings_from_welcome;          // B on that page goes back to the welcome.
     int free_list;                       // Free books: the list shown (catalogs.h's CatalogList),
     char free_query[128];                // the last search,
+    int free_search_in;                  // the list whose catalog it searched (a CatalogList),
     char free_asked[1024];               // the page asked for last, and whether it adds to the list;
     bool free_more, free_loading;
     char free_next[1024];                // the list's next page ("" at its end),
@@ -285,6 +286,10 @@ void appFreeUpdate(App *app, uint64_t now_ns);
 void appFreeOpen(App *app, int order_index, uint64_t now_ns);  // Downloaded to the card, then opened.
 bool appFreeLoading(void);
 const char *appFreeListName(const App *app);
+// The + menu's line for searching the catalog Y would search ("Search textos.info"), translated.
+const char *appFreeSearchLine(const App *app);
+// What to try when the last search found nothing, for its catalog's language, translated.
+const char *appFreeSearchHint(const App *app);
 // The + menu's line for the list L/R would show next ("Show Standard Ebooks' newest"), translated.
 const char *appFreeNextListLine(const App *app);
 // A book of the card's books folder opened, the card's library shown (a free book downloaded).

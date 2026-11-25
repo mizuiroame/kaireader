@@ -942,11 +942,11 @@ Sucht jetzt. In sdmc:/switch installiert A, was gefunden wurde; aus Brewstore ak
 Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
 Sucht einmal am Tag beim Öffnen auf GitHub nach einem neuen KaiReader und meldet es.
 
-Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits.
-Netzwerk: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) und Mozillas Stammzertifikate (MPL 2.0). Updates: Jansson (MIT). Kostenlose Bücher: Project Gutenberg, Standard Ebooks, textos.info und Ebooks libres et gratuits.
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits and unglue.it.
+Netzwerk: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) und Mozillas Stammzertifikate (MPL 2.0). Updates: Jansson (MIT). Kostenlose Bücher: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits und unglue.it.
 
-Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened.
-Nicht verbunden mit Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info oder Ebooks libres et gratuits. Bücher mit DRM lassen sich nicht öffnen.
+Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits or unglue.it. Books locked with DRM can't be opened.
+Nicht verbunden mit Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits oder unglue.it. Bücher mit DRM lassen sich nicht öffnen.
 
 Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
 Nur für einen eigenen Server mit selbst erstelltem Zertifikat (https) ausschalten. Die Anmeldung geht weiterhin nur an ihn.
@@ -1004,3 +1004,36 @@ Dem Zertifikat des Servers wird nicht vertraut. Hat der Server ein eigenes Zerti
 
 Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's sign-in still only goes to it.
 Nur für einen eigenen WebDAV-Ordner mit selbst erstelltem Zertifikat (https) ausschalten. Die Anmeldung geht weiterhin nur an ihn.
+
+Search Standard Ebooks
+Standard Ebooks durchsuchen
+
+Search Standard Ebooks: a title, an author, a subject
+Standard Ebooks durchsuchen: Titel, Autor, Thema
+
+Search textos.info
+textos.info durchsuchen
+
+Search textos.info: a title or an author, in Spanish
+textos.info durchsuchen: Titel oder Autor, auf Spanisch
+
+Search Ebooks libres et gratuits
+Ebooks libres et gratuits durchsuchen
+
+Search Ebooks libres et gratuits: words of a title, in French
+Ebooks libres et gratuits durchsuchen: Wörter eines Titels, auf Französisch
+
+Search unglue.it
+unglue.it durchsuchen
+
+Search unglue.it: a title, an author, a subject
+unglue.it durchsuchen: Titel, Autor, Thema
+
+Try other words: a title or an author, in Spanish.
+Versuche andere Wörter: Titel oder Autor, auf Spanisch.
+
+Try other words from a title, in French.
+Versuche andere Wörter eines Titels, auf Französisch.
+
+Show unglue.it's most popular, under Creative Commons
+Beliebteste von unglue.it zeigen, unter Creative Commons

@@ -13,6 +13,7 @@
 #include "netstream.h"
 #include "opdsnet.h"
 #include "roots_sslcom_pem.h"
+#include "roots_unglue_pem.h"
 #include "smbnet.h"
 
 #define TEST_TEXT_MAX 256
@@ -60,12 +61,12 @@ void appNetworkFeedSettings(void)
     memset(&a, 0, sizeof(a));
 }
 
-// Project Gutenberg's certificate comes from SSL.com, whose roots the console's list lacks: those
-// two roots (from Mozilla's list, as curl publishes it) written next to KaiReader's files, for it only.
-static void addRoots(const App *app)
+// Roots (from Mozilla's list, as curl publishes it) written next to KaiReader's files as name,
+// and used for host_suffix's addresses only.
+static void addRootsFile(const App *app, const char *name, const uint8_t *pem, size_t size, const char *host_suffix)
 {
     char path[APP_FOLDER_MAX + 32];
-    snprintf(path, sizeof(path), "%s/roots-sslcom.pem", app->folder);
+    snprintf(path, sizeof(path), "%s/%s", app->folder, name);
     FILE *f = fopen(path, "rb");
     long have = -1;
     if (f) {
@@ -73,15 +74,23 @@ static void addRoots(const App *app)
         have = ftell(f);
         fclose(f);
     }
-    if (have != (long)roots_sslcom_pem_size) {  // Missing, or of another version: written anew.
+    if (have != (long)size) {  // Missing, or of another version: written anew.
         f = fopen(path, "wb");
         if (!f)
             return;
-        bool ok = fwrite(roots_sslcom_pem, 1, roots_sslcom_pem_size, f) == roots_sslcom_pem_size;
+        bool ok = fwrite(pem, 1, size, f) == size;
         if (fclose(f) != 0 || !ok)
             return;
     }
-    netAddRoots("gutenberg.org", path);
+    netAddRoots(host_suffix, path);
+}
+
+// Project Gutenberg's certificate comes from SSL.com, whose roots the console's list lacks. unglue.it's
+// come from ISRG Root X2 (Let's Encrypt's newer root) and its files' from Amazon's: their roots too.
+static void addRoots(const App *app)
+{
+    addRootsFile(app, "roots-sslcom.pem", roots_sslcom_pem, roots_sslcom_pem_size, "gutenberg.org");
+    addRootsFile(app, "roots-unglue.pem", roots_unglue_pem, roots_unglue_pem_size, "unglue.it");
 }
 
 void appNetworkStart(App *app)

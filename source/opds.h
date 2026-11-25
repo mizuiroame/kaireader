@@ -18,6 +18,7 @@ typedef struct {
     char id[OPDS_URL_MAX];        // The entry's id (urn:...), to know it again on another page.
     char title[OPDS_TEXT_MAX];
     char author[OPDS_TEXT_MAX];
+    char author_sort[OPDS_TEXT_MAX];  // "Surname, Name" when author was turned around for showing; "" if not.
     char genre[OPDS_TEXT_MAX];    // Its first category.
     char acquire[OPDS_URL_MAX];   // The download link of the kind read best (EPUB first), absolute.
     char ext[OPDS_EXT_MAX];       // Its kind as an extension: ".epub", ".pdf", ".cbz"...

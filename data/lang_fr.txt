@@ -942,11 +942,11 @@ Cherche maintenant. Dans sdmc:/switch, A installe ce qu'il a trouvé ; depuis Br
 Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
 Cherche une nouvelle version de KaiReader sur GitHub une fois par jour, à l'ouverture, et le signale.
 
-Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits.
-Réseau : libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) et les certificats racine de Mozilla (MPL 2.0). Mises à jour : Jansson (MIT). Livres gratuits : Project Gutenberg, Standard Ebooks, textos.info et Ebooks libres et gratuits.
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits and unglue.it.
+Réseau : libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) et les certificats racine de Mozilla (MPL 2.0). Mises à jour : Jansson (MIT). Livres gratuits : Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits et unglue.it.
 
-Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened.
-Sans lien avec Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info ou Ebooks libres et gratuits. Les livres avec DRM ne s'ouvrent pas.
+Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits or unglue.it. Books locked with DRM can't be opened.
+Sans lien avec Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits ou unglue.it. Les livres avec DRM ne s'ouvrent pas.
 
 Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
 À désactiver seulement pour votre propre serveur avec un certificat qu'il a créé (https). Ses identifiants ne vont toujours qu'à lui.
@@ -1004,3 +1004,36 @@ Le certificat du serveur n'est pas reconnu. Si le serveur a son propre certifica
 
 Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's sign-in still only goes to it.
 À désactiver seulement pour votre propre dossier WebDAV avec un certificat qu'il a créé (https). Ses identifiants ne vont toujours qu'à lui.
+
+Search Standard Ebooks
+Rechercher dans Standard Ebooks
+
+Search Standard Ebooks: a title, an author, a subject
+Rechercher dans Standard Ebooks : un titre, un auteur, un sujet
+
+Search textos.info
+Rechercher dans textos.info
+
+Search textos.info: a title or an author, in Spanish
+Rechercher dans textos.info : un titre ou un auteur, en espagnol
+
+Search Ebooks libres et gratuits
+Rechercher dans Ebooks libres et gratuits
+
+Search Ebooks libres et gratuits: words of a title, in French
+Rechercher dans Ebooks libres et gratuits : des mots d'un titre, en français
+
+Search unglue.it
+Rechercher dans unglue.it
+
+Search unglue.it: a title, an author, a subject
+Rechercher dans unglue.it : un titre, un auteur, un sujet
+
+Try other words: a title or an author, in Spanish.
+Essayez d'autres mots : un titre ou un auteur, en espagnol.
+
+Try other words from a title, in French.
+Essayez d'autres mots d'un titre, en français.
+
+Show unglue.it's most popular, under Creative Commons
+Afficher les plus populaires d'unglue.it, sous licence Creative Commons

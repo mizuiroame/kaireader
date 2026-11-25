@@ -942,11 +942,11 @@ Busca ahora. En sdmc:/switch, A instala lo que encontró; desde Brewstore, lo ac
 Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
 Busca en GitHub una nueva versión de KaiReader una vez al día, al abrirse, y avisa.
 
-Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits.
-Red: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) y los certificados raíz de Mozilla (MPL 2.0). Actualizaciones: Jansson (MIT). Libros gratis: Project Gutenberg, Standard Ebooks, textos.info y Ebooks libres et gratuits.
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits and unglue.it.
+Red: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) y los certificados raíz de Mozilla (MPL 2.0). Actualizaciones: Jansson (MIT). Libros gratis: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits y unglue.it.
 
-Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened.
-Sin relación con Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info ni Ebooks libres et gratuits. Los libros con DRM no se pueden abrir.
+Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits or unglue.it. Books locked with DRM can't be opened.
+Sin relación con Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits ni unglue.it. Los libros con DRM no se pueden abrir.
 
 Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
 Desactívalo solo para un servidor tuyo con un certificado propio (https). El inicio de sesión del servidor sigue yendo solo a él.
@@ -1004,3 +1004,36 @@ El certificado del servidor no es de confianza. Si el servidor tiene su propio c
 
 Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's sign-in still only goes to it.
 Desactívalo solo para una carpeta WebDAV tuya con un certificado propio (https). El inicio de sesión de la carpeta sigue yendo solo a ella.
+
+Search Standard Ebooks
+Buscar en Standard Ebooks
+
+Search Standard Ebooks: a title, an author, a subject
+Buscar en Standard Ebooks: un título, un autor, un tema
+
+Search textos.info
+Buscar en textos.info
+
+Search textos.info: a title or an author, in Spanish
+Buscar en textos.info: un título o un autor, en español
+
+Search Ebooks libres et gratuits
+Buscar en Ebooks libres et gratuits
+
+Search Ebooks libres et gratuits: words of a title, in French
+Buscar en Ebooks libres et gratuits: palabras de un título, en francés
+
+Search unglue.it
+Buscar en unglue.it
+
+Search unglue.it: a title, an author, a subject
+Buscar en unglue.it: un título, un autor, un tema
+
+Try other words: a title or an author, in Spanish.
+Prueba otras palabras: un título o un autor, en español.
+
+Try other words from a title, in French.
+Prueba otras palabras de un título, en francés.
+
+Show unglue.it's most popular, under Creative Commons
+Ver lo más popular de unglue.it, con licencia Creative Commons

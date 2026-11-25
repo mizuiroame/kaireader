@@ -365,7 +365,8 @@ static void *pageThread(void *arg)
         g_page_count = count;
         g_page_ok = ok;
         snprintf(g_page_url, sizeof(g_page_url), "%s", url);
-        snprintf(g_page_next, sizeof(g_page_next), "%s", ok ? f.next : "");
+        if (!ok || !catalogNextPage(url, f.next, g_page_next, sizeof(g_page_next)))
+            g_page_next[0] = '\0';
         snprintf(g_page_why, sizeof(g_page_why), "%s", why);
         g_page_ready = true;
         if (ok)

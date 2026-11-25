@@ -144,7 +144,7 @@ static void drawFreeEmpty(const App *app, uint64_t now_ns)
     } else {
         char line[256];
         snprintf(line, sizeof(line), T("Nothing found for \"%s\"."), app->free_query);
-        const char *lines[] = {line, T("Try other words: a title, an author or a subject, in English.")};
+        const char *lines[] = {line, appFreeSearchHint(app)};
         drawMessage(lines, 2, T("Search again"), HIT_SORT);
     }
 }

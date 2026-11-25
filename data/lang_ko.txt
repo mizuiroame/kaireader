@@ -941,11 +941,11 @@ Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore 
 Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
 하루에 한 번, 열 때 GitHub에서 새 KaiReader를 찾아 알려 줘요.
 
-Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits.
-네트워크: libsmb2(LGPL 2.1), curl, libssh2, Mbed TLS(Apache 2.0), Mozilla 루트 인증서(MPL 2.0). 업데이트: Jansson(MIT). 무료 책: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits.
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits and unglue.it.
+네트워크: libsmb2(LGPL 2.1), curl, libssh2, Mbed TLS(Apache 2.0), Mozilla 루트 인증서(MPL 2.0). 업데이트: Jansson(MIT). 무료 책: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits, unglue.it.
 
-Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened.
-Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits와 관련이 없어요. DRM이 걸린 책은 열 수 없어요.
+Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits or unglue.it. Books locked with DRM can't be opened.
+Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits, unglue.it와 관련이 없어요. DRM이 걸린 책은 열 수 없어요.
 
 Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
 자체 인증서(https)를 쓰는 내 서버일 때만 끄세요. 로그인 정보는 여전히 그 서버로만 가요.
@@ -1003,3 +1003,36 @@ The server's certificate isn't trusted. If the server has its own certificate, t
 
 Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's sign-in still only goes to it.
 자체 인증서(https)를 쓰는 내 WebDAV 폴더일 때만 끄세요. 로그인 정보는 여전히 그 폴더로만 가요.
+
+Search Standard Ebooks
+Standard Ebooks 검색
+
+Search Standard Ebooks: a title, an author, a subject
+Standard Ebooks 검색: 제목, 저자, 주제
+
+Search textos.info
+textos.info 검색
+
+Search textos.info: a title or an author, in Spanish
+textos.info 검색: 제목이나 저자를 스페인어로
+
+Search Ebooks libres et gratuits
+Ebooks libres et gratuits 검색
+
+Search Ebooks libres et gratuits: words of a title, in French
+Ebooks libres et gratuits 검색: 제목의 단어를 프랑스어로
+
+Search unglue.it
+unglue.it 검색
+
+Search unglue.it: a title, an author, a subject
+unglue.it 검색: 제목, 저자, 주제
+
+Try other words: a title or an author, in Spanish.
+다른 단어로 해 보세요: 제목이나 저자를 스페인어로.
+
+Try other words from a title, in French.
+제목의 다른 단어를 프랑스어로 해 보세요.
+
+Show unglue.it's most popular, under Creative Commons
+unglue.it 인기 책 보기(크리에이티브 커먼즈)

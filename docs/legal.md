@@ -2,7 +2,8 @@
 
 KaiReader is an independent project. It is not affiliated with, endorsed by
 or sponsored by Nintendo, Amazon, Artifex Software, Project Gutenberg,
-Standard Ebooks, textos.info, Ebooks libres et gratuits or any publisher. "Kindle" is a trademark of Amazon; KaiReader does not use it.
+Standard Ebooks, textos.info, Ebooks libres et gratuits, unglue.it or any
+publisher. "Kindle" is a trademark of Amazon; KaiReader does not use it.
 
 ## Your books
 
@@ -10,8 +11,8 @@ KaiReader opens the books you put on your SD card. It does not come with
 books, and does not point to any site that offers books without the
 author's or publisher's permission.
 
-**Free books** lists only catalogs that publish public-domain books for
-free download through a public feed made for reading apps, and downloads a
+**Free books** lists only catalogs that publish public-domain or freely
+licensed books for free download through a public feed made for reading apps, and downloads a
 book only when you choose it, one at a time:
 
 | Catalog | Feed | Books |
@@ -20,6 +21,7 @@ book only when you choose it, one at a time:
 | [Standard Ebooks](https://standardebooks.org/) | Its Atom feed of new releases, open to all | Public domain in the US; its own work CC0 |
 | [textos.info](https://www.textos.info/) | OPDS | Public-domain texts, in Spanish |
 | [Ebooks libres et gratuits](https://www.ebooksgratuits.com/) | OPDS | Public-domain texts in its volunteers' editions, in French, free for personal use; at most 50 downloads a day, one at a time |
+| [unglue.it](https://unglue.it/) (The Free Ebook Foundation) | OPDS | Books their rights holders released under Creative Commons licenses; each book's license is in it (often non-commercial or no-derivatives: share it as that license says). See its [terms](https://unglue.it/terms/) |
 
 Public domain depends on the country: a book free in one may not be in
 another. Check your own country's rules.
@@ -68,6 +70,7 @@ source code under the same license. Its source code is at
 | [Jansson](https://github.com/akheron/jansson) | Reading GitHub's answer when looking for an update | MIT | [third_party/Jansson-MIT.txt](../third_party/Jansson-MIT.txt) |
 | [Mbed TLS](https://www.trustedfirmware.org/projects/mbed-tls/) | Encryption (SFTP, https) | Apache-2.0 | [third_party/MbedTLS-Apache-2.0.txt](../third_party/MbedTLS-Apache-2.0.txt) |
 | Two root certificates (SSL.com) from [Mozilla's CA list](https://wiki.mozilla.org/CA), as [curl publishes it](https://curl.se/docs/caextract.html) | Project Gutenberg's secure connection, whose roots the console lacks (`data/roots_sslcom.pem`) | MPL-2.0 | <https://www.mozilla.org/MPL/2.0/> |
+| Four root certificates (ISRG Root X1 and X2, Amazon Root CA 1, Starfield Services Root G2) from the same list | unglue.it's and its files' secure connections (`data/roots_unglue.pem`) | MPL-2.0 | <https://www.mozilla.org/MPL/2.0/> |
 | [Noto Sans](https://fonts.google.com/noto) | The app's own text | SIL OFL 1.1 | [third_party/NotoSans-OFL.txt](../third_party/NotoSans-OFL.txt) |
 | [stb_image, stb_truetype](https://github.com/nothings/stb) | Images and the app's fonts | Public domain or MIT | In the files |
 | [libnx](https://github.com/switchbrew/libnx) and [libounce](https://github.com/ouncebrew/libounce) | Switch 2 system access | ISC | [third_party/libnx-ISC.txt](../third_party/libnx-ISC.txt), [third_party/libounce-ISC.txt](../third_party/libounce-ISC.txt) |

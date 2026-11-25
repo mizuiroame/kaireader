@@ -14,6 +14,7 @@
 #include "background.h"
 #include "theme.h"
 #include "buttons.h"
+#include "catalogs.h"
 #include "font.h"
 #include "gfx.h"
 #include "reading.h"
@@ -188,6 +189,37 @@ extern bool g_preview_net_configured;
 extern bool g_preview_free_down;
 extern bool g_preview_server_configured;
 
+// The + menu on each Free books list: its search names the list's own catalog, and the list line
+// the one L/R goes to next. Checked, and drawn (free-menu-0...).
+static void freeMenus(App *app, const char *dir)
+{
+    snprintf(app->free_query, sizeof(app->free_query), "%s", "lighthouse");  // A search done: it's a list too.
+    for (int list = 0; list < CATALOG_COUNT; list++) {
+        if (list == CATALOG_SEARCH)
+            app->free_search_in = CATALOG_FRENCH;
+        appFreeShow(app, list, 50);
+        settle(app);
+        CatalogList in = catalogSearchOf((CatalogList)list, (CatalogList)app->free_search_in);
+        char brand[64];
+        snprintf(brand, sizeof(brand), "%.*s", (int)strcspn(catalogName(in), ":"), catalogName(in));
+        const char *next = catalogShowLine((CatalogList)((list + 1) % CATALOG_COUNT));
+        if (!strstr(appFreeSearchLine(app), brand) || strcmp(appFreeNextListLine(app), next) != 0 ||
+            (list == CATALOG_SEARCH && strcmp(appFreeListName(app), catalogSearchName(CATALOG_FRENCH)) != 0)) {
+            printf("PREVIEW: on Free books list %d the menu says \"%s\" and \"%s\"\n", list, appFreeSearchLine(app),
+                   appFreeNextListLine(app));
+            g_problems++;
+        }
+        app->panel = PANEL_MENU;
+        app->menu_cursor = 0;
+        char name[32];
+        snprintf(name, sizeof(name), "free-menu-%d", list);
+        render(app, dir, name);
+        app->panel = PANEL_NONE;
+    }
+    app->free_query[0] = '\0';
+    app->free_search_in = CATALOG_POPULAR;
+}
+
 // The Network tab: no folder yet; then a made-up one, its list, a copy, and its Settings page.
 static void networkShots(App *app, const char *dir)
 {
@@ -205,14 +237,22 @@ static void networkShots(App *app, const char *dir)
     render(app, dir, "free-list");
     app->prefs.list_view = false;
     appResort(app);
-    g_preview_free_down = true;  // Down for maintenance: said, with Try again.
-    shelfFree(&app->shelf);
-    appResort(app);
-    appFreeLookAgain(app, 50);
+    freeMenus(app, dir);
+    // Another list whose catalog is down (Project Gutenberg's 503), reached with L/R from one with
+    // books: its name over no books and the message, never the old list's books.
+    appFreeShow(app, CATALOG_FRENCH, 50);
     settle(app);
+    g_preview_free_down = true;
+    appFreeStepList(app, 1, 50);
+    bool emptied = app->order_count == 0;  // At once, while the new list is asked for.
+    settle(app);
+    if (!emptied || app->order_count != 0 || !app->free_problem[0] || app->free_list != CATALOG_OPEN) {
+        printf("PREVIEW: a list that couldn't be read still shows %d books of the one before\n", app->order_count);
+        g_problems++;
+    }
     render(app, dir, "free-down");
     g_preview_free_down = false;
-    appFreeLookAgain(app, 50);
+    appFreeShow(app, CATALOG_POPULAR, 50);
     settle(app);
     appLibTab(app, LIB_CARD, 51);
 

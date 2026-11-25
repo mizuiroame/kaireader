@@ -1,8 +1,9 @@
 // Free books: public-domain catalogs (catalogs.h) browsed as a library, after
 // the card's, the network folder's and the server's (X). L and R change the
 // list (Project Gutenberg's most popular, Standard Ebooks' newest, textos.info's
-// most popular in Spanish, Ebooks libres et gratuits' newest in French, a search),
-// Y searches Project Gutenberg, and the next page comes as the end nears. A
+// most popular in Spanish, Ebooks libres et gratuits' newest in French, unglue.it's
+// most popular under Creative Commons, a search), Y searches the catalog of the
+// list shown, and the next page comes as the end nears. A
 // book chosen is downloaded to the card's books folder (sdmc:/books/Free/,
 // "Title - Author.epub"), then opened there: it's one of the card's books from
 // then on. Nothing is asked of the catalogs until Free books is opened.
@@ -22,6 +23,23 @@
 #define FREE_FOLDER "Free"
 #define MORE_LINES 2  // The next page is asked for when the cursor is this many lines from the end.
 
+// The Free books' shelf: the one shown, or kept aside while another library is.
+static Shelf *freeShelf(App *app)
+{
+    return app->lib_tab == LIB_FREE ? &app->shelf : &app->stash[LIB_FREE];
+}
+
+// No books shown: a new list's first page is on its way (or the list couldn't be read).
+static void emptyList(App *app)
+{
+    shelfFree(freeShelf(app));
+    if (app->lib_tab == LIB_FREE) {
+        app->cursor = 0;
+        app->scroll = 0;
+        appResort(app);
+    }
+}
+
 static void ask(App *app, const char *url, bool more)
 {
     snprintf(app->free_asked, sizeof(app->free_asked), "%s", url);
@@ -34,13 +52,14 @@ static void ask(App *app, const char *url, bool more)
 void appFreeShow(App *app, int list, uint64_t now_ns)
 {
     char url[OPDS_URL_MAX];
-    if (!catalogUrl((CatalogList)list, app->free_query, url, sizeof(url))) {
+    if (!catalogUrl((CatalogList)list, (CatalogList)app->free_search_in, app->free_query, url, sizeof(url))) {
         if (list == CATALOG_SEARCH)
             appFreeSearch(app, now_ns);
         return;
     }
     app->free_list = list;
     app->free_next[0] = '\0';
+    emptyList(app);  // The old list's books never stay under the new list's name.
     appNetworkWantFree();
     ask(app, url, false);
 }
@@ -62,11 +81,28 @@ const char *appFreeNextListLine(const App *app)
     return T(catalogShowLine((CatalogList)stepped(app, 1)));
 }
 
+// The catalog Y searches: the shown list's, or on a search, the one searched.
+static CatalogList searchedIn(const App *app)
+{
+    return catalogSearchOf((CatalogList)app->free_list, (CatalogList)app->free_search_in);
+}
+
+const char *appFreeSearchLine(const App *app)
+{
+    return T(catalogSearchLine(searchedIn(app)));
+}
+
+const char *appFreeSearchHint(const App *app)
+{
+    return T(catalogSearchHint((CatalogList)app->free_search_in));
+}
+
 void appFreeSearch(App *app, uint64_t now_ns)
 {
     char words[CATALOG_QUERY_MAX];
-    SystemKeyboardResult result = systemKeyboardInput(T("Search Project Gutenberg: a title, an author, a subject"),
-                                                      app->free_query, words, sizeof(words), sizeof(words) - 1);
+    CatalogList in = searchedIn(app);
+    SystemKeyboardResult result = systemKeyboardInput(T(catalogSearchPrompt(in)), app->free_query, words,
+                                                      sizeof(words), sizeof(words) - 1);
     if (result == SYSTEM_KEYBOARD_UNAVAILABLE) {
         appNotify(app, NOTICE_ERROR, T("The keyboard couldn't open."), now_ns);
         return;
@@ -74,11 +110,14 @@ void appFreeSearch(App *app, uint64_t now_ns)
     if (result != SYSTEM_KEYBOARD_OK || !words[0])
         return;
     snprintf(app->free_query, sizeof(app->free_query), "%s", words);
+    app->free_search_in = in;
     appFreeShow(app, CATALOG_SEARCH, now_ns);
 }
 
 const char *appFreeListName(const App *app)
 {
+    if (app->free_list == CATALOG_SEARCH)
+        return T(catalogSearchName((CatalogList)app->free_search_in));
     return T(catalogName((CatalogList)app->free_list));
 }
 
@@ -103,14 +142,9 @@ static void takePage(App *app, uint64_t now_ns)
         free(books);
         return;
     }
-    Shelf *s = app->lib_tab == LIB_FREE ? &app->shelf : &app->stash[LIB_FREE];
-    if (!app->free_more) {
-        shelfFree(s);
-        if (app->lib_tab == LIB_FREE) {
-            app->cursor = 0;
-            app->scroll = 0;
-        }
-    }
+    if (!app->free_more)
+        emptyList(app);
+    Shelf *s = freeShelf(app);
     for (int i = 0; i < count; i++) {
         char path[SHELF_PATH_MAX];
         int n = snprintf(path, sizeof(path), "%s%s#%s", OPDS_PREFIX, books[i].acquire, books[i].ext);
@@ -121,7 +155,7 @@ static void takePage(App *app, uint64_t now_ns)
             break;
         b->size = books[i].size;
         shelfSetInfo(b, books[i].title, books[i].author);
-        shelfSetDetails(b, books[i].genre, "");
+        shelfSetDetails(b, books[i].genre, books[i].author_sort);
         opdsRememberCover(path, books[i].cover);
     }
     free(books);

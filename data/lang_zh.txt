@@ -941,11 +941,11 @@ Looks now. In sdmc:/switch, A installs what it found; from Brewstore, Brewstore 
 Looks on GitHub for a new KaiReader once a day, when it opens, and says so.
 每天在打开时到 GitHub 查找一次新版 KaiReader，并给出提示。
 
-Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info and Ebooks libres et gratuits.
-网络：libsmb2（LGPL 2.1）、curl、libssh2、Mbed TLS（Apache 2.0）和 Mozilla 根证书（MPL 2.0）。更新：Jansson（MIT）。免费书籍：Project Gutenberg、Standard Ebooks、textos.info 和 Ebooks libres et gratuits。
+Network: libsmb2 (LGPL 2.1), curl, libssh2, Mbed TLS (Apache 2.0) and Mozilla's root certificates (MPL 2.0). Updates: Jansson (MIT). Free books: Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits and unglue.it.
+网络：libsmb2（LGPL 2.1）、curl、libssh2、Mbed TLS（Apache 2.0）和 Mozilla 根证书（MPL 2.0）。更新：Jansson（MIT）。免费书籍：Project Gutenberg、Standard Ebooks、textos.info、Ebooks libres et gratuits 和 unglue.it。
 
-Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info or Ebooks libres et gratuits. Books locked with DRM can't be opened.
-与 Nintendo、Amazon、Project Gutenberg、Standard Ebooks、textos.info 和 Ebooks libres et gratuits 无关。带 DRM 的书无法打开。
+Not affiliated with Nintendo, Amazon, Project Gutenberg, Standard Ebooks, textos.info, Ebooks libres et gratuits or unglue.it. Books locked with DRM can't be opened.
+与 Nintendo、Amazon、Project Gutenberg、Standard Ebooks、textos.info、Ebooks libres et gratuits 和 unglue.it 无关。带 DRM 的书无法打开。
 
 Off only for a server of your own with a certificate it made itself (https). The server's sign-in still only goes to it.
 仅对使用自签名证书（https）的自有服务器关闭。登录信息仍只发送给该服务器。
@@ -1003,3 +1003,36 @@ The server's certificate isn't trusted. If the server has its own certificate, t
 
 Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's sign-in still only goes to it.
 仅对使用自签名证书（https）的自有 WebDAV 文件夹关闭。登录信息仍只发送给该文件夹。
+
+Search Standard Ebooks
+搜索 Standard Ebooks
+
+Search Standard Ebooks: a title, an author, a subject
+搜索 Standard Ebooks：书名、作者、主题
+
+Search textos.info
+搜索 textos.info
+
+Search textos.info: a title or an author, in Spanish
+搜索 textos.info：书名或作者，用西班牙文
+
+Search Ebooks libres et gratuits
+搜索 Ebooks libres et gratuits
+
+Search Ebooks libres et gratuits: words of a title, in French
+搜索 Ebooks libres et gratuits：书名中的词，用法文
+
+Search unglue.it
+搜索 unglue.it
+
+Search unglue.it: a title, an author, a subject
+搜索 unglue.it：书名、作者、主题
+
+Try other words: a title or an author, in Spanish.
+试试其他词：书名或作者，用西班牙文。
+
+Try other words from a title, in French.
+试试书名中的其他词，用法文。
+
+Show unglue.it's most popular, under Creative Commons
+显示 unglue.it 最热门（知识共享许可）

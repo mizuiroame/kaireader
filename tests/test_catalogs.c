@@ -121,25 +121,87 @@ static const char FRENCH_REAL[] =
     "      <link type=\"application/zip\" href=\"https://www.ebooksgratuits.com/newsendbook.php?id=3538&amp;format=so\" rel=\"http://opds-spec.org/acquisition\" />\r\n"
     "   </entry>\r\n</feed>\r\n";
 
+// unglue.it's most popular with an EPUB as it came on 2026-11-25 (trimmed, the book made up): its
+// download an "open-access" acquisition, keyword links to other lists, a next page.
+static const char OPEN_REAL[] =
+    "<?xml version='1.0' encoding='utf-8'?>\n"
+    "<feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:dcterms=\"http://purl.org/dc/terms/\" "
+    "xmlns:opds=\"http://opds-spec.org/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"
+    " <title>Unglue.it eBooks available in format: epub - Popular</title>\n"
+    " <link href=\"https://unglue.it/api/opds/epub/?order_by=popular&amp;page=1\" rel=\"next\" title=\"Next 10\" "
+    "type=\"application/atom+xml; profile=opds-catalog ;kind=acquisition; charset=utf-8\"/>\n"
+    " <entry>\n  <title>\n   So You Want to Keep a Lighthouse\n  </title>\n"
+    "  <id>\n   https://unglue.it/api/id/work/76348/\n  </id>\n"
+    "  <link dcterms:rights=\"CC BY-SA\" href=\"https://unglue.it/download_ebook/249663/?feed=opds\" "
+    "rel=\"http://opds-spec.org/acquisition/open-access\" type=\"application/epub+zip\"/>\n"
+    "  <link href=\"https://files.unglue.it/cache/82/53/82532928e810f0efc5f2753cb1248278.jpg\" "
+    "rel=\"http://opds-spec.org/image/thumbnail\" type=\"image/jpeg\"/>\n"
+    "  <link href=\"https://files.unglue.it/cache/60/54/6054f6ad467e45646e2ffa5be0f9045b.jpg\" "
+    "rel=\"http://opds-spec.org/image\" type=\"image/jpeg\"/>\n"
+    "  <author>\n   <name>\n    Lio Arden\n   </name>\n  </author>\n"
+    "  <dcterms:language>\n   en\n  </dcterms:language>\n"
+    "  <content type=\"html\">\n   A made-up book.\n  </content>\n"
+    "  <category term=\"Nonfiction\">\n  </category>\n"
+    "  <link href=\"https://unglue.it/api/opds/kw.Nonfiction/?order_by=popular&amp;page=0\" rel=\"related\" "
+    "title=\"Nonfiction\" type=\"application/atom+xml; profile=opds-catalog ;kind=acquisition; charset=utf-8\"/>\n"
+    " </entry>\n</feed>\n";
+
 static void testUrls(void)
 {
     char url[512];
-    CHECK(catalogUrl(CATALOG_POPULAR, NULL, url, sizeof(url)));
+    CHECK(catalogUrl(CATALOG_POPULAR, CATALOG_POPULAR, NULL, url, sizeof(url)));
     CHECK_STR(url, "https://www.gutenberg.org/ebooks/search.opds/?sort_order=downloads");
-    CHECK(catalogUrl(CATALOG_NEWEST, NULL, url, sizeof(url)));
+    CHECK(catalogUrl(CATALOG_NEWEST, CATALOG_POPULAR, NULL, url, sizeof(url)));
     CHECK_STR(url, "https://standardebooks.org/feeds/atom/new-releases");
-    CHECK(catalogUrl(CATALOG_SEARCH, "  pride & prejudice", url, sizeof(url)));
+    CHECK(catalogUrl(CATALOG_SEARCH, CATALOG_POPULAR, "  pride & prejudice", url, sizeof(url)));
     CHECK_STR(url, "https://www.gutenberg.org/ebooks/search.opds/?query=pride+%26+prejudice");
-    CHECK(catalogUrl(CATALOG_SEARCH, "Caf\xC3\xA9", url, sizeof(url)));
+    CHECK(catalogUrl(CATALOG_SEARCH, CATALOG_POPULAR, "Caf\xC3\xA9", url, sizeof(url)));
     CHECK_STR(url, "https://www.gutenberg.org/ebooks/search.opds/?query=Caf%C3%A9");
-    CHECK(!catalogUrl(CATALOG_SEARCH, "   ", url, sizeof(url)));
-    CHECK(!catalogUrl(CATALOG_SEARCH, NULL, url, sizeof(url)));
-    CHECK(!catalogUrl(CATALOG_POPULAR, NULL, url, 20));
+    CHECK(!catalogUrl(CATALOG_SEARCH, CATALOG_POPULAR, "   ", url, sizeof(url)));
+    CHECK(!catalogUrl(CATALOG_SEARCH, CATALOG_POPULAR, NULL, url, sizeof(url)));
+    CHECK(!catalogUrl(CATALOG_POPULAR, CATALOG_POPULAR, NULL, url, 20));
     CHECK_STR(catalogName(CATALOG_NEWEST), "Standard Ebooks: newest");
-    CHECK(catalogUrl(CATALOG_SPANISH, NULL, url, sizeof(url)));
+    CHECK(catalogUrl(CATALOG_SPANISH, CATALOG_POPULAR, NULL, url, sizeof(url)));
     CHECK_STR(url, "https://www.textos.info/populares.atom");
-    CHECK(catalogUrl(CATALOG_FRENCH, "ignored", url, sizeof(url)));
+    CHECK(catalogUrl(CATALOG_FRENCH, CATALOG_POPULAR, "ignored", url, sizeof(url)));
     CHECK_STR(url, "https://www.ebooksgratuits.com/opds/feed.php");
+    CHECK(catalogUrl(CATALOG_OPEN, CATALOG_POPULAR, NULL, url, sizeof(url)));
+    CHECK_STR(url, "https://unglue.it/api/opds/epub/?order_by=popular");
+    // Each catalog's own search, as its OpenSearch description gives it.
+    CHECK(catalogUrl(CATALOG_SEARCH, CATALOG_NEWEST, "jane austen", url, sizeof(url)));
+    CHECK_STR(url, "https://standardebooks.org/feeds/atom/all?query=jane+austen");
+    CHECK(catalogUrl(CATALOG_SEARCH, CATALOG_SPANISH, "quijote", url, sizeof(url)));
+    CHECK_STR(url, "https://www.textos.info/busqueda.atom&query=quijote");
+    CHECK(catalogUrl(CATALOG_SEARCH, CATALOG_FRENCH, "mis\xC3\xA9rables", url, sizeof(url)));
+    CHECK_STR(url, "https://www.ebooksgratuits.com/opds/feed.php?mode=search&query=mis%C3%A9rables");
+    CHECK(catalogUrl(CATALOG_SEARCH, CATALOG_OPEN, "library", url, sizeof(url)));
+    CHECK_STR(url, "https://unglue.it/api/opds/search/?q=library");
+    CHECK(catalogUrl(CATALOG_SEARCH, (CatalogList)99, "x", url, sizeof(url)));  // Not a catalog: Gutenberg's.
+    CHECK_STR(url, "https://www.gutenberg.org/ebooks/search.opds/?query=x");
+    // Y searches the shown list's catalog; on a search, the one searched last.
+    CHECK(catalogSearchOf(CATALOG_FRENCH, CATALOG_POPULAR) == CATALOG_FRENCH);
+    CHECK(catalogSearchOf(CATALOG_SEARCH, CATALOG_SPANISH) == CATALOG_SPANISH);
+    CHECK(catalogSearchOf(CATALOG_SEARCH, CATALOG_SEARCH) == CATALOG_POPULAR);
+    CHECK_STR(catalogSearchName(CATALOG_OPEN), "unglue.it: search");
+    CHECK_STR(catalogSearchLine(CATALOG_SPANISH), "Search textos.info");
+    CHECK_STR(catalogSearchPrompt(CATALOG_POPULAR), "Search Project Gutenberg: a title, an author, a subject");
+    CHECK_STR(catalogSearchHint(CATALOG_FRENCH), "Try other words from a title, in French.");
+    for (int i = 0; i < CATALOG_SEARCH; i++)
+        CHECK(catalogSearchName((CatalogList)i)[0] && catalogSearchPrompt((CatalogList)i)[0] &&
+              catalogSearchLine((CatalogList)i)[0] && catalogSearchHint((CatalogList)i)[0]);
+    // unglue.it's search: its next page without the words gets them back; the others' as they are.
+    char next[512];
+    CHECK(catalogNextPage("https://unglue.it/api/opds/search/?q=library",
+                          "https://unglue.it/api/opds/search/?order_by=newest&page=1", next, sizeof(next)));
+    CHECK_STR(next, "https://unglue.it/api/opds/search/?order_by=newest&page=1&q=library");
+    CHECK(catalogNextPage("https://unglue.it/api/opds/search/?q=a+b&order_by=newest&page=1",
+                          "https://unglue.it/api/opds/search/?order_by=newest&page=2", next, sizeof(next)));
+    CHECK_STR(next, "https://unglue.it/api/opds/search/?order_by=newest&page=2&q=a+b");
+    CHECK(catalogNextPage("https://standardebooks.org/feeds/atom/all?query=love",
+                          "https://standardebooks.org/feeds/atom/all?query=love&page=2&per-page=12", next, sizeof(next)));
+    CHECK_STR(next, "https://standardebooks.org/feeds/atom/all?query=love&page=2&per-page=12");
+    CHECK(catalogNextPage("https://unglue.it/api/opds/search/?q=x", "", next, sizeof(next)) && !next[0]);
+    CHECK(!catalogNextPage("https://a/", "https://a/very/long/next", next, 8));
     CHECK_STR(catalogName(CATALOG_FRENCH), "Ebooks libres et gratuits: newest (French)");
     CHECK_STR(catalogShowLine(CATALOG_SPANISH), "Show textos.info's most popular, in Spanish");
     CHECK_STR(catalogShowLine(CATALOG_SEARCH), "Show your last search");
@@ -240,18 +302,57 @@ static void testOtherLanguages(void)
     CHECK(n == 1);
     if (n == 1) {
         CHECK_STR(books[0].title, "Le Phare tranquille");
-        CHECK_STR(books[0].author, "Exemple, Ana");
+        CHECK_STR(books[0].author, "Ana Exemple");  // As written; its "Surname, Name" kept for sorting.
+        CHECK_STR(books[0].author_sort, "Exemple, Ana");
         CHECK_STR(books[0].acquire, "https://www.ebooksgratuits.com/newsendbook.php?id=3538&format=epub");
         CHECK_STR(books[0].ext, ".epub");  // Not the zipped Word file.
         CHECK_STR(books[0].cover, "");     // None: the book's own cover, once read.
         CHECK_STR(books[0].genre, "Th\xC3\xA9\xC3\xA2tre");
         char name[128];
         catalogFileName(&books[0], name, sizeof(name));
-        CHECK_STR(name, "Le Phare tranquille - Exemple, Ana.epub");
+        CHECK_STR(name, "Le Phare tranquille - Ana Exemple.epub");
     }
     CHECK_STR(f.next, "https://www.ebooksgratuits.com/opds/feed.php?page=1");
     free(books);
     opdsFeedFree(&f);
+
+    CHECK(opdsParse(OPEN_REAL, sizeof(OPEN_REAL) - 1, "https://unglue.it/api/opds/epub/?order_by=popular", &f));
+    n = catalogBooks(&f, &books);
+    CHECK(n == 1);
+    if (n == 1) {
+        CHECK_STR(books[0].title, "So You Want to Keep a Lighthouse");
+        CHECK_STR(books[0].author, "Lio Arden");
+        CHECK_STR(books[0].author_sort, "");
+        CHECK_STR(books[0].acquire, "https://unglue.it/download_ebook/249663/?feed=opds");  // open-access: read here.
+        CHECK_STR(books[0].ext, ".epub");
+        CHECK_STR(books[0].cover, "https://files.unglue.it/cache/82/53/82532928e810f0efc5f2753cb1248278.jpg");
+        CHECK_STR(books[0].genre, "Nonfiction");
+    }
+    CHECK_STR(f.next, "https://unglue.it/api/opds/epub/?order_by=popular&page=1");
+    CHECK(f.feed_count == 0);  // Its keyword links lead to lists, not shown as books.
+    free(books);
+    opdsFeedFree(&f);
+}
+
+// "Surname, Name" turned around; everything else left as it is.
+static void testAuthors(void)
+{
+    char out[64] = "unset";
+    CHECK(catalogAuthorAsWritten("Hugo, Victor", out, sizeof(out)));
+    CHECK_STR(out, "Victor Hugo");
+    CHECK(catalogAuthorAsWritten("Goncourt, Edmond de", out, sizeof(out)));
+    CHECK_STR(out, "Edmond de Goncourt");
+    CHECK(catalogAuthorAsWritten("Doyle ,  Arthur Conan", out, sizeof(out)));
+    CHECK_STR(out, "Arthur Conan Doyle");
+    strcpy(out, "unset");
+    CHECK(!catalogAuthorAsWritten("Victor Hugo", out, sizeof(out)));           // No comma.
+    CHECK(!catalogAuthorAsWritten("Hugo, Victor, 1802-1885", out, sizeof(out)));  // Several.
+    CHECK(!catalogAuthorAsWritten("Dumas, Alexandre et Maquet, Auguste", out, sizeof(out)));
+    CHECK(!catalogAuthorAsWritten("King, Jr.", out, sizeof(out)));             // A suffix, not a name.
+    CHECK(!catalogAuthorAsWritten("Hugo, 1802", out, sizeof(out)));
+    CHECK(!catalogAuthorAsWritten(", Victor", out, sizeof(out)) && !catalogAuthorAsWritten("Hugo,", out, sizeof(out)));
+    CHECK_STR(out, "unset");
+    CHECK(!catalogAuthorAsWritten("Hugo, Victor", out, 6));  // Doesn't fit.
 }
 
 void testCatalogs(void)
@@ -260,4 +361,5 @@ void testCatalogs(void)
     testPages();
     testRealAnswers();
     testOtherLanguages();
+    testAuthors();
 }
