@@ -17,3 +17,7 @@ docker build -t kaireader-host -f tests/Dockerfile.host tests
 The `kaireader-devkit` image starts from KaiRadio's image (the Switch 2
 devkit with libounce). The tests open made-up books written by
 `tests/make_fixtures.py`.
+
+On every push and pull request, GitHub Actions runs the host tests
+(`make coverage`) in an image built from `tests/Dockerfile.host`, with
+MuPDF kept in its cache (`.github/workflows/tests.yml`).

@@ -76,10 +76,6 @@ files.
 - [Building](docs/building.md): from source, with Docker
 - [Legal notice and licenses](docs/legal.md)
 
-On every push and pull request, GitHub Actions runs the host tests
-(`make coverage`) in an image built from `tests/Dockerfile.host`, with
-MuPDF kept in its cache (`.github/workflows/tests.yml`).
-
 ## License
 
 GNU AGPL 3.0 or later ([LICENSE](LICENSE)), as MuPDF is. The other parts and
