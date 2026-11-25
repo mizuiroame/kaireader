@@ -13,6 +13,7 @@
 #include "davnet.h"
 #include "doc.h"
 #include "keyboard_system.h"
+#include "lang.h"
 #include "netjob.h"
 #include "opdsnet.h"
 
@@ -323,6 +324,7 @@ void appNetworkUse(void)
 
 static bool g_page_ready;
 static char g_page_url[1024];
+bool g_preview_free_down;  // The catalog down for maintenance (Project Gutenberg's 503).
 
 void netJobCatalogPage(const char *url)
 {
@@ -349,6 +351,17 @@ bool netJobTakeCatalogPage(char *url, size_t url_size, OpdsBook **books, int *co
     if (!g_page_ready)
         return false;
     g_page_ready = false;
+    if (g_preview_free_down) {
+        snprintf(url, url_size, "%s", g_page_url);
+        *books = NULL;
+        *count = 0;
+        if (next_size)
+            next[0] = 0;
+        *ok = false;
+        snprintf(why, why_size, "%s",
+                 T("It isn't answering right now (it may be down for maintenance): try again later."));
+        return true;
+    }
     int n = (int)(sizeof(PAGE) / sizeof(PAGE[0]));
     *books = calloc((size_t)n, sizeof(**books));
     *count = 0;

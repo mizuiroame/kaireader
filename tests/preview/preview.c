@@ -172,6 +172,7 @@ static void settingsShots(App *app, const char *dir, const char *prefix)
 }
 
 extern bool g_preview_net_configured;
+extern bool g_preview_free_down;
 extern bool g_preview_server_configured;
 
 // The Network tab: no folder yet; then a made-up one, its list, a copy, and its Settings page.
@@ -191,6 +192,15 @@ static void networkShots(App *app, const char *dir)
     render(app, dir, "free-list");
     app->prefs.list_view = false;
     appResort(app);
+    g_preview_free_down = true;  // Down for maintenance: said, with Try again.
+    shelfFree(&app->shelf);
+    appResort(app);
+    appFreeLookAgain(app, 50);
+    settle(app);
+    render(app, dir, "free-down");
+    g_preview_free_down = false;
+    appFreeLookAgain(app, 50);
+    settle(app);
     appLibTab(app, LIB_CARD, 51);
 
     g_preview_net_configured = true;

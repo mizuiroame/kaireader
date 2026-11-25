@@ -108,7 +108,7 @@ static void sayProblem(const NetResponse *r, char *why, size_t why_size)
 {
     if (r->problem == NET_STATUS && (r->status == 401 || r->status == 403))
         snprintf(why, why_size, "%s", T("Wrong user name or password."));
-    else if (r->problem == NET_STATUS && (r->status == 502 || r->status == 503 || r->status == 504))
+    else if (r->problem == NET_STATUS && opdsBusyStatus(r->status))
         snprintf(why, why_size, "%s", T("It isn't answering right now (it may be down for maintenance): try again later."));
     else if (r->problem == NET_STATUS && r->status == 404)
         snprintf(why, why_size, "%s", T("There's no catalog at that address."));

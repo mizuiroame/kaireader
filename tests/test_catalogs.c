@@ -36,6 +36,40 @@ static const char NEWEST_PAGE[] =
     "<link href=\"https://standardebooks.org/x/text/single-page\" rel=\"enclosure\" type=\"application/xhtml+xml\"/>"
     "</entry></feed>";
 
+// Standard Ebooks' newest as it came on 2026-11-24 (trimmed, the book made up): a stylesheet
+// before the feed and a script inside it, before its entries.
+static const char NEWEST_REAL[] =
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+    "<?xml-stylesheet href=\"https://standardebooks.org/feeds/atom/style\" type=\"text/xsl\"?>\n"
+    "<feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:media=\"http://search.yahoo.com/mrss/\">\n"
+    "\t<script xmlns=\"http://www.w3.org/1999/xhtml\" src=\"https://standardebooks.org/scripts/xslt-polyfill.min.js\"/>\n"
+    "\t<id>https://standardebooks.org/feeds/atom/new-releases</id>\n"
+    "\t<link href=\"https://standardebooks.org/feeds/atom/new-releases\" rel=\"self\" type=\"application/atom+xml\"/>\n"
+    "\t<title>Standard Ebooks - Newest Ebooks</title>\n"
+    "\t<author>\n\t\t<name>Standard Ebooks</name>\n\t</author>\n"
+    "\t<link href=\"https://standardebooks.org/opensearch\" rel=\"search\" title=\"Standard Ebooks\" "
+    "type=\"application/opensearchdescription+xml\"/>\n"
+    "\t<entry>\n\t\t<id>https://standardebooks.org/ebooks/ana-example/the-salt-ledger</id>\n"
+    "\t\t<title>The Salt Ledger</title>\n"
+    "\t\t<author>\n\t\t\t<name>Ana Example</name>\n\t\t\t<uri>https://standardebooks.org/ebooks/ana-example</uri>\n\t\t</author>\n"
+    "\t\t<rights>Public domain in the United States.</rights>\n"
+    "\t\t<category scheme=\"http://purl.org/dc/terms/LCSH\" term=\"Fiction\"/>\n"
+    "\t\t<media:thumbnail height=\"525\" url=\"https://standardebooks.org/ebooks/ana-example/the-salt-ledger/downloads/cover-thumbnail.jpg\" width=\"350\"/>\n"
+    "\t\t<link href=\"https://standardebooks.org/ebooks/ana-example/the-salt-ledger\" rel=\"alternate\" title=\"This ebook's page at Standard Ebooks\" type=\"application/xhtml+xml\"/>\n"
+    "\t\t<link href=\"https://standardebooks.org/ebooks/ana-example/the-salt-ledger/downloads/ana-example_the-salt-ledger.epub?source=feed\" length=\"875588\" rel=\"enclosure\" title=\"Recommended compatible epub\" type=\"application/epub+zip\"/>\n"
+    "\t\t<link href=\"https://standardebooks.org/ebooks/ana-example/the-salt-ledger/downloads/ana-example_the-salt-ledger_advanced.epub?source=feed\" length=\"861369\" rel=\"enclosure\" title=\"Advanced epub\" type=\"application/epub+zip\"/>\n"
+    "\t\t<link href=\"https://standardebooks.org/ebooks/ana-example/the-salt-ledger/downloads/ana-example_the-salt-ledger.kepub.epub?source=feed\" length=\"802783\" rel=\"enclosure\" title=\"Kobo Kepub epub\" type=\"application/kepub+zip\"/>\n"
+    "\t</entry>\n</feed>\n";
+
+// What Project Gutenberg answered for days in November 2026 (HTTP 503, trimmed): a web page, not a feed.
+static const char GUTENBERG_DOWN[] =
+    "<!DOCTYPE html> <html lang=\"en\"> <head> <meta charset=\"utf-8\"> "
+    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> "
+    "<title>Temporarily Down for Maintenance</title> <style> body { margin: 0; } </style> </head> <body> <main> "
+    "<h1>Temporarily Down for Maintenance</h1> "
+    "<p>Project Gutenberg is temporarily unavailable while we perform maintenance.</p> "
+    "<p>Please check back soon. We apologize for the inconvenience.</p> </main> </body> </html>";
+
 static void testUrls(void)
 {
     char url[512];
@@ -89,8 +123,39 @@ static void testPages(void)
     opdsFeedFree(&f);
 }
 
+// The feeds as they really come, and Gutenberg's maintenance page.
+static void testRealAnswers(void)
+{
+    OpdsFeed f;
+    OpdsBook *books;
+    CHECK(opdsParse(NEWEST_REAL, sizeof(NEWEST_REAL) - 1, "https://standardebooks.org/feeds/atom/new-releases", &f));
+    CHECK_STR(f.title, "Standard Ebooks - Newest Ebooks");
+    int n = catalogBooks(&f, &books);
+    CHECK(n == 1);
+    if (n == 1) {
+        CHECK_STR(books[0].title, "The Salt Ledger");
+        CHECK_STR(books[0].author, "Ana Example");
+        CHECK_STR(books[0].acquire, "https://standardebooks.org/ebooks/ana-example/the-salt-ledger/downloads/"
+                                    "ana-example_the-salt-ledger.epub?source=feed");
+        CHECK(books[0].size == 875588);
+        CHECK_STR(books[0].cover,
+                  "https://standardebooks.org/ebooks/ana-example/the-salt-ledger/downloads/cover-thumbnail.jpg");
+        CHECK_STR(books[0].genre, "Fiction");
+        CHECK_STR(books[0].ext, ".epub");
+    }
+    free(books);
+    opdsFeedFree(&f);
+
+    // Not a feed: said as a problem, never shown as an empty list.
+    CHECK(!opdsParse(GUTENBERG_DOWN, sizeof(GUTENBERG_DOWN) - 1, "https://www.gutenberg.org/ebooks/search.opds/", &f));
+    CHECK(f.books == NULL && f.feeds == NULL && f.book_count == 0);
+    CHECK(opdsBusyStatus(503) && opdsBusyStatus(502) && opdsBusyStatus(504));
+    CHECK(!opdsBusyStatus(200) && !opdsBusyStatus(404) && !opdsBusyStatus(500) && !opdsBusyStatus(0));
+}
+
 void testCatalogs(void)
 {
     testUrls();
     testPages();
+    testRealAnswers();
 }

@@ -354,9 +354,11 @@ static void *pageThread(void *arg)
         OpdsBook *books = NULL;
         int count = 0;
         bool ok = opdsFetchFeed(url, &f, why, sizeof(why));
-        if (ok) {
+        if (ok)
             count = catalogBooks(&f, &books);
-        }
+        else if (!strcmp(why, T("That address isn't an OPDS catalog.")))  // A free catalog's own address:
+            snprintf(why, sizeof(why), "%s",  // a web page in its feed's place is its maintenance page.
+                     T("It isn't answering right now (it may be down for maintenance): try again later."));
         pthread_mutex_lock(&g_lock);
         free(g_page_books);  // One not taken: the newer one replaces it.
         g_page_books = books;
@@ -512,6 +514,8 @@ static bool copyByUrl(const char *url, char *auth, FILE *out, char *why, size_t 
     memset(auth, 0, strlen(auth));  // The sign-in, not kept in memory.
     if (sink.failed)
         snprintf(why, why_size, "%s", T("It couldn't be written to the card."));
+    else if (!ok && opdsBusyStatus(status))  // Not "The server answered 503".
+        snprintf(why, why_size, "%s", T("It isn't answering right now (it may be down for maintenance): try again later."));
     return ok && !g_cancel;
 }
 

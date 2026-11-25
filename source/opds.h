@@ -48,6 +48,10 @@ void opdsFeedFree(OpdsFeed *f);
 // href (absolute, from the host's root, or relative) against base, into out. False if it doesn't fit.
 bool opdsResolve(const char *base, const char *href, char *out, size_t size);
 
+// True for an HTTP status that says the server is down for now (502, 503, 504:
+// maintenance, or overloaded), not that the address is wrong.
+bool opdsBusyStatus(long status);
+
 // The extension of a kind of book KaiReader opens, from its MIME type (or the
 // link's own name); NULL for a kind it doesn't.
 const char *opdsExtensionFor(const char *mime, const char *href);

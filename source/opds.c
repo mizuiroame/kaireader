@@ -68,6 +68,11 @@ const char *opdsExtensionFor(const char *mime, const char *href)
     return NULL;
 }
 
+bool opdsBusyStatus(long status)
+{
+    return status == 502 || status == 503 || status == 504;
+}
+
 bool opdsResolve(const char *base, const char *href, char *out, size_t size)
 {
     if (!href || !href[0])
