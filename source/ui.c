@@ -400,7 +400,7 @@ static void drawLibrary(App *app, uint64_t now_ns)
              uiSourceName(appNextSource(app)));
     snprintf(help + strlen(help), sizeof(help) - strlen(help), "%s", T("[+] Menu"));
     drawFooter(help);
-    uiDrawNetCopy(app);
+    uiDrawNetCopy(app, now_ns);
 }
 
 // --- The reader ---

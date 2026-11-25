@@ -18,6 +18,7 @@
 #include "opdsnet.h"
 
 bool g_preview_net_configured;
+bool g_preview_copy_unknown;
 bool g_preview_server_configured;
 
 // The made-up book server: some of the books, as a catalog would list them.
@@ -119,8 +120,8 @@ void netJobCancelCopy(void)
 
 NetJobState netJobCopyState(int64_t *done, int64_t *total, char *why, size_t why_size)
 {
-    *total = 4210000;
-    *done = *total * 2 / 5;
+    *total = g_preview_copy_unknown ? -1 : 4210000;  // A server that doesn't say its size: -1.
+    *done = 4210000 * 2 / 5;
     if (why_size)
         why[0] = '\0';
     return g_copy;

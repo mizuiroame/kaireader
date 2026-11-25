@@ -23,4 +23,4 @@ void uiDrawCoversPill(int left, int right, uint64_t now_ns, int tab);
 const char *uiSourceName(int tab);
 Color uiSourceColor(int tab);
 // A book being copied to the card, over the library.
-void uiDrawNetCopy(const App *app);
+void uiDrawNetCopy(const App *app, uint64_t now_ns);

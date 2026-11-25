@@ -19,6 +19,7 @@ extern int g_checks;
 
 void testAppRoot(void);
 void testKinetic(void);
+void testCopyBar(void);
 void testLang(void);
 void testNotice(void);
 void testDoc(void);

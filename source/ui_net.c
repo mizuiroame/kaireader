@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "copybar.h"
 #include "davnet.h"
 #include "font.h"
 #include "gfx.h"
@@ -190,7 +191,7 @@ static void sizeText(int64_t bytes, char *out, size_t size)
         snprintf(out, size, "%" PRId64 " KB", (bytes + 1023) / 1024);
 }
 
-void uiDrawNetCopy(const App *app)
+void uiDrawNetCopy(const App *app, uint64_t now_ns)
 {
     if (!app->net_copying[0])
         return;
@@ -203,11 +204,13 @@ void uiDrawNetCopy(const App *app)
     fontDraw(FONT_BOLD, 22, x + 28, y + 26, T("Copying to the card"), COLOR_TEXT);
     fontDrawClipped(FONT_REGULAR, 18, x + 28, y + 70, pw - 56, app->net_copying, COLOR_DIM);
     int64_t done, total;
-    float share = appNetCopyProgress(&done, &total);
+    appNetCopyProgress(&done, &total);
     int bx = x + 28, by = y + 118, bw = pw - 56;
     gfxFillRoundRect(bx, by, bw, BAR_H, BAR_H / 2, COLOR_SURFACE_HI);
-    if (share >= 0)
-        gfxFillRoundRect(bx, by, (int)(bw * (share > 1 ? 1 : share)), BAR_H, BAR_H / 2, COLOR_NETWORK);
+    CopyBar bar = copyBarOf(done, total, now_ns);  // Without a size: a piece that slides.
+    int fx = bx + (int)(bw * bar.from), fw = (int)(bw * bar.to) - (int)(bw * bar.from);
+    if (fw > 0)
+        gfxFillRoundRect(fx, by, fw > BAR_H ? fw : BAR_H, BAR_H, BAR_H / 2, COLOR_NETWORK);
     char a[32], b[32], line[96];
     sizeText(done, a, sizeof(a));
     sizeText(total, b, sizeof(b));

@@ -77,6 +77,8 @@ typedef struct {
     NetSink sink;
     void *user;
     bool stopped;
+    CURL *curl;
+    long long *answer_size;  // Told on the first piece, as the request asks; NULL: not wanted.
 } Transfer;
 
 static uint64_t g_bytes_received;
@@ -91,6 +93,13 @@ static size_t onData(char *data, size_t one, size_t count, void *user)
     Transfer *t = user;
     size_t n = one * count;
     __atomic_add_fetch(&g_bytes_received, n, __ATOMIC_RELAXED);
+    if (t->answer_size) {  // Only the last answer's data comes here, so a redirect's size isn't taken.
+        curl_off_t length = -1;
+        if (curl_easy_getinfo(t->curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &length) != CURLE_OK || length <= 0)
+            length = -1;
+        *t->answer_size = (long long)length;
+        t->answer_size = NULL;
+    }
     if (t->sink(data, n, t->user))
         return n;
     t->stopped = true;
@@ -284,7 +293,7 @@ static bool fetch(NetClient *c, const NetRequest *request, NetSink sink, void *u
                   char *error, size_t error_size)
 {
     char curl_error[CURL_ERROR_SIZE] = "";
-    Transfer t = {sink, user, false};
+    Transfer t = {sink, user, false, c->curl, request->answer_size};
     struct curl_slist *headers = buildHeaders(request);
     setOptions(c->curl, request, headers, &t, curl_error);
     CURLcode rc = curl_easy_perform(c->curl);

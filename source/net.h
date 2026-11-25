@@ -30,6 +30,8 @@ typedef struct {
     const char *custom_method;    // "DELETE" and the like, instead of GET or POST.
     const char *depth;            // WebDAV's Depth header ("1"), or NULL.
     long long *total_size;        // If not NULL, gets the whole file's size from a range's answer.
+    long long *answer_size;       // If not NULL, gets the answer's size (its Content-Length, after any
+                                  // redirect) before its first piece reaches the sink; -1 if it doesn't say.
     const volatile bool *cancel;  // Stops the transfer when it becomes true; may be NULL.
     long timeout_s;               // For the whole transfer; 0: as long as data keeps coming.
     long stall_s;                 // Gives up connecting, or with no data, after this; 0: the usual.

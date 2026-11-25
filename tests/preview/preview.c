@@ -186,6 +186,7 @@ static int rowAt(SettingsPage page, SettingRow row)
 }
 
 extern bool g_preview_net_configured;
+extern bool g_preview_copy_unknown;
 extern bool g_preview_free_down;
 extern bool g_preview_server_configured;
 
@@ -248,6 +249,21 @@ static void networkShots(App *app, const char *dir)
     render(app, dir, "free-list");
     app->prefs.list_view = false;
     appResort(app);
+    // A free book being downloaded from a catalog that doesn't say its size: what's come so far,
+    // and a piece of the bar that slides, not a bar left empty.
+    int fresh = 0;
+    while (fresh < app->order_count && app->shelf.items[app->order[fresh]].on_card)
+        fresh++;
+    g_preview_copy_unknown = true;
+    appFreeOpen(app, fresh, 50);
+    if (!app->net_copying[0]) {
+        printf("PREVIEW: opening a free book doesn't show its download\n");
+        g_problems++;
+    }
+    render(app, dir, "free-copy-unknown-size");
+    appHandleButtons(app, HidNpadButton_B, 50);
+    appUpdate(app, 50);
+    g_preview_copy_unknown = false;
     freeMenus(app, dir);
     // Another list whose catalog is down (Project Gutenberg's 503), reached with L/R from one with
     // books: its name over no books and the message, never the old list's books.

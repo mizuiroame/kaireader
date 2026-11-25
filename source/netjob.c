@@ -452,6 +452,7 @@ static void progress(int64_t done, int64_t total)
 typedef struct {
     FILE *out;
     int64_t done;
+    long long size;  // What the server says it sends; -1 if it doesn't (a catalog's link often doesn't).
     bool failed;
 } Sink;
 
@@ -463,7 +464,7 @@ static bool toFile(const void *data, size_t size, void *user)
         return false;
     }
     s->done += (int64_t)size;
-    progress(s->done, -1);
+    progress(s->done, s->size);  // Unknown (-1): the size the list gave, if any, is kept.
     return !g_cancel;
 }
 
@@ -506,9 +507,9 @@ static bool copyByUrl(const char *url, char *auth, FILE *out, char *why, size_t 
         snprintf(why, why_size, "%s", T("The network can't be used."));
         return false;
     }
-    Sink sink = {out, 0, false};
+    Sink sink = {out, 0, -1, false};
     NetRequest r = {.url = url, .authorization = auth[0] ? auth : NULL, .cancel = &g_cancel, .stall_s = COPY_STALL_S,
-                    .any_certificate = any_certificate};
+                    .any_certificate = any_certificate, .answer_size = &sink.size};
     long status = 0;
     bool ok = netFetch(c, &r, toFile, &sink, &status, why, why_size) && !sink.failed;
     netClientClose(c);
