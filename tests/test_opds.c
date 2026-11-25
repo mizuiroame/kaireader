@@ -84,8 +84,9 @@ static void testFeeds(void)
     CHECK_STR(f.title, "Calibre-Web");
     CHECK(f.book_count == 0 && f.feed_count == 2 && !f.next[0]);  // The same feed twice: once.
     if (f.feed_count == 2) {
-        CHECK_STR(f.feeds[0], "http://nas:8083/opds/books");
-        CHECK_STR(f.feeds[1], "http://nas:8083/opds/author");
+        CHECK_STR(f.feeds[0].url, "http://nas:8083/opds/books");
+        CHECK_STR(f.feeds[0].title, "Alphabetical Books");
+        CHECK_STR(f.feeds[1].url, "http://nas:8083/opds/author");
     }
     opdsFeedFree(&f);
 

@@ -25,10 +25,17 @@ typedef struct {
     int64_t size;                 // Bytes, if the link says; -1 if not.
 } OpdsBook;
 
+// A feed an entry leads to (a list, or a book's own page): absolute, with the entry's words.
+typedef struct {
+    char url[OPDS_URL_MAX];
+    char title[OPDS_TEXT_MAX];
+    char summary[OPDS_TEXT_MAX];  // Its content's text (Gutenberg puts the author there).
+} OpdsLink;
+
 typedef struct {
     OpdsBook *books;
     int book_count;
-    char (*feeds)[OPDS_URL_MAX];  // The feeds its entries lead to (navigation), absolute.
+    OpdsLink *feeds;  // The feeds its entries lead to (navigation).
     int feed_count;
     char next[OPDS_URL_MAX];      // Its next page; "" if it's the last.
     char title[OPDS_TEXT_MAX];

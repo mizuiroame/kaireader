@@ -318,3 +318,57 @@ SystemKeyboardResult systemKeyboardPassword(const char *title, char *out, size_t
 void appNetworkUse(void)
 {
 }
+
+// --- Free books: a made-up first page (its covers the fixtures') ---
+
+static bool g_page_ready;
+static char g_page_url[1024];
+
+void netJobCatalogPage(const char *url)
+{
+    snprintf(g_page_url, sizeof(g_page_url), "%s", url);
+    g_page_ready = true;
+}
+
+bool netJobCatalogLoading(void)
+{
+    return false;
+}
+
+bool netJobTakeCatalogPage(char *url, size_t url_size, OpdsBook **books, int *count, char *next, size_t next_size,
+                           bool *ok, char *why, size_t why_size)
+{
+    static const struct {
+        const char *file, *title, *author;
+    } PAGE[] = {
+        {"library1.epub", "The Salt Ledger", "Mara Fennick"},  {"library2.epub", "North of the Bell", "Ivo Castellan"},
+        {"library4.epub", "A Map of Small Islands", "Lio Arden"}, {"library5.epub", "The Gull Keeper", "Ivo Castellan"},
+        {"library7.epub", "Fog Stair", "Lio Arden"},           {"old.epub", "An Older Harbor", "Ana Example"},
+        {"tale.fb2", "A Tale of Ropes", "Cy Placeholder"},
+    };
+    if (!g_page_ready)
+        return false;
+    g_page_ready = false;
+    int n = (int)(sizeof(PAGE) / sizeof(PAGE[0]));
+    *books = calloc((size_t)n, sizeof(**books));
+    *count = 0;
+    for (int i = 0; *books && i < n; i++) {
+        OpdsBook *b = &(*books)[(*count)++];
+        snprintf(b->title, sizeof(b->title), "%s", PAGE[i].title);
+        snprintf(b->author, sizeof(b->author), "%s", PAGE[i].author);
+        snprintf(b->acquire, sizeof(b->acquire), "https://free.example/books/%s", PAGE[i].file);
+        snprintf(b->ext, sizeof(b->ext), "%s", ".epub");
+        b->size = -1;
+    }
+    snprintf(url, url_size, "%s", g_page_url);
+    if (next_size)
+        next[0] = 0;
+    *ok = true;
+    if (why_size)
+        why[0] = 0;
+    return true;
+}
+
+void appNetworkWantFree(void)
+{
+}

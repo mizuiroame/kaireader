@@ -74,11 +74,14 @@ bool opdsSaveAccount(const char *path)
     return ok;
 }
 
-bool opdsAuthorization(char *out, size_t size)
+bool opdsAuthorization(const char *url, char *out, size_t size)
 {
+    if (size)
+        out[0] = '\0';
     DavAccount a;
     opdsGetAccount(&a);
-    bool ok = davAuthorization(&a, out, size);
+    // Only to the server's own address: never to a cover or book elsewhere, nor to a free catalog.
+    bool ok = !a.address[0] || !davSameServer(url, a.address) || davAuthorization(&a, out, size);
     memset(&a, 0, sizeof(a));
     return ok;
 }
@@ -88,6 +91,8 @@ static void sayProblem(const NetResponse *r, char *why, size_t why_size)
 {
     if (r->problem == NET_STATUS && (r->status == 401 || r->status == 403))
         snprintf(why, why_size, "%s", T("Wrong user name or password."));
+    else if (r->problem == NET_STATUS && (r->status == 502 || r->status == 503 || r->status == 504))
+        snprintf(why, why_size, "%s", T("It isn't answering right now (it may be down for maintenance): try again later."));
     else if (r->problem == NET_STATUS && r->status == 404)
         snprintf(why, why_size, "%s", T("There's no catalog at that address."));
     else if (r->problem == NET_CERTIFICATE)
@@ -102,7 +107,7 @@ static void sayProblem(const NetResponse *r, char *why, size_t why_size)
 static bool fetch(const char *url, size_t max, NetResponse *r)
 {
     char auth[AUTH_MAX];
-    if (!opdsAuthorization(auth, sizeof(auth)))
+    if (!opdsAuthorization(url, auth, sizeof(auth)))
         auth[0] = '\0';
     NetClient *c = netClientOpen();
     memset(r, 0, sizeof(*r));

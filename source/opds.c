@@ -157,10 +157,10 @@ static bool hasWord(const char *text, const char *word)
     return text && strstr(text, word) != NULL;
 }
 
-static bool addFeed(OpdsFeed *f, const char *url)
+static bool addFeed(OpdsFeed *f, const char *url, fz_xml *entry)
 {
     for (int i = 0; i < f->feed_count; i++)
-        if (!strcmp(f->feeds[i], url))
+        if (!strcmp(f->feeds[i].url, url))
             return true;
     if (f->feed_count % FEEDS_GROWTH == 0) {
         void *grown = realloc(f->feeds, (size_t)(f->feed_count + FEEDS_GROWTH) * sizeof(*f->feeds));
@@ -168,7 +168,10 @@ static bool addFeed(OpdsFeed *f, const char *url)
             return false;
         f->feeds = grown;
     }
-    snprintf(f->feeds[f->feed_count++], OPDS_URL_MAX, "%s", url);
+    OpdsLink *l = &f->feeds[f->feed_count++];
+    snprintf(l->url, sizeof(l->url), "%s", url);
+    textInto(child(entry, "title"), l->title, sizeof(l->title));
+    textInto(child(entry, "content"), l->summary, sizeof(l->summary));
     return true;
 }
 
@@ -181,6 +184,12 @@ static void readEntry(OpdsFeed *f, fz_xml *entry, const char *base)
     int best = KIND_COUNT;
     char nav[OPDS_URL_MAX] = "";
     for (fz_xml *l = fz_xml_down(entry); l; l = fz_xml_next(l)) {
+        if (tagIs(l, "thumbnail") && !b.cover[0]) {  // media:thumbnail url="...".
+            const char *u = fz_xml_att(l, "url");
+            if (u)
+                opdsResolve(base, u, b.cover, sizeof(b.cover));
+            continue;
+        }
         if (!tagIs(l, "link"))
             continue;
         const char *rel = fz_xml_att(l, "rel"), *type = fz_xml_att(l, "type"), *href = fz_xml_att(l, "href");
@@ -189,10 +198,11 @@ static void readEntry(OpdsFeed *f, fz_xml *entry, const char *base)
         char url[OPDS_URL_MAX];
         if (!opdsResolve(base, href, url, sizeof(url)))
             continue;
-        if (hasWord(rel, "opds-spec.org/acquisition")) {
+        bool enclosure = rel && !strcmp(rel, "enclosure");  // An Atom feed's download (Standard Ebooks').
+        if (hasWord(rel, "opds-spec.org/acquisition") || enclosure) {
             if (hasWord(rel, "borrow") || hasWord(rel, "buy") || hasWord(rel, "subscribe") || hasWord(rel, "sample"))
                 continue;  // Not a book to read here.
-            int r = rankOf(type, href);
+            int r = rankOf(type, enclosure ? NULL : href);  // An enclosure's kind is its type alone.
             if (r < best) {
                 best = r;
                 snprintf(b.acquire, sizeof(b.acquire), "%s", url);
@@ -227,7 +237,7 @@ static void readEntry(OpdsFeed *f, fz_xml *entry, const char *base)
         }
         f->books[f->book_count++] = b;
     } else if (nav[0]) {
-        addFeed(f, nav);
+        addFeed(f, nav, entry);
     }
 }
 

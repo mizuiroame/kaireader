@@ -36,8 +36,9 @@
 #define NET_LOCAL_MAX (APP_FOLDER_MAX + 512)
 #define LIB_CARD 0     // The library's sources: the SD card's books,
 #define LIB_NETWORK 1  // the network folder's,
-#define LIB_SERVER 2   // and the book server's (OPDS).
-#define LIB_SOURCES 3
+#define LIB_SERVER 2   // the book server's (OPDS),
+#define LIB_FREE 3     // and the free catalogs' (app_free.c).
+#define LIB_SOURCES 4
 
 #define CONTENTS_ROW_H 48
 #define READ_TURN_NS 180000000ull  // A page sliding to the next.
@@ -64,6 +65,8 @@ typedef enum {
     MENU_NET_SETUP,   // No other source yet: Settings, at the network folder and the book server.
     MENU_SETTINGS,
     MENU_RESCAN,      // The card's books looked for again, or the network folder read again.
+    MENU_FREE_SEARCH, // Free books: search Project Gutenberg.
+    MENU_FREE_LIST,   // Free books: the next list.
     MENU_EXIT,
     MENU_COUNT,
 } MenuItem;
@@ -135,6 +138,12 @@ typedef struct {
     bool server_scanned;                 // The book server's catalog walked since KaiReader started.
     char server_problem[256];            // Why the server couldn't be read; "" if it could.
     int copy_tab;                        // The library of the book being copied to open.
+    int free_list;                       // Free books: the list shown (catalogs.h's CatalogList),
+    char free_query[128];                // the last search,
+    char free_asked[1024];               // the page asked for last, and whether it adds to the list;
+    bool free_more, free_loading;
+    char free_next[1024];                // the list's next page ("" at its end),
+    char free_problem[256];              // and why the list couldn't be read.
     char net_problem[256];               // Why the folder couldn't be read; "" if it could.
     int net_open;                        // A network book copied to be opened: its shelf index; -1 none.
     char net_copying[DAV_NAME_MAX];      // The book being copied to the card; "" none.
@@ -229,6 +238,21 @@ void appCopyStarted(App *app, int book, const char *name, const char *local);
 void appNetworkUse(void);
 // True for a source that's set up (the card always is).
 bool appSourceSet(int tab);
+
+// Free books (app_free.c).
+void appFreeEntered(App *app, uint64_t now_ns);   // Its first list, the first time.
+void appFreeShow(App *app, int list, uint64_t now_ns);
+void appFreeStepList(App *app, int dir, uint64_t now_ns);  // L and R: the other lists.
+void appFreeSearch(App *app, uint64_t now_ns);    // Y: the keyboard, then the search.
+void appFreeLookAgain(App *app, uint64_t now_ns);
+void appFreeUpdate(App *app, uint64_t now_ns);
+void appFreeOpen(App *app, int order_index, uint64_t now_ns);  // Downloaded to the card, then opened.
+bool appFreeLoading(void);
+const char *appFreeListName(const App *app);
+// A book of the card's books folder opened, the card's library shown (a free book downloaded).
+void appOpenCardBook(App *app, const char *path, uint64_t now_ns);
+// The network started for Free books too (app_network.c).
+void appNetworkWantFree(void);
 
 // The book server's library and Settings page (app_server.c).
 Shelf *appServerShelf(App *app);

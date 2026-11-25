@@ -35,11 +35,13 @@ static void pathIn(const App *app, const char *name, char *out, size_t size)
     snprintf(out, size, "%s/%s", app->folder, name);
 }
 
-static const char *const SHELF_FILES[LIB_SOURCES] = {"shelf.txt", "shelf-network.txt", "shelf-server.txt"};
+static const char *const SHELF_FILES[LIB_SOURCES] = {"shelf.txt", "shelf-network.txt", "shelf-server.txt", ""};
 
-// The library shown to its file.
+// The library shown to its file (Free books' isn't kept: it's the catalog's page).
 static void saveShelf(App *app)
 {
+    if (!SHELF_FILES[app->lib_tab][0])
+        return;
     char file[APP_FOLDER_MAX + 32];
     pathIn(app, SHELF_FILES[app->lib_tab], file, sizeof(file));
     shelfSave(&app->shelf, file);
@@ -47,7 +49,8 @@ static void saveShelf(App *app)
 
 bool appSourceSet(int tab)
 {
-    return tab == LIB_CARD || (tab == LIB_NETWORK && davConfigured()) || (tab == LIB_SERVER && opdsConfigured());
+    return tab == LIB_CARD || tab == LIB_FREE || (tab == LIB_NETWORK && davConfigured()) ||
+           (tab == LIB_SERVER && opdsConfigured());
 }
 
 static void savePrefs(App *app)
@@ -106,7 +109,7 @@ static void layoutLibrary(App *app)
         return;
     int y = 0;
     char group[SHELF_TEXT_MAX], last[SHELF_TEXT_MAX] = "";
-    bool grouped = app->prefs.sort == SHELF_SORT_AUTHOR || app->prefs.sort == SHELF_SORT_GENRE;
+    bool grouped = app->lib_tab != LIB_FREE && (app->prefs.sort == SHELF_SORT_AUTHOR || app->prefs.sort == SHELF_SORT_GENRE);
     for (int i = 0; i < app->order_count;) {
         if (grouped) {
             shelfGroupOf(&app->shelf.items[app->order[i]], (ShelfSort)app->prefs.sort, group, sizeof(group));
@@ -147,7 +150,13 @@ static int lineOf(const App *app, int book)
 static void sortShelf(App *app)
 {
     int selected = app->order_count && app->cursor < app->order_count ? app->order[app->cursor] : -1;
-    app->order_count = shelfOrder(&app->shelf, (ShelfSort)app->prefs.sort, app->order, SHELF_MAX_BOOKS);
+    if (app->lib_tab == LIB_FREE) {  // A catalog's list: in its own order (most popular first...).
+        app->order_count = 0;
+        for (int i = 0; i < app->shelf.count && app->order_count < SHELF_MAX_BOOKS; i++)
+            app->order[app->order_count++] = i;
+    } else {
+        app->order_count = shelfOrder(&app->shelf, (ShelfSort)app->prefs.sort, app->order, SHELF_MAX_BOOKS);
+    }
     app->cursor = 0;
     for (int i = 0; i < app->order_count; i++)
         if (app->order[i] == selected)
@@ -178,6 +187,10 @@ void appRescan(App *app, uint64_t now_ns)
     }
     if (app->lib_tab == LIB_SERVER) {  // The server's catalog: walked again.
         appServerScan(app, now_ns);
+        return;
+    }
+    if (app->lib_tab == LIB_FREE) {  // The list: read again.
+        appFreeLookAgain(app, now_ns);
         return;
     }
     int found = shelfScan(&app->shelf, app->books_folder);
@@ -355,7 +368,7 @@ void appFree(App *app)
     app->lines = NULL;
     coversFree(&app->covers);
     for (int tab = 0; tab < LIB_SOURCES; tab++) {  // The other libraries too, to their files.
-        if (tab == app->lib_tab || !appSourceSet(tab))
+        if (tab == app->lib_tab || !appSourceSet(tab) || !SHELF_FILES[tab][0])
             continue;
         char file[APP_FOLDER_MAX + 32];
         pathIn(app, SHELF_FILES[tab], file, sizeof(file));
@@ -419,6 +432,10 @@ void appOpenBook(App *app, int order_index, uint64_t now_ns)
 {
     if (order_index < 0 || order_index >= app->order_count)
         return;
+    if (app->lib_tab == LIB_FREE) {  // Downloaded to the card's books first, then opened as one of them.
+        appFreeOpen(app, order_index, now_ns);
+        return;
+    }
     char local[NET_LOCAL_MAX];
     const char *open = app->shelf.items[app->order[order_index]].path;
     if (davIsLocation(open)) {  // The network folder's: its copy on the card, made first if it isn't there.
@@ -729,6 +746,7 @@ void appUpdate(App *app, uint64_t now_ns)
     appNetUpdate(app, now_ns);
     appServerUpdate(app, now_ns);
     appServerTestUpdate(app, now_ns);
+    appFreeUpdate(app, now_ns);
     if (app->view == VIEW_READER)
         followBook(app, now_ns);
     if (app->turn_from >= 0 && now_ns - app->turn_start_ns >= READ_TURN_NS)
@@ -816,6 +834,8 @@ int appMenuGroup(MenuItem item)
     case MENU_CONTENTS:
     case MENU_BOOKMARK:
     case MENU_FAVORITE:
+    case MENU_FREE_SEARCH:
+    case MENU_FREE_LIST:
         return 0;
     case MENU_SETTINGS:
     case MENU_EXIT:
@@ -834,9 +854,15 @@ int appMenuRows(const App *app, MenuItem *out)
         out[n++] = MENU_LIBRARY;
     }
     if (app->view == VIEW_LIBRARY) {
-        if (appSelectedBook(app))
+        if (app->lib_tab == LIB_FREE) {  // Free books: its lists and search.
+            out[n++] = MENU_FREE_SEARCH;
+            out[n++] = MENU_FREE_LIST;
+        } else if (appSelectedBook(app)) {
             out[n++] = MENU_FAVORITE;
-        out[n++] = appSourceSet(LIB_NETWORK) || appSourceSet(LIB_SERVER) ? MENU_SOURCE : MENU_NET_SETUP;
+        }
+        out[n++] = MENU_SOURCE;
+        if (!appSourceSet(LIB_NETWORK) && !appSourceSet(LIB_SERVER))
+            out[n++] = MENU_NET_SETUP;
         out[n++] = MENU_VIEW;
         out[n++] = MENU_RESCAN;
     }
@@ -928,6 +954,29 @@ void appLibTab(App *app, int tab, uint64_t now_ns)
         appNetScan(app, now_ns);
     if (tab == LIB_SERVER && !app->server_scanned)
         appServerScan(app, now_ns);
+    if (tab == LIB_FREE)
+        appFreeEntered(app, now_ns);
+}
+
+void appOpenCardBook(App *app, const char *path, uint64_t now_ns)
+{
+    appLibTab(app, LIB_CARD, now_ns);
+    ShelfBook *b = shelfFind(&app->shelf, path);
+    if (!b)
+        b = shelfAdd(&app->shelf, path);
+    if (!b) {
+        appNotify(app, NOTICE_ERROR, T("The library is full."), now_ns);
+        return;
+    }
+    b->present = true;
+    sortShelf(app);
+    for (int i = 0; i < app->order_count; i++)
+        if (!strcmp(app->shelf.items[app->order[i]].path, path)) {
+            app->cursor = i;
+            keepCursorVisible(app);
+            appOpenBook(app, i, now_ns);
+            return;
+        }
 }
 
 // The next source that's set up, after tab (round to the card).
@@ -956,7 +1005,7 @@ void appCopyStarted(App *app, int book, const char *name, const char *local)
 
 void appSwitchSource(App *app, uint64_t now_ns)
 {
-    if (appSourceSet(LIB_NETWORK) || appSourceSet(LIB_SERVER)) {
+    if (nextSource(app->lib_tab) != app->lib_tab) {  // Free books is always there: X always goes on.
         appLibTab(app, nextSource(app->lib_tab), now_ns);
         return;
     }
@@ -987,6 +1036,12 @@ static void menuPick(App *app, MenuItem item, uint64_t now_ns)
         break;
     case MENU_FAVORITE:
         appToggleFavorite(app, app->cursor, now_ns);
+        break;
+    case MENU_FREE_SEARCH:
+        appFreeSearch(app, now_ns);
+        break;
+    case MENU_FREE_LIST:
+        appFreeStepList(app, 1, now_ns);
         break;
     case MENU_VIEW:
         quickStep(app, SETTING_VIEW, 1, now_ns);
@@ -1193,6 +1248,13 @@ static void libraryButtons(App *app, uint64_t pressed, uint64_t now_ns)
         appSwitchSource(app, now_ns);
         return;
     }
+    if (app->lib_tab == LIB_FREE && (pressed & (HidNpadButton_Y | HidNpadButton_L | HidNpadButton_R))) {
+        if (pressed & HidNpadButton_Y)  // Free books: Y searches, L and R change the list.
+            appFreeSearch(app, now_ns);
+        else
+            appFreeStepList(app, (pressed & HidNpadButton_R) ? 1 : -1, now_ns);
+        return;
+    }
     if (pressed & HidNpadButton_Y) {
         quickStep(app, SETTING_SORT, 1, now_ns);
         keepCursorVisible(app);
@@ -1381,8 +1443,11 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
     case HIT_NET_CANCEL:
         appNetCancelCopy();
         break;
-    case HIT_SORT:
-        quickStep(app, SETTING_SORT, 1, now_ns);
+    case HIT_SORT:  // The sort; in Free books, the search.
+        if (app->lib_tab == LIB_FREE)
+            appFreeSearch(app, now_ns);
+        else
+            quickStep(app, SETTING_SORT, 1, now_ns);
         break;
     case HIT_BOOK:
         app->cursor = hit->arg;
@@ -1476,7 +1541,7 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
         break;
     case TOUCH_LONG: {  // Held on a cover: a favorite, or not any more.
         const HitRegion *hit = uiHitFind(e.x, e.y);
-        if (hit && hit->kind == HIT_BOOK && app->panel == PANEL_NONE) {
+        if (hit && hit->kind == HIT_BOOK && app->panel == PANEL_NONE && app->lib_tab != LIB_FREE) {
             app->cursor = hit->arg;
             appToggleFavorite(app, hit->arg, now_ns);
         }

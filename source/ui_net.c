@@ -21,7 +21,8 @@
 #define BAR_H 8
 
 // Each source's name, as the pill and the help line say it, and its color.
-static const char *const SOURCE_NAMES[LIB_SOURCES] = {N_("SD card"), N_("Network folder"), N_("Book server")};
+static const char *const SOURCE_NAMES[LIB_SOURCES] = {N_("SD card"), N_("Network folder"), N_("Book server"),
+                                                       N_("Free books")};
 
 const char *uiSourceName(int tab)
 {
@@ -30,14 +31,11 @@ const char *uiSourceName(int tab)
 
 Color uiSourceColor(int tab)
 {
-    return tab == LIB_NETWORK ? COLOR_NETWORK : tab == LIB_SERVER ? COLOR_SERVER : COLOR_ACCENT;
+    return tab == LIB_NETWORK ? COLOR_NETWORK : tab == LIB_SERVER ? COLOR_SERVER : tab == LIB_FREE ? COLOR_FREE : COLOR_ACCENT;
 }
 
 int uiDrawSourcePill(const App *app)
 {
-    int title_end = MARGIN + 34 + fontTextWidth(FONT_BOLD, 26, "KaiReader");
-    if (!appSourceSet(LIB_NETWORK) && !appSourceSet(LIB_SERVER))
-        return title_end;
     const char *label = uiSourceName(app->lib_tab);
     bool key = app->panel == PANEL_NONE;  // X switches it while no panel is open.
     int key_w = key ? uiButtonWidth("X") + 8 : 0;
@@ -73,6 +71,13 @@ void uiDrawCoversPill(int left, int right, uint64_t now_ns, int tab)
 void uiDrawNetScan(int tab, int x, float cy, uint64_t now_ns)
 {
     int found;
+    if (tab == LIB_FREE) {  // A list's page being fetched.
+        if (!appFreeLoading())
+            return;
+        uiDrawSpinner(x + 10.0f, cy, 9.0f, now_ns, COLOR_FREE);
+        fontDrawMiddle(FONT_REGULAR, 16, x + 28, cy, T("Loading..."), COLOR_DIM);
+        return;
+    }
     if (tab == LIB_NETWORK ? !appNetScanning(&found) : tab == LIB_SERVER ? !appServerScanning(&found) : true)
         return;
     uiDrawSpinner(x + 10.0f, cy, 9.0f, now_ns, uiSourceColor(tab));
@@ -123,8 +128,30 @@ static void drawServerEmpty(const App *app, uint64_t now_ns)
     }
 }
 
+// Free books with nothing shown: loading, why not, or nothing found.
+static void drawFreeEmpty(const App *app, uint64_t now_ns)
+{
+    if (appFreeLoading()) {
+        uiDrawSpinner(gfxLayoutWidth() / 2.0f, LIB_TOP + 60.0f, 16.0f, now_ns, COLOR_FREE);
+        const char *lines[] = {appFreeListName(app), T("Public-domain books, free to read. Loading the list...")};
+        drawMessage(lines, 2, NULL, HIT_RESCAN_NET);
+    } else if (app->free_problem[0]) {
+        const char *lines[] = {T("The catalog couldn't be read."), app->free_problem};
+        drawMessage(lines, 2, T("Try again"), HIT_RESCAN_NET);
+    } else {
+        char line[256];
+        snprintf(line, sizeof(line), T("Nothing found for \"%s\"."), app->free_query);
+        const char *lines[] = {line, T("Try other words: a title, an author or a subject, in English.")};
+        drawMessage(lines, 2, T("Search again"), HIT_SORT);
+    }
+}
+
 void uiDrawNetEmpty(const App *app, uint64_t now_ns)
 {
+    if (app->lib_tab == LIB_FREE) {
+        drawFreeEmpty(app, now_ns);
+        return;
+    }
     if (app->lib_tab == LIB_SERVER) {
         drawServerEmpty(app, now_ns);
         return;

@@ -29,9 +29,17 @@ static void accountPath(const App *app, char *out, size_t size)
     snprintf(out, size, "%s/%s", app->folder, DAV_ACCOUNT_FILE);
 }
 
+static bool g_free_wanted;  // Free books opened: the network stays.
+
+void appNetworkWantFree(void)
+{
+    g_free_wanted = true;
+    appNetworkUse();
+}
+
 void appNetworkUse(void)
 {
-    bool wanted = davConfigured() || opdsConfigured();
+    bool wanted = davConfigured() || opdsConfigured() || g_free_wanted;
     if (wanted && !g_network)
         g_network = netInit();
     else if (!wanted && g_network) {

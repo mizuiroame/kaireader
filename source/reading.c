@@ -256,12 +256,13 @@ static void makeCover(const CoverAsk *ask)
     pthread_mutex_lock(&g_lock);
     ReadingCoverFetcher fetch = g_fetch_cover;
     pthread_mutex_unlock(&g_lock);
-    if (fetch && fetch(ask->path, ask->w, ask->h, &c->image)) {  // A server's book: its own thumbnail.
+    bool fetched = !strncmp(ask->path, READING_FETCHED_PREFIX, strlen(READING_FETCHED_PREFIX));
+    if (fetched && fetch && fetch(ask->path, ask->w, ask->h, &c->image)) {  // A server's book: its own thumbnail.
         c->ok = true;
         giveCover(c);
         return;
     }
-    if (!strncmp(ask->path, READING_FETCHED_PREFIX, strlen(READING_FETCHED_PREFIX))) {  // No thumbnail: none.
+    if (fetched) {  // No thumbnail: none.
         giveCover(c);
         return;
     }

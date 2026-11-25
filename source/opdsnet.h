@@ -26,8 +26,9 @@ bool opdsFetchFeed(const char *url, OpdsFeed *out, char *why, size_t why_size);
 bool opdsFindCatalog(const char *address, char *catalog, size_t size, char *why, size_t why_size);
 // Asks the server for its catalog: what it says, as a sentence. True if it answered with one.
 bool opdsTest(char *out, size_t size);
-// The Authorization header for the server ("" without a user). False if it doesn't fit.
-bool opdsAuthorization(char *out, size_t size);
+// The Authorization header for url: the server's sign-in if url is on the server, "" otherwise
+// (or without a user). False if it doesn't fit.
+bool opdsAuthorization(const char *url, char *out, size_t size);
 
 // Where a server's book ("opds:<link>#.ext") is kept on the card:
 // books_folder "/.opds/", its title as a plain name, its kind. False if it doesn't fit.

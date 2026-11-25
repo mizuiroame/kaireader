@@ -10,6 +10,7 @@
 #include "lang.h"
 #include "net.h"
 #include "netlist.h"
+#include "catalogs.h"
 #include "opdsnet.h"
 
 #define COPY_CHUNK (1024 * 1024)
@@ -258,8 +259,8 @@ static void *serverThread(void *arg)
         if (f.next[0] && queued < NETJOB_SERVER_FEEDS && !seen(queue, queued, f.next))
             snprintf(queue[queued++], OPDS_URL_MAX, "%s", f.next);
         for (int i = 0; i < f.feed_count && queued < NETJOB_SERVER_FEEDS; i++)
-            if (!seen(queue, queued, f.feeds[i]))
-                snprintf(queue[queued++], OPDS_URL_MAX, "%s", f.feeds[i]);
+            if (!seen(queue, queued, f.feeds[i].url))
+                snprintf(queue[queued++], OPDS_URL_MAX, "%s", f.feeds[i].url);
         opdsFeedFree(&f);
     }
     free(queue);
@@ -325,6 +326,101 @@ bool netJobTakeServerScan(OpdsBook **books, int *count, bool *ok, char *why, siz
         snprintf(why, why_size, "%s", g_server_why);
         g_server_books = NULL;
         g_server_ready = false;
+    }
+    pthread_mutex_unlock(&g_lock);
+    return got;
+}
+
+// --- A free catalog's page ---
+
+static pthread_t g_page_thread;
+static bool g_page_joinable, g_page_running, g_page_ready, g_page_ok;
+static char g_page_asked[OPDS_URL_MAX], g_page_url[OPDS_URL_MAX], g_page_next[OPDS_URL_MAX];
+static char g_page_why[NETJOB_WHY_MAX];
+static OpdsBook *g_page_books;
+static int g_page_count;
+
+static void *pageThread(void *arg)
+{
+    (void)arg;
+    pthread_mutex_lock(&g_lock);
+    while (g_page_asked[0]) {
+        char url[OPDS_URL_MAX];
+        snprintf(url, sizeof(url), "%s", g_page_asked);
+        g_page_asked[0] = '\0';
+        pthread_mutex_unlock(&g_lock);
+        OpdsFeed f;
+        char why[NETJOB_WHY_MAX] = "";
+        OpdsBook *books = NULL;
+        int count = 0;
+        bool ok = opdsFetchFeed(url, &f, why, sizeof(why));
+        if (ok) {
+            count = catalogBooks(&f, &books);
+        }
+        pthread_mutex_lock(&g_lock);
+        free(g_page_books);  // One not taken: the newer one replaces it.
+        g_page_books = books;
+        g_page_count = count;
+        g_page_ok = ok;
+        snprintf(g_page_url, sizeof(g_page_url), "%s", url);
+        snprintf(g_page_next, sizeof(g_page_next), "%s", ok ? f.next : "");
+        snprintf(g_page_why, sizeof(g_page_why), "%s", why);
+        g_page_ready = true;
+        if (ok)
+            opdsFeedFree(&f);
+    }
+    g_page_running = false;
+    pthread_mutex_unlock(&g_lock);
+    return NULL;
+}
+
+void netJobCatalogPage(const char *url)
+{
+    pthread_mutex_lock(&g_lock);
+    snprintf(g_page_asked, sizeof(g_page_asked), "%s", url);
+    bool start = !g_page_running;
+    if (start)
+        g_page_running = true;
+    pthread_mutex_unlock(&g_lock);
+    if (!start)
+        return;  // The one running takes it next.
+    if (g_page_joinable)
+        pthread_join(g_page_thread, NULL);
+    g_page_joinable = startThread(&g_page_thread, pageThread);
+    if (g_page_joinable)
+        return;
+    pthread_mutex_lock(&g_lock);
+    g_page_running = false;
+    g_page_asked[0] = '\0';
+    g_page_ready = true;
+    g_page_ok = false;
+    snprintf(g_page_url, sizeof(g_page_url), "%s", url);
+    snprintf(g_page_why, sizeof(g_page_why), "%s", T("The catalog couldn't be read."));
+    pthread_mutex_unlock(&g_lock);
+}
+
+bool netJobCatalogLoading(void)
+{
+    pthread_mutex_lock(&g_lock);
+    bool busy = g_page_running || g_page_asked[0];
+    pthread_mutex_unlock(&g_lock);
+    return busy;
+}
+
+bool netJobTakeCatalogPage(char *url, size_t url_size, OpdsBook **books, int *count, char *next, size_t next_size,
+                           bool *ok, char *why, size_t why_size)
+{
+    pthread_mutex_lock(&g_lock);
+    bool got = g_page_ready && !g_page_asked[0];
+    if (got) {
+        snprintf(url, url_size, "%s", g_page_url);
+        snprintf(next, next_size, "%s", g_page_next);
+        snprintf(why, why_size, "%s", g_page_why);
+        *books = g_page_books;
+        *count = g_page_count;
+        *ok = g_page_ok;
+        g_page_books = NULL;
+        g_page_ready = false;
     }
     pthread_mutex_unlock(&g_lock);
     return got;
@@ -433,7 +529,7 @@ static bool copyByHttp(const char *location, FILE *out, char *why, size_t why_si
 static bool copyByLink(const char *link, FILE *out, char *why, size_t why_size)
 {
     char auth[AUTH_MAX];
-    if (!opdsAuthorization(auth, sizeof(auth)))
+    if (!opdsAuthorization(link, auth, sizeof(auth)))
         auth[0] = '\0';
     return copyByUrl(link, auth, out, why, why_size);
 }
@@ -568,6 +664,14 @@ void netJobStop(void)
     g_server_joinable = false;
     free(g_server_books);
     g_server_books = NULL;
+    pthread_mutex_lock(&g_lock);
+    g_page_asked[0] = '\0';
+    pthread_mutex_unlock(&g_lock);
+    if (g_page_joinable)
+        pthread_join(g_page_thread, NULL);
+    g_page_joinable = false;
+    free(g_page_books);
+    g_page_books = NULL;
     if (g_scan_joinable)
         pthread_join(g_scan_thread, NULL);
     g_scan_joinable = false;

@@ -175,12 +175,25 @@ extern bool g_preview_server_configured;
 // The Network tab: no folder yet; then a made-up one, its list, a copy, and its Settings page.
 static void networkShots(App *app, const char *dir)
 {
-    appSwitchSource(app, 50);  // No folder yet: Settings, with a word.
-    render(app, dir, "network-none");
+    // Free books, always there: X goes to it with no folder or server.
+    appSwitchSource(app, 50);
+    settle(app);
+    render(app, dir, "free");
+    app->panel = PANEL_MENU;
+    app->menu_cursor = 0;
+    render(app, dir, "free-menu");
     app->panel = PANEL_NONE;
+    app->prefs.list_view = true;
+    appResort(app);
+    settle(app);
+    render(app, dir, "free-list");
+    app->prefs.list_view = false;
+    appResort(app);
+    appLibTab(app, LIB_CARD, 51);
+
     g_preview_net_configured = true;
     appNetworkFeedSettings();
-    appSwitchSource(app, 52);  // The network folder's library: looked through, covers read over the "network".
+    appLibTab(app, LIB_NETWORK, 52);  // The network folder's library: covers read over the "network".
     settle(app);
     render(app, dir, "network");
     app->covers_busy_ns = 1234567890ull;
@@ -205,24 +218,22 @@ static void networkShots(App *app, const char *dir)
     app->settings_cursor = 0;
     render(app, dir, "settings-network");
     app->panel = PANEL_NONE;
-    appSwitchSource(app, 57);
+    appLibTab(app, LIB_CARD, 57);
     render(app, dir, "library-network-set");
     app->panel = PANEL_MENU;
     app->menu_cursor = 0;
     render(app, dir, "library-menu-network");
     app->panel = PANEL_NONE;
-    // A book server too: X goes card, network folder, server.
-    g_preview_server_configured = true;
+
+    g_preview_server_configured = true;  // A book server too.
     appServerFeedSettings();
     appServerStart(app);
-    appSwitchSource(app, 58);  // To the network folder,
-    appSwitchSource(app, 59);  // then to the server.
+    appLibTab(app, LIB_SERVER, 59);
     settle(app);
     render(app, dir, "server");
     app->panel = PANEL_MENU;
     app->menu_cursor = 0;
     render(app, dir, "server-menu");
-    app->panel = PANEL_NONE;
     app->panel = PANEL_SETTINGS;
     app->settings_page = SETTINGS_PAGE_MAIN;
     app->settings_cursor = 2;
@@ -231,7 +242,7 @@ static void networkShots(App *app, const char *dir)
     app->settings_cursor = 0;
     render(app, dir, "settings-server");
     app->panel = PANEL_NONE;
-    appSwitchSource(app, 60);  // Round to the card.
+    appLibTab(app, LIB_CARD, 61);
     g_preview_server_configured = false;
     appServerFeedSettings();
     g_preview_net_configured = false;  // The rest as before: no folder.

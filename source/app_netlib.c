@@ -157,6 +157,10 @@ static void followCopy(App *app, uint64_t now_ns)
         appNotify(app, why[0] ? NOTICE_ERROR : NOTICE_INFO, why[0] ? why : T("Copy stopped."), now_ns);
         return;
     }
+    if (app->copy_tab == LIB_FREE) {  // A free book: one of the card's now, opened there.
+        appOpenCardBook(app, app->net_copy_local, now_ns);
+        return;
+    }
     if (app->lib_tab != app->copy_tab || app->view != VIEW_LIBRARY)
         return;  // Switched away meanwhile: it's on the card now, and opens at once next time.
     for (int i = 0; i < app->order_count; i++)

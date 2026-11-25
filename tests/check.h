@@ -32,3 +32,4 @@ void testFolderList(void);
 void testNetList(void);
 void testTouch(void);
 void testOpds(void);
+void testCatalogs(void);

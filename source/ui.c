@@ -298,16 +298,20 @@ static void drawLibrary(App *app, uint64_t now_ns)
     if (now_ns - app->covers_busy_ns < COVERS_SPIN_HOLD_NS)  // Covers being read: a spinner left of the clock.
         uiDrawCoversPill(pill_end, status_x - 18, now_ns, app->lib_tab);
 
-    char sub[64];
-    snprintf(sub, sizeof(sub), app->order_count == 1 ? T("1 book") : T("%d books"), app->order_count);
+    char sub[160];
+    if (app->lib_tab == LIB_FREE)  // Free books: the list shown, not a count (its end isn't known).
+        snprintf(sub, sizeof(sub), "%s", appFreeListName(app));
+    else
+        snprintf(sub, sizeof(sub), app->order_count == 1 ? T("1 book") : T("%d books"), app->order_count);
     bool remote = app->lib_tab != LIB_CARD;
     int tw = fontDraw(FONT_BOLD, 22, MARGIN, 74, remote ? uiSourceName(app->lib_tab) : T("Library"), COLOR_TEXT);
     int sw0 = fontDraw(FONT_REGULAR, 18, MARGIN + tw + 14, 77, sub, COLOR_DIM);
     if (remote)  // The folder or catalog being looked through, after the count.
         uiDrawNetScan(app->lib_tab, MARGIN + tw + 14 + sw0 + 20, 89.0f, now_ns);
-    if (app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES) {  // The sort, at the right: a tap (or Y) changes it.
+    if (app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES || app->lib_tab == LIB_FREE) {
+        // The sort, at the right: a tap (or Y) changes it. Free books: the search there.
         char sort[64];
-        snprintf(sort, sizeof(sort), "%s", T(prefsSortName(app->prefs.sort)));
+        snprintf(sort, sizeof(sort), "%s", app->lib_tab == LIB_FREE ? T("Search") : T(prefsSortName(app->prefs.sort)));
         int sw = fontTextWidth(FONT_REGULAR, 17, sort), bw = uiButtonWidth("Y");
         int x = w - MARGIN - sw;
         fontDraw(FONT_REGULAR, 17, x, 78, sort, COLOR_DIM);
@@ -359,12 +363,13 @@ static void drawLibrary(App *app, uint64_t now_ns)
         uiHitClip(0, h);
         gfxResetClip();
     }
-    // The help: X names the source it goes to, when there's another.
-    bool sources = appSourceSet(LIB_NETWORK) || appSourceSet(LIB_SERVER);
+    // The help: X names the source it goes to.
+    bool free_books = app->lib_tab == LIB_FREE;
     bool sortable = app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES;
-    char help[160];
-    snprintf(help, sizeof(help), "%s%s%s%s%s", app->order_count ? T("[A] Read  ") : "", sortable ? T("[Y] Sort  ") : "",
-             sources ? "[X] " : "", sources ? uiSourceName(appNextSource(app)) : "", sources ? "  " : "");
+    char help[200];
+    snprintf(help, sizeof(help), "%s%s%s[X] %s  ", app->order_count ? T("[A] Read  ") : "",
+             free_books ? T("[Y] Search  [L][R] Lists  ") : sortable ? T("[Y] Sort  ") : "", "",
+             uiSourceName(appNextSource(app)));
     snprintf(help + strlen(help), sizeof(help) - strlen(help), "%s", T("[+] Menu"));
     drawFooter(help);
     uiDrawNetCopy(app);
@@ -534,9 +539,14 @@ static const char *menuLabel(const App *app, MenuItem item)
     case MENU_VIEW:
         return app->prefs.list_view ? T("Show as a grid") : T("Show as a list");
     case MENU_SOURCE:
-        return appNextSource(app) == LIB_NETWORK ? T("Go to the network folder")
+        return appNextSource(app) == LIB_NETWORK  ? T("Go to the network folder")
                : appNextSource(app) == LIB_SERVER ? T("Go to the book server")
+               : appNextSource(app) == LIB_FREE   ? T("Go to free books")
                                                   : T("Go to the SD card library");
+    case MENU_FREE_SEARCH:
+        return T("Search Project Gutenberg");
+    case MENU_FREE_LIST:
+        return app->free_list == 0 ? T("Show Standard Ebooks' newest") : T("Show Project Gutenberg's most popular");
     case MENU_NET_SETUP:
         return T("Add a network folder or book server");
     case MENU_SETTINGS:
@@ -544,6 +554,7 @@ static const char *menuLabel(const App *app, MenuItem item)
     case MENU_RESCAN:
         return app->lib_tab == LIB_NETWORK  ? T("Look through the network folder again")
                : app->lib_tab == LIB_SERVER ? T("Look through the server's catalog again")
+               : app->lib_tab == LIB_FREE   ? T("Load the list again")
                                             : T("Look for books again");
     case MENU_EXIT:
         return T("Exit KaiReader");

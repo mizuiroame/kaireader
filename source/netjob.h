@@ -44,6 +44,14 @@ bool netJobServerScanning(int *found);
 // Its end, once: the books (malloc'd, the caller frees them), and whether the catalog could be read.
 bool netJobTakeServerScan(OpdsBook **books, int *count, bool *ok, char *why, size_t why_size);
 
+// One page of a free catalog (catalogs.h): its books and its next page. A page asked while
+// one is fetched follows it (only the newest).
+void netJobCatalogPage(const char *url);
+bool netJobCatalogLoading(void);
+// The page come, once: its address, books (malloc'd, the caller frees them), next page, or why not.
+bool netJobTakeCatalogPage(char *url, size_t url_size, OpdsBook **books, int *count, char *next, size_t next_size,
+                           bool *ok, char *why, size_t why_size);
+
 // Downloads a book server's book (its link) to local, as netJobCopy does. False if a copy runs already.
 bool netJobCopyLink(const char *link, const char *local, int64_t size);
 
