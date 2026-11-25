@@ -47,9 +47,6 @@ Calibre-Web なら 192.168.0.10:8083、Komga なら 192.168.0.10:25600（/opds �
 [<>] Change  [A] Choose  [B] Back
 [<>] 変更  [A] 選択  [B] 戻る
 
-[A] Choose  [B] Close
-[A] 選択  [B] 閉じる
-
 [A] Go  [<>] Page  [L][R] Tabs  [B] Close
 [A] 移動  [<>] ページ  [L][R] タブ  [B] 閉じる
 
@@ -970,3 +967,24 @@ Text: Noto Sans (SIL OFL 1.1) and the console's own fonts. Also stb, libnx, libo
 
 That image couldn't be read.
 その画像を読み込めませんでした。
+
+About
+このアプリについて
+
+Color
+色
+
+Its own
+固有の色
+
+[A] Choose  [B] Close  [+] Exit
+[A] 選択  [B] 閉じる  [+] 終了
+
+The book server's dot and its library's color: its own (blue) or one of the accents.
+ブックサーバーの点とライブラリーの色：固有の色（青）かアクセントカラーのどれか。
+
+The network folder's dot and its library's color: its own (turquoise) or one of the accents.
+ネットワークフォルダーの点とライブラリーの色：固有の色（ターコイズ）かアクセントカラーのどれか。
+
+Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+オープンソース（AGPL 3.0）  ·  github.com/mizuiroame/kaireader

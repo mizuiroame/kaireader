@@ -55,10 +55,12 @@ typedef enum {
     SETTING_ACCENT,        // The accent color.
     SETTING_BACKGROUND,    // An image behind the library (the app steps it: the folder's files).
     SETTING_BLUR,          // How soft that image is.
+    SETTING_NET_COLOR,     // The color the network folder wears: its own, or an accent.
+    SETTING_SRV_COLOR,     // The book server's.
     SETTING_COUNT,
 } SettingRow;
 
-#define SETTINGS_ROWS_MAX 6
+#define SETTINGS_ROWS_MAX 8
 
 // What a change needs from the app.
 typedef enum {
@@ -70,6 +72,7 @@ typedef enum {
     SETTINGS_CHANGED_CERTIFICATE = 16,  // The book server's certificate check.
     SETTINGS_CHANGED_ACCENT = 32,       // The accent color.
     SETTINGS_CHANGED_BLUR = 64,         // The background made again.
+    SETTINGS_CHANGED_SOURCE_COLOR = 128,  // A source's color.
 } SettingsChange;
 
 // The rows of a page, into out; how many.

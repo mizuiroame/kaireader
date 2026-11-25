@@ -48,9 +48,6 @@ language = Português (Brasil)
 [<>] Change  [A] Choose  [B] Back
 [<>] Mudar  [A] Escolher  [B] Voltar
 
-[A] Choose  [B] Close
-[A] Escolher  [B] Fechar
-
 [A] Go  [<>] Page  [L][R] Tabs  [B] Close
 [A] Ir  [<>] Página  [L][R] Abas  [B] Fechar
 
@@ -971,3 +968,24 @@ Texto: Noto Sans (SIL OFL 1.1) e as fontes do console. Também stb, libnx, libou
 
 That image couldn't be read.
 Não foi possível ler essa imagem.
+
+About
+Sobre
+
+Color
+Cor
+
+Its own
+A própria
+
+[A] Choose  [B] Close  [+] Exit
+[A] Escolher  [B] Fechar  [+] Sair
+
+The book server's dot and its library's color: its own (blue) or one of the accents.
+O ponto do servidor de livros e a cor da sua biblioteca: a própria (azul) ou uma das cores de destaque.
+
+The network folder's dot and its library's color: its own (turquoise) or one of the accents.
+O ponto da pasta de rede e a cor da sua biblioteca: a própria (turquesa) ou uma das cores de destaque.
+
+Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+Código aberto (AGPL 3.0)  ·  github.com/mizuiroame/kaireader

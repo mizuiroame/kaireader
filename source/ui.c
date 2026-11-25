@@ -121,6 +121,21 @@ static void drawFooter(const char *help)
     uiDrawHelp(MARGIN, h - FOOTER_H + 28.0f, w - 2 * MARGIN, help);
 }
 
+// A panel's row, as the other Kai apps': chosen, a lighter band with the accent's mark at its left.
+static void rowHighlight(int x, int y, int w, int h)
+{
+    gfxFillRoundRect(x, y, w, h, 10, COLOR_SURFACE_HI);
+    gfxFillRect(x, y + 10, 3, h - 20, COLOR_ACCENT);
+}
+
+#define SOURCE_DOT_SIZE 12
+#define SOURCE_DOT_ROOM 20  // The dot and the gap after it.
+
+static void sourceDot(int x, float middle, Color color)
+{
+    gfxFillRoundRect(x, (int)middle - SOURCE_DOT_SIZE / 2, SOURCE_DOT_SIZE, SOURCE_DOT_SIZE, SOURCE_DOT_SIZE / 2, color);
+}
+
 // --- The library ---
 
 static void drawPlaceholder(int x, int y, const ShelfBook *b, const char *name)
@@ -573,7 +588,7 @@ static void drawExit(const App *app)
 {
     static const char *const ANSWERS[2] = {N_("Exit"), N_("Cancel")};
     dim();
-    int w = minInt(MENU_W, gfxLayoutWidth() - 40), h = 70 + 2 * MENU_ROW_H + 56;
+    int w = minInt(MENU_W, gfxLayoutWidth() - 40), h = 70 + 2 * MENU_ROW_H + 20;
     int x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
     gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
     uiHitAdd(x, y, w, h, HIT_MENU_ITEM, -1);
@@ -582,41 +597,35 @@ static void drawExit(const App *app)
         int ry = y + 70 + i * MENU_ROW_H;
         bool on = i == app->menu_cursor;
         if (on)
-            gfxFillRoundRect(x + 12, ry, w - 24, MENU_ROW_H - 4, 12, COLOR_SURFACE_HI);
-        fontDrawMiddle(FONT_BOLD, 19, x + 28, ry + (MENU_ROW_H - 4) / 2.0f, T(ANSWERS[i]), on ? COLOR_ACCENT : COLOR_TEXT);
+            rowHighlight(x + 12, ry, w - 24, MENU_ROW_H - 4);
+        fontDrawMiddle(on ? FONT_BOLD : FONT_REGULAR, 21, x + 28, ry + (MENU_ROW_H - 4) / 2.0f, T(ANSWERS[i]), COLOR_TEXT);
         uiHitAdd(x + 12, ry, w - 24, MENU_ROW_H - 4, HIT_EXIT_ITEM, i);
     }
-    uiDrawHelp(x + 28, y + h - 30.0f, w - 56, T("[A] Choose  [B] Cancel  [+] Exit"));
+    drawFooter(T("[A] Choose  [B] Cancel  [+] Exit"));
 }
 
 static void drawMenu(const App *app)
 {
     dim();
     MenuItem rows[MENU_COUNT];
-    int n = appMenuRows(app, rows), lines = 0;
-    for (int i = 1; i < n; i++)
-        lines += appMenuGroup(rows[i]) != appMenuGroup(rows[i - 1]);
-    int w = minInt(MENU_W, gfxLayoutWidth() - 40), h = 70 + n * MENU_ROW_H + lines * MENU_LINE_H + 56;
+    int n = appMenuRows(app, rows);
+    int w = minInt(MENU_W, gfxLayoutWidth() - 40), h = 70 + n * MENU_ROW_H + 20;
     int x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
     gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
     uiHitAdd(x, y, w, h, HIT_MENU_ITEM, -1);
-    int name_w = fontDraw(FONT_BOLD, 24, x + 28, y + 22, "KaiReader", COLOR_ACCENT);
-    fontDraw(FONT_REGULAR, 17, x + 28 + name_w + 10, y + 28, KAIREADER_VERSION, COLOR_DIM);
-    int ry = y + 70 - MENU_ROW_H;
+    // The app's name and version over its items, as KaiPlayer's, KaiRadio's and KaiVideo's.
+    int name_w = fontDraw(FONT_BOLD, 22, x + 28, y + 24, "KaiReader", COLOR_ACCENT);
+    fontDraw(FONT_REGULAR, 15, x + 28 + name_w + 12, y + 31, KAIREADER_VERSION, COLOR_FAINT);
     for (int i = 0; i < n; i++) {
-        ry += MENU_ROW_H;
-        if (i > 0 && appMenuGroup(rows[i]) != appMenuGroup(rows[i - 1])) {  // A new group: a line before it.
-            gfxFillRect(x + 28, ry + MENU_LINE_H / 2 - 4, w - 56, 1, COLOR_SURFACE_HI);
-            ry += MENU_LINE_H;
-        }
+        int ry = y + 70 + i * MENU_ROW_H;
         bool on = i == app->menu_cursor;
         if (on)
-            gfxFillRoundRect(x + 12, ry, w - 24, MENU_ROW_H - 4, 12, COLOR_SURFACE_HI);
-        fontDrawMiddle(FONT_BOLD, 19, x + 28, ry + (MENU_ROW_H - 4) / 2.0f, menuLabel(app, rows[i]),
-                       on ? COLOR_ACCENT : COLOR_TEXT);
-        uiHitAdd(x + 12, ry, w - 24, MENU_ROW_H - 4, HIT_MENU_ITEM, i);
+            rowHighlight(x + 12, ry, w - 24, MENU_ROW_H - 6);
+        fontDrawMiddle(on ? FONT_BOLD : FONT_REGULAR, 21, x + 28, ry + (MENU_ROW_H - 6) / 2.0f, menuLabel(app, rows[i]),
+                       COLOR_TEXT);
+        uiHitAdd(x + 12, ry, w - 24, MENU_ROW_H - 6, HIT_MENU_ITEM, i);
     }
-    uiDrawHelp(x + 28, y + h - 30.0f, w - 56, T("[A] Choose  [B] Close"));
+    drawFooter(T("[A] Choose  [B] Close  [+] Exit"));
 }
 
 // About's paragraphs from y down; returns where they end. Measures only, without draw.
@@ -642,7 +651,14 @@ static int drawAboutText(int x, int y, int w, bool draw)
     return y;
 }
 
-static void drawSettings(const App *app)
+#define SOURCE_BAND_H 5  // A source's page: its color along the top, as KaiVideo's.
+
+static bool isSourcePage(int page)
+{
+    return page == SETTINGS_PAGE_NETWORK || page == SETTINGS_PAGE_SERVER;
+}
+
+static void drawSettingsPanel(const App *app)
 {
     dim();
     SettingRow rows[SETTINGS_ROWS_MAX];
@@ -650,9 +666,13 @@ static void drawSettings(const App *app)
     bool about = app->settings_page == SETTINGS_PAGE_CREDITS;
     int w = minInt(SETTINGS_W_MAX, gfxLayoutWidth() - 40);
     int about_text = about ? drawAboutText(0, 0, w - 64, false) : 0;  // Its height, to fit the page to it.
-    int h = about ? 84 + ABOUT_ICON + 20 + about_text + ABOUT_BRAND_H + 40 : 84 + n * SETTINGS_ROW_H + 110;
+    bool main_page = app->settings_page == SETTINGS_PAGE_MAIN;  // The project's line under the help.
+    int h = about ? 84 + ABOUT_ICON + 20 + about_text + ABOUT_BRAND_H + 32
+                  : 84 + n * SETTINGS_ROW_H + 76 + (main_page ? 30 : 0);
     int x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
     gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
+    if (isSourcePage(app->settings_page))
+        gfxFillRoundRect(x + 16, y, w - 32, SOURCE_BAND_H, SOURCE_BAND_H / 2, COLOR_ACCENT);
     uiHitAdd(x, y, w, h, HIT_SETTING, -1);
     int tx = x + 28;
     if (app->settings_page != SETTINGS_PAGE_MAIN) {  // Back to the main page.
@@ -663,27 +683,41 @@ static void drawSettings(const App *app)
         uiHitAdd(x + 20, y + 14, bw + 16, 52, HIT_SETTINGS_BACK, 0);
         tx = x + 28 + bw + 18;
     }
+    if (app->settings_page == SETTINGS_PAGE_NETWORK || app->settings_page == SETTINGS_PAGE_SERVER) {
+        sourceDot(tx, y + 40.0f, app->settings_page == SETTINGS_PAGE_NETWORK ? COLOR_NETWORK : COLOR_SERVER);
+        tx += SOURCE_DOT_ROOM;
+    }
     fontDrawMiddle(FONT_BOLD, 22, tx, y + 40.0f, T(settingsPageTitle(app->settings_page)), COLOR_TEXT);
     if (about) {
         uiDrawAppIcon(x + 32, y + 84, ABOUT_ICON);  // KaiReader's icon, its name and version beside it.
         fontDraw(FONT_BOLD, 30, x + 32 + ABOUT_ICON + 22, y + 92, "KaiReader", COLOR_TEXT);
         fontDraw(FONT_REGULAR, 18, x + 32 + ABOUT_ICON + 22, y + 134, KAIREADER_VERSION, COLOR_DIM);
         drawAboutText(x + 32, y + 84 + ABOUT_ICON + 20, w - 64, true);
-        uiDrawBrandRight(x + w - 32, y + h - 24 - ABOUT_BRAND_H, ABOUT_BRAND_H);  // Mizuiro's mark, at the bottom right.
-        uiDrawHelp(x + 28, y + h - 30.0f, w - 56, T("[B] Back"));
+        uiDrawBrandRight(x + w - 32, y + h - 20 - ABOUT_BRAND_H, ABOUT_BRAND_H);  // Mizuiro's mark, at the bottom right.
+        drawFooter(T("[B] Back"));
         return;
     }
     for (int i = 0; i < n; i++) {
         int ry = y + 84 + i * SETTINGS_ROW_H;
         bool on = i == app->settings_cursor;
-        if (on) {
-            gfxFillRoundRect(x + 14, ry, w - 28, SETTINGS_ROW_H - 4, 10, COLOR_SURFACE_HI);
-            gfxFillRect(x + 14, ry + 12, 3, SETTINGS_ROW_H - 28, COLOR_ACCENT);
-        }
+        if (on)
+            rowHighlight(x + 14, ry, w - 28, SETTINGS_ROW_H - 4);
         float mid = ry + (SETTINGS_ROW_H - 4) / 2.0f;
-        fontDrawMiddle(on ? FONT_BOLD : FONT_REGULAR, 19, x + 32, mid, T(settingsLabel(rows[i])), COLOR_TEXT);
+        int label_x = x + 32;
+        if (rows[i] == SETTING_OPEN_NETWORK || rows[i] == SETTING_OPEN_SERVER) {  // A source: its color.
+            sourceDot(label_x, mid, rows[i] == SETTING_OPEN_NETWORK ? COLOR_NETWORK : COLOR_SERVER);
+            label_x += SOURCE_DOT_ROOM;
+        }
+        fontDrawMiddle(on ? FONT_BOLD : FONT_REGULAR, 21, label_x, mid, T(settingsLabel(rows[i])), COLOR_TEXT);
         int right = x + w - 34;
-        if (settingsPickedValue(rows[i])) {  // A value picked with A (the keyboard): no arrows.
+        bool opens = settingsOpens(rows[i]) != SETTINGS_PAGE_MAIN;
+        if (rows[i] == SETTING_OPEN_ABOUT) {  // "KaiReader 1.0.0", and the arrow into its page.
+            const char *version = "KaiReader " KAIREADER_VERSION;
+            int vw = fontTextWidth(FONT_BOLD, 20, version);
+            fontDrawMiddle(FONT_BOLD, 20, right - 22 - vw, mid, version, COLOR_TEXT);
+            gfxFillTriangleRight(right - 10, (int)mid - 8, 10, 16, on ? COLOR_TEXT : COLOR_DIM);
+            uiHitAdd(x + 14, ry, w - 28, SETTINGS_ROW_H - 4, HIT_SETTING, i);
+        } else if (settingsPickedValue(rows[i])) {  // A value picked with A (the keyboard): no arrows.
             char value[160];
             bool name;
             if (rows[i] == SETTING_UPDATE_NOW) {
@@ -693,31 +727,34 @@ static void drawSettings(const App *app)
                 settingsValue(&app->prefs, rows[i], value, sizeof(value), &name);
             }
             const char *shown = name ? T(value) : value;
-            int vw = fontTextWidth(FONT_BOLD, 18, shown), max_vw = w / 2 - 40;
+            int arrow = opens ? 22 : 0;  // A source's row opens its page: an arrow, as KaiVideo's.
+            int vw = fontTextWidth(FONT_BOLD, 20, shown), max_vw = w / 2 - 40;
             vw = vw > max_vw ? max_vw : vw;
-            gfxSetClip(right - vw, ry, vw, SETTINGS_ROW_H);
-            fontDrawMiddle(FONT_BOLD, 18, right - vw, mid, shown, COLOR_ACCENT);
+            gfxSetClip(right - arrow - vw, ry, vw, SETTINGS_ROW_H);
+            fontDrawMiddle(FONT_BOLD, 20, right - arrow - vw, mid, shown, COLOR_TEXT);
             gfxResetClip();
+            if (opens)
+                gfxFillTriangleRight(right - 10, (int)mid - 8, 10, 16, on ? COLOR_TEXT : COLOR_DIM);
             uiHitAdd(x + 14, ry, w - 28, SETTINGS_ROW_H - 4, HIT_SETTING, i);
         } else if (settingsHasValue(rows[i])) {
             char value[64];
             bool name;
             settingsValue(&app->prefs, rows[i], value, sizeof(value), &name);
             const char *shown = name ? T(value) : value;
-            int vw = fontTextWidth(FONT_BOLD, 18, shown);
+            int vw = fontTextWidth(FONT_BOLD, 20, shown);
             int max_vw = w / 2 - 60;
             vw = vw > max_vw ? max_vw : vw;
-            gfxFillTriangleRight(right - 10, (int)mid - 8, 10, 16, on ? COLOR_TEXT : COLOR_FAINT);
+            gfxFillTriangleRight(right - 10, (int)mid - 8, 10, 16, COLOR_DIM);
             gfxSetClip(right - 22 - vw, ry, vw, SETTINGS_ROW_H);  // A long value is cut at its room.
-            fontDrawMiddle(FONT_BOLD, 18, right - 22 - vw, mid, shown, COLOR_ACCENT);
+            fontDrawMiddle(FONT_BOLD, 20, right - 22 - vw, mid, shown, COLOR_ACCENT);
             gfxResetClip();
-            gfxFillTriangleLeft(right - 42 - vw, (int)mid - 8, 10, 16, on ? COLOR_TEXT : COLOR_FAINT);
+            gfxFillTriangleLeft(right - 42 - vw, (int)mid - 8, 10, 16, COLOR_DIM);
             int half = (w - 28) / 2;
             uiHitAdd(x + 14, ry, half, SETTINGS_ROW_H - 4, HIT_SETTING_STEP, i * 2);
             uiHitAdd(x + 14 + half, ry, w - 28 - half, SETTINGS_ROW_H - 4, HIT_SETTING_STEP, i * 2 + 1);
         } else {
-            if (settingsOpens(rows[i]) != SETTINGS_PAGE_MAIN)  // A page: an arrow into it.
-                gfxFillTriangleRight(right - 10, (int)mid - 8, 10, 16, on ? COLOR_TEXT : COLOR_FAINT);
+            if (opens)  // A page: an arrow into it.
+                gfxFillTriangleRight(right - 10, (int)mid - 8, 10, 16, on ? COLOR_TEXT : COLOR_DIM);
             uiHitAdd(x + 14, ry, w - 28, SETTINGS_ROW_H - 4, HIT_SETTING, i);
         }
     }
@@ -729,8 +766,20 @@ static void drawSettings(const App *app)
         for (int i = 0; i < lines_n; i++)
             fontDraw(FONT_REGULAR, 16, x + 32, hy + i * 22, lines[i], COLOR_DIM);
     }
-    uiDrawHelp(x + 28, y + h - 30.0f, w - 56,
-               app->settings_page == SETTINGS_PAGE_MAIN ? T("[A] Open  [B] Close") : T("[<>] Change  [A] Choose  [B] Back"));
+    if (main_page)  // As the other Kai apps.
+        fontDrawClipped(FONT_REGULAR, 16, x + 32, y + h - 40, w - 64,
+                        T("Open source (AGPL 3.0)  \xC2\xB7  github.com/mizuiroame/kaireader"), COLOR_FAINT);
+    drawFooter(main_page ? T("[A] Open  [B] Close") : T("[<>] Change  [A] Choose  [B] Back"));
+}
+
+// A source's page in its color (the accent's, for as long as it's drawn).
+static void drawSettings(const App *app)
+{
+    Color accent = g_accent;
+    if (isSourcePage(app->settings_page))
+        g_accent = app->settings_page == SETTINGS_PAGE_NETWORK ? COLOR_NETWORK : COLOR_SERVER;
+    drawSettingsPanel(app);
+    g_accent = accent;
 }
 
 // The first run's welcome: where are the books? A row each, a line under it.
@@ -750,7 +799,7 @@ static void drawWelcome(const App *app)
         N_("Start with an empty library; it's all in + > Settings."),
     };
     dim();
-    int w = minInt(WELCOME_W, gfxLayoutWidth() - 40), h = 116 + WELCOME_ROW_COUNT * WELCOME_ROW_H + 64;
+    int w = minInt(WELCOME_W, gfxLayoutWidth() - 40), h = 116 + WELCOME_ROW_COUNT * WELCOME_ROW_H + 24;
     int x = (gfxLayoutWidth() - w) / 2, y = (gfxLayoutHeight() - h) / 2;
     gfxFillRoundRect(x, y, w, h, PANEL_RADIUS, COLOR_SURFACE);
     uiHitAdd(x, y, w, h, HIT_SETTING, -1);  // The panel itself: nothing.
@@ -769,7 +818,7 @@ static void drawWelcome(const App *app)
         fontDrawClipped(FONT_REGULAR, 16, x + 36, ry + 40, w - 72, T(NOTES[i]), COLOR_DIM);
         uiHitAdd(x + 14, ry, w - 28, WELCOME_ROW_H - 6, HIT_WELCOME_ROW, i);
     }
-    uiDrawHelp(x + 32, y + h - 30.0f, w - 64, T("[A] Choose  [B] Later"));
+    drawFooter(T("[A] Choose  [B] Later"));
 }
 
 static void drawContents(const App *app)

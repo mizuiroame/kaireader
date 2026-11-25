@@ -47,9 +47,6 @@ Calibre-Web은 192.168.0.10:8083, Komga는 192.168.0.10:25600(/opds 주소는 �
 [<>] Change  [A] Choose  [B] Back
 [<>] 변경  [A] 선택  [B] 뒤로
 
-[A] Choose  [B] Close
-[A] 선택  [B] 닫기
-
 [A] Go  [<>] Page  [L][R] Tabs  [B] Close
 [A] 이동  [<>] 페이지  [L][R] 탭  [B] 닫기
 
@@ -970,3 +967,24 @@ Text: Noto Sans (SIL OFL 1.1) and the console's own fonts. Also stb, libnx, libo
 
 That image couldn't be read.
 그 이미지를 읽을 수 없어요.
+
+About
+정보
+
+Color
+색상
+
+Its own
+고유 색
+
+[A] Choose  [B] Close  [+] Exit
+[A] 선택  [B] 닫기  [+] 종료
+
+The book server's dot and its library's color: its own (blue) or one of the accents.
+책 서버의 점과 서재 색: 고유 색(파랑) 또는 강조 색 중 하나.
+
+The network folder's dot and its library's color: its own (turquoise) or one of the accents.
+네트워크 폴더의 점과 서재 색: 고유 색(청록) 또는 강조 색 중 하나.
+
+Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+오픈 소스 (AGPL 3.0)  ·  github.com/mizuiroame/kaireader

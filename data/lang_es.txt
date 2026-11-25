@@ -48,9 +48,6 @@ language = Español (Latinoamérica)
 [<>] Change  [A] Choose  [B] Back
 [<>] Cambiar  [A] Elegir  [B] Atrás
 
-[A] Choose  [B] Close
-[A] Elegir  [B] Cerrar
-
 [A] Go  [<>] Page  [L][R] Tabs  [B] Close
 [A] Ir  [<>] Página  [L][R] Pestañas  [B] Cerrar
 
@@ -971,3 +968,24 @@ Texto: Noto Sans (SIL OFL 1.1) y las fuentes de la consola. También stb, libnx,
 
 That image couldn't be read.
 No se pudo leer esa imagen.
+
+About
+Acerca de
+
+Color
+Color
+
+Its own
+El suyo
+
+[A] Choose  [B] Close  [+] Exit
+[A] Elegir  [B] Cerrar  [+] Salir
+
+The book server's dot and its library's color: its own (blue) or one of the accents.
+El punto del servidor de libros y el color de su biblioteca: el suyo (azul) o uno de los de acento.
+
+The network folder's dot and its library's color: its own (turquoise) or one of the accents.
+El punto de la carpeta de red y el color de su biblioteca: el suyo (turquesa) o uno de los de acento.
+
+Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+Código abierto (AGPL 3.0)  ·  github.com/mizuiroame/kaireader

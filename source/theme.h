@@ -12,3 +12,6 @@ extern Color g_accent;
 const char *themeAccentName(int accent);
 // Sets g_accent (out of range: the first, amber).
 void themeApply(int accent);
+// The network folder's and the book server's colors: 0 their own, else an accent + 1.
+extern Color g_network_color, g_server_color;
+void themeApplySources(int network, int server);

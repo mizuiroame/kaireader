@@ -12,8 +12,23 @@ void testSettings(void)
     CHECK(settingsRows(SETTINGS_PAGE_MAIN, rows) == 6 && rows[0] == SETTING_OPEN_LIBRARY);
     CHECK(settingsOpens(rows[1]) == SETTINGS_PAGE_NETWORK && settingsOpens(rows[2]) == SETTINGS_PAGE_SERVER);
     CHECK(settingsOpens(rows[3]) == SETTINGS_PAGE_READING && settingsOpens(rows[5]) == SETTINGS_PAGE_ABOUT);
-    CHECK(settingsRows(SETTINGS_PAGE_SERVER, rows) == 5 && rows[0] == SETTING_SRV_ADDRESS && settingsIsServer(rows[4]));
-    CHECK(rows[3] == SETTING_SRV_CERTIFICATE && !settingsIsServer(rows[3]) && settingsHasValue(rows[3]));
+    // A source's page, as the other Kai apps': address, sign-in, options (its color last), test, forget.
+    CHECK(settingsRows(SETTINGS_PAGE_SERVER, rows) == 6 && rows[0] == SETTING_SRV_ADDRESS && settingsIsServer(rows[5]));
+    CHECK(rows[2] == SETTING_SRV_CERTIFICATE && !settingsIsServer(rows[2]) && settingsHasValue(rows[2]));
+    CHECK(rows[3] == SETTING_SRV_COLOR && settingsHasValue(rows[3]) && rows[4] == SETTING_SRV_TEST);
+    {  // A source's color: its own, then each accent, kept.
+        Prefs colors;
+        prefsDefaults(&colors);
+        char v[64];
+        bool named;
+        settingsValue(&colors, SETTING_NET_COLOR, v, sizeof(v), &named);
+        CHECK(!strcmp(v, "Its own") && named);
+        CHECK(settingsStep(&colors, SETTING_NET_COLOR, 1) == SETTINGS_CHANGED_SOURCE_COLOR && colors.network_color == 1);
+        settingsValue(&colors, SETTING_NET_COLOR, v, sizeof(v), &named);
+        CHECK(!strcmp(v, "Amber"));
+        CHECK(settingsStep(&colors, SETTING_SRV_COLOR, -1) == SETTINGS_CHANGED_SOURCE_COLOR &&
+              colors.server_color == THEME_ACCENT_COUNT);
+    }
     Prefs cert;
     prefsDefaults(&cert);
     CHECK(settingsStep(&cert, SETTING_SRV_CERTIFICATE, 1) == SETTINGS_CHANGED_CERTIFICATE && cert.server_any_certificate);
@@ -68,7 +83,8 @@ void testSettings(void)
         CHECK(v.sort == SHELF_SORT_RECENT);
     }
     // The network folder's page: its rows are the app's, the address shown as set.
-    CHECK(settingsRows(SETTINGS_PAGE_NETWORK, rows) == 6 && rows[0] == SETTING_NET_ADDRESS && rows[5] == SETTING_NET_FORGET);
+    CHECK(settingsRows(SETTINGS_PAGE_NETWORK, rows) == 7 && rows[0] == SETTING_NET_ADDRESS && rows[4] == SETTING_NET_COLOR &&
+          rows[6] == SETTING_NET_FORGET);
     CHECK(settingsIsNetwork(SETTING_NET_TEST) && !settingsIsNetwork(SETTING_OPEN_NETWORK) && !settingsIsNetwork(SETTING_CLOCK));
     CHECK(settingsPickedValue(SETTING_NET_ADDRESS) && !settingsPickedValue(SETTING_NET_REMEMBER));
     {

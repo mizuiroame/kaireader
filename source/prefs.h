@@ -33,6 +33,8 @@ typedef struct {
     int last_tab;   // That book's library (app.h's LIB_*), and its path there; "" none.
     char last_book[512];
     int accent;             // theme.h's accent.
+    int network_color;      // The network folder's color: 0 its own, else an accent + 1.
+    int server_color;       // The book server's, the same way.
     char background[128];   // An image in the Backgrounds folder, "" none.
     int background_blur;    // background.h's BackgroundBlur.
     bool update_check;      // Look for a new version once a day.

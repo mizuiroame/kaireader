@@ -47,9 +47,6 @@ Calibre-Web 填 192.168.0.10:8083，Komga 填 192.168.0.10:25600（会自动找�
 [<>] Change  [A] Choose  [B] Back
 [<>] 更改  [A] 选择  [B] 返回
 
-[A] Choose  [B] Close
-[A] 选择  [B] 关闭
-
 [A] Go  [<>] Page  [L][R] Tabs  [B] Close
 [A] 前往  [<>] 翻页  [L][R] 标签  [B] 关闭
 
@@ -970,3 +967,24 @@ Text: Noto Sans (SIL OFL 1.1) and the console's own fonts. Also stb, libnx, libo
 
 That image couldn't be read.
 无法读取该图片。
+
+About
+关于
+
+Color
+颜色
+
+Its own
+自带颜色
+
+[A] Choose  [B] Close  [+] Exit
+[A] 选择  [B] 关闭  [+] 退出
+
+The book server's dot and its library's color: its own (blue) or one of the accents.
+书籍服务器的圆点和书库颜色：自带颜色（蓝色）或任一强调色。
+
+The network folder's dot and its library's color: its own (turquoise) or one of the accents.
+网络文件夹的圆点和书库颜色：自带颜色（青绿色）或任一强调色。
+
+Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+开源软件（AGPL 3.0）  ·  github.com/mizuiroame/kaireader

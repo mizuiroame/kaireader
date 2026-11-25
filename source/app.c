@@ -259,6 +259,7 @@ void appInit(App *app, const char *folder)
     appServerStart(app);
     opdsCheckCertificate(!app->prefs.server_any_certificate);
     themeApply(app->prefs.accent);
+    themeApplySources(app->prefs.network_color, app->prefs.server_color);
     backgroundLoad(app->folder, app->prefs.background, app->prefs.background_blur);
     appNetworkUse();
     if (appWelcomeNeeded(app))  // The first run, with no books anywhere yet.
@@ -838,6 +839,8 @@ static void applyChange(App *app, int changed, uint64_t now_ns)
         opdsCheckCertificate(!app->prefs.server_any_certificate);
     if (changed & SETTINGS_CHANGED_ACCENT)
         themeApply(app->prefs.accent);
+    if (changed & SETTINGS_CHANGED_SOURCE_COLOR)
+        themeApplySources(app->prefs.network_color, app->prefs.server_color);
     if (changed & SETTINGS_CHANGED_BLUR)
         backgroundSetBlur(app->prefs.background_blur);
 }

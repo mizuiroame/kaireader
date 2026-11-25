@@ -21,7 +21,7 @@ static const char *const LABELS[SETTING_COUNT] = {
     N_("Reading"),
     N_("Library"),
     N_("Display"),
-    N_("About KaiReader"),
+    N_("About"),
     N_("Text size"),
     N_("Colors"),
     N_("Pages"),
@@ -51,6 +51,8 @@ static const char *const LABELS[SETTING_COUNT] = {
     N_("Accent color"),
     N_("Background"),
     N_("Background blur"),
+    N_("Color"),
+    N_("Color"),
 };
 
 static const char *const HELP[SETTING_COUNT] = {
@@ -87,6 +89,8 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("Highlights, buttons and the selected book."),
     N_("JPEG or PNG images in the Backgrounds folder of KaiReader's folder (sdmc:/switch/kaireader/config), behind the library."),
     N_("How soft the background image is."),
+    N_("The network folder's dot and its library's color: its own (turquoise) or one of the accents."),
+    N_("The book server's dot and its library's color: its own (blue) or one of the accents."),
 };
 
 static char g_language_name[64] = "English";
@@ -160,22 +164,24 @@ int settingsRows(SettingsPage page, SettingRow *out)
         out[n++] = SETTING_ACCENT;
         out[n++] = SETTING_BACKGROUND;
         out[n++] = SETTING_BLUR;
-        out[n++] = SETTING_SCREEN;
         out[n++] = SETTING_CLOCK;
+        out[n++] = SETTING_SCREEN;  // KaiReader's own, last.
         break;
     case SETTINGS_PAGE_NETWORK:
         out[n++] = SETTING_NET_ADDRESS;
         out[n++] = SETTING_NET_ACCOUNT;
         out[n++] = SETTING_NET_REMEMBER;
         out[n++] = SETTING_NET_UNSIGNED;
+        out[n++] = SETTING_NET_COLOR;
         out[n++] = SETTING_NET_TEST;
         out[n++] = SETTING_NET_FORGET;
         break;
     case SETTINGS_PAGE_SERVER:
         out[n++] = SETTING_SRV_ADDRESS;
         out[n++] = SETTING_SRV_ACCOUNT;
-        out[n++] = SETTING_SRV_TEST;
         out[n++] = SETTING_SRV_CERTIFICATE;
+        out[n++] = SETTING_SRV_COLOR;
+        out[n++] = SETTING_SRV_TEST;
         out[n++] = SETTING_SRV_FORGET;
         break;
     case SETTINGS_PAGE_ABOUT:
@@ -230,7 +236,7 @@ bool settingsHasValue(SettingRow row)
 {
     return row == SETTING_TEXT_SIZE || row == SETTING_COLORS || row == SETTING_PAGES || row == SETTING_SORT ||
            row == SETTING_VIEW || row == SETTING_LANGUAGE || row == SETTING_RESUME || row == SETTING_SRV_CERTIFICATE || row == SETTING_UPDATE_AUTO || row == SETTING_ACCENT ||
-           row == SETTING_BACKGROUND || row == SETTING_BLUR ||
+           row == SETTING_BACKGROUND || row == SETTING_BLUR || row == SETTING_NET_COLOR || row == SETTING_SRV_COLOR ||
            row == SETTING_SCREEN || row == SETTING_CLOCK || row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED ||
            settingsPickedValue(row);
 }
@@ -264,6 +270,12 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
     case SETTING_ACCENT:
         snprintf(out, size, "%s", themeAccentName(p->accent));
         break;
+    case SETTING_NET_COLOR:
+    case SETTING_SRV_COLOR: {
+        int choice = row == SETTING_NET_COLOR ? p->network_color : p->server_color;
+        snprintf(out, size, "%s", choice ? themeAccentName(choice - 1) : N_("Its own"));
+        break;
+    }
     case SETTING_BACKGROUND:  // A file's name, as it is; or None.
         *translate_name = !p->background[0];
         snprintf(out, size, "%s", p->background[0] ? p->background : N_("None"));
@@ -377,6 +389,12 @@ int settingsStep(Prefs *p, SettingRow row, int dir)
     case SETTING_BLUR:
         p->background_blur = around(p->background_blur, dir, 4);
         return SETTINGS_CHANGED_BLUR;
+    case SETTING_NET_COLOR:
+        p->network_color = around(p->network_color, dir, THEME_ACCENT_COUNT + 1);
+        return SETTINGS_CHANGED_SOURCE_COLOR;
+    case SETTING_SRV_COLOR:
+        p->server_color = around(p->server_color, dir, THEME_ACCENT_COUNT + 1);
+        return SETTINGS_CHANGED_SOURCE_COLOR;
     case SETTING_SRV_CERTIFICATE:
         p->server_any_certificate = !p->server_any_certificate;
         return SETTINGS_CHANGED_CERTIFICATE;

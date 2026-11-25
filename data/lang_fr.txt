@@ -48,9 +48,6 @@ language = Français
 [<>] Change  [A] Choose  [B] Back
 [<>] Changer  [A] Choisir  [B] Retour
 
-[A] Choose  [B] Close
-[A] Choisir  [B] Fermer
-
 [A] Go  [<>] Page  [L][R] Tabs  [B] Close
 [A] Aller  [<>] Page  [L][R] Onglets  [B] Fermer
 
@@ -971,3 +968,24 @@ Texte : Noto Sans (SIL OFL 1.1) et les polices de la console. Aussi stb, libnx, 
 
 That image couldn't be read.
 Impossible de lire cette image.
+
+About
+À propos
+
+Color
+Couleur
+
+Its own
+La sienne
+
+[A] Choose  [B] Close  [+] Exit
+[A] Choisir  [B] Fermer  [+] Quitter
+
+The book server's dot and its library's color: its own (blue) or one of the accents.
+La pastille du serveur de livres et la couleur de sa bibliothèque : la sienne (bleu) ou une des couleurs d'accent.
+
+The network folder's dot and its library's color: its own (turquoise) or one of the accents.
+La pastille du dossier réseau et la couleur de sa bibliothèque : la sienne (turquoise) ou une des couleurs d'accent.
+
+Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader

@@ -48,9 +48,6 @@ language = Italiano
 [<>] Change  [A] Choose  [B] Back
 [<>] Cambia  [A] Scegli  [B] Indietro
 
-[A] Choose  [B] Close
-[A] Scegli  [B] Chiudi
-
 [A] Go  [<>] Page  [L][R] Tabs  [B] Close
 [A] Vai  [<>] Pagina  [L][R] Schede  [B] Chiudi
 
@@ -971,3 +968,24 @@ Testo: Noto Sans (SIL OFL 1.1) e i font della console. Inoltre stb, libnx, libou
 
 That image couldn't be read.
 Impossibile leggere quell'immagine.
+
+About
+Informazioni
+
+Color
+Colore
+
+Its own
+Il suo
+
+[A] Choose  [B] Close  [+] Exit
+[A] Scegli  [B] Chiudi  [+] Esci
+
+The book server's dot and its library's color: its own (blue) or one of the accents.
+Il punto del server di libri e il colore della sua libreria: il suo (blu) o uno dei colori d'accento.
+
+The network folder's dot and its library's color: its own (turquoise) or one of the accents.
+Il punto della cartella di rete e il colore della sua libreria: il suo (turchese) o uno dei colori d'accento.
+
+Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader

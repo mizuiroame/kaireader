@@ -48,9 +48,6 @@ language = Deutsch
 [<>] Change  [A] Choose  [B] Back
 [<>] Ändern  [A] Wählen  [B] Zurück
 
-[A] Choose  [B] Close
-[A] Wählen  [B] Schließen
-
 [A] Go  [<>] Page  [L][R] Tabs  [B] Close
 [A] Gehe zu  [<>] Seite  [L][R] Tabs  [B] Schließen
 
@@ -971,3 +968,24 @@ Text: Noto Sans (SIL OFL 1.1) und die Schriften der Konsole. Außerdem stb, libn
 
 That image couldn't be read.
 Dieses Bild konnte nicht gelesen werden.
+
+About
+Info
+
+Color
+Farbe
+
+Its own
+Eigene
+
+[A] Choose  [B] Close  [+] Exit
+[A] Wählen  [B] Schließen  [+] Beenden
+
+The book server's dot and its library's color: its own (blue) or one of the accents.
+Der Punkt des Buchservers und die Farbe seiner Bibliothek: seine eigene (Blau) oder eine der Akzentfarben.
+
+The network folder's dot and its library's color: its own (turquoise) or one of the accents.
+Der Punkt des Netzwerkordners und die Farbe seiner Bibliothek: seine eigene (Türkis) oder eine der Akzentfarben.
+
+Open source (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
+Quelloffen (AGPL 3.0)  ·  github.com/mizuiroame/kaireader
