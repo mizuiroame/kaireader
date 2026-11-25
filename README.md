@@ -27,9 +27,13 @@ comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
 |--------------------------|-----------|-----------|
 | ![Network folder](docs/screenshots/network.png) | ![List](docs/screenshots/library-list.png) | ![Favorites](docs/screenshots/library-favorites-stars.png) |
 
-| Your book server (OPDS) | Free books |
-|-------------------------|------------|
-| ![Book server](docs/screenshots/server.png) | ![Free books](docs/screenshots/free.png) |
+| Your book server (OPDS) | Free books | The + menu |
+|-------------------------|------------|------------|
+| ![Book server](docs/screenshots/server.png) | ![Free books](docs/screenshots/free.png) | ![Menu](docs/screenshots/menu.png) |
+
+| Each source with its color | Credits and licenses |
+|----------------------------|----------------------|
+| ![Settings and sources](docs/screenshots/settings-sources.png) | ![Credits](docs/screenshots/credits.png) |
 
 The screenshots show made-up books.
 
