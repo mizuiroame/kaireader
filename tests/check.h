@@ -37,3 +37,4 @@ void testCatalogs(void);
 void testUpdate(void);
 void testUpdateRelease(void);
 void testNewsFeeds(void);
+void testNews(void);

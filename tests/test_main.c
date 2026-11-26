@@ -38,6 +38,7 @@ int main(void)
     testTouch();
     testOpds();
     testNewsFeeds();
+    testNews();
     testCatalogs();
     testUpdate();
     testUpdateRelease();
