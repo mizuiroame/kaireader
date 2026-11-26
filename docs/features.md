@@ -46,7 +46,7 @@ KaiReader reads **EPUB**, **PDF**, comics (**CBZ**, **CBR**, **CB7**,
 ## Where the books come from
 
 **X** goes round your libraries: the SD card, the network folder and the book
-server (the ones set up), and Free books. Each wears its color in the
+server (the ones set up), Free books, and the news (once you follow a feed). Each wears its color in the
 "Source:" pill at the top and in Settings.
 
 - **Network folders**: a Windows shared folder (SMB), a NAS or Nextcloud
@@ -77,6 +77,45 @@ server (the ones set up), and Free books. Each wears its color in the
   again**; **L**/**R** still reach the other lists.
 
 How the accounts are kept on the card: [Security](security.md).
+
+## News
+
+- **The sites you read, as books**: add a site's RSS or Atom feed in
+  Settings > News > **Add a feed** (its address, or the address of one of the
+  site's pages that links to its feed: the feed is found), or **Import feeds
+  (OPML)** from `feeds.opml`, exported from another reader and put in
+  KaiReader's folder (`sdmc:/switch/kaireader/config`). The feeds are kept in
+  `feeds.txt` there. There are no feeds built in.
+- **The library**: every feed's articles, newest first, with the feed's name
+  and the date; **L**/**R** show one feed alone, or all of them again. An
+  article you haven't opened wears a dot (a "New" in the list view). Its
+  picture, when the feed gives one, is its cover.
+- **Checked** once a session, when you first go to the news, and with **Y**
+  (or "Check the feeds again" in the + menu). The last 100 articles of each
+  feed are kept on the card, so they're there offline too; a site that
+  doesn't answer is said, and its kept articles stay.
+- **Reading**: an article opens as a page in your text size and colors, its
+  title, feed and date at the top. What the feed gives is often only the
+  start: **Read the full article** in the + menu brings the article's page
+  from its site and keeps the part of it that reads as the article (it opens
+  that way from then on). Pictures inside articles show as their description,
+  or "[picture]".
+- **+ menu**: Mark all as read (the articles shown), the next feed.
+- **Settings > News**: Add a feed, Import feeds (OPML), Feed (the one the rows
+  under it are about), Rename this feed, Certificate check (off only for a
+  site of your own with its own https certificate), Color, Remove this feed.
+
+What the news can't do yet:
+
+- Pictures inside articles aren't downloaded (only the list's covers).
+- A feed that needs a sign-in can't be followed; adding a feed always checks
+  its https certificate (turn the check off after, for a site of your own).
+- "Read the full article" is a best guess: on some sites it finds only part
+  of the article, or none (it says so).
+- Read marks are kept for 30 days after an article has left its feed's last
+  100.
+- Feeds in charsets other than UTF-8, UTF-16, ISO-8859-1/7, KOI8-R and
+  Windows-1250/1251/1252 show wrong letters.
 
 ## Looks, languages and updates
 
