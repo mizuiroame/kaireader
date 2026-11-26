@@ -9,6 +9,8 @@
 #include "article.h"
 #include "check.h"
 #include "feedlist.h"
+#include "feedsuggest.h"
+#include "settings.h"
 
 #define CHECK_STR(a, b) CHECK(strcmp((a), (b)) == 0)
 
@@ -173,11 +175,13 @@ static void testExtract(void)
         "<div id=\"story\"><h2>The ferry</h2>"
         "<p>The new ferry left the harbor at dawn, carrying forty passengers and a crate of apples.</p>"
         "<p>Its captain said the crossing took less than an hour, even with the wind against them.</p>"
-        "<p><img src=\"ferry.jpg\" alt=\"The ferry\"> Next week it sails twice a day.</p></div>"
+        "<p><img src=\"ferry.jpg\" alt=\"The ferry\"> Next week it sails twice a day.</p>"
+        "<div class=\"share-buttons\">Facebook Twitter Email</div><div id=\"comments\">2 comments</div></div>"
         "<footer><p>Copyright</p></footer></body></html>";
     char *html = articleExtract(page, strlen(page));
     CHECK(html && strstr(html, "forty passengers") && strstr(html, "twice a day"));
     CHECK(html && !strstr(html, "Home | News") && !strstr(html, "Copyright") && !strstr(html, "var a"));
+    CHECK(html && !strstr(html, "Facebook") && !strstr(html, "2 comments"));  // Beside the article.
     CHECK(html && strstr(html, "<img alt=\"The ferry\"/>"));  // Said by articlePage, in the reader's language.
     if (html) {
         ArticleParts parts = {"The ferry", "", html, "[picture]", NULL};
@@ -201,8 +205,52 @@ static void testExtract(void)
     CHECK(articleExtract("", 0) == NULL);
 }
 
+// The suggested feeds: every language KaiReader speaks has some, each a whole web address.
+static void testSuggestions(void)
+{
+    static const char *const IDS[] = {"en", "es", "de", "fr", "it", "pt", "ja", "ko", "zh"};
+    CHECK(feedSuggestLanguages() == 9);
+    for (int i = 0; i < 9; i++) {
+        int at = feedSuggestLanguageIndex(IDS[i]);
+        CHECK(at >= 0 && !strcmp(feedSuggestLanguage(at), IDS[i]));
+        const FeedSuggestion *list;
+        int n = feedSuggestions(at, &list);
+        CHECK(n >= 4 && n <= FEED_SUGGEST_MAX);
+        CHECK(1 + n <= SETTINGS_ROWS_MAX && SETTING_NEWS_SUGGEST_0 + n - 1 <= SETTING_NEWS_SUGGEST_LAST);
+        for (int j = 0; j < n; j++) {
+            CHECK(list[j].name[0] && !strncmp(list[j].url, "https://", 8) && strlen(list[j].url) < 256);
+            for (int k = 0; k < j; k++)
+                CHECK(strcmp(list[j].url, list[k].url) != 0);
+        }
+    }
+    const FeedSuggestion *none;
+    CHECK(feedSuggestLanguageIndex("xx") == -1 && feedSuggestions(-1, &none) == 0 && none == NULL);
+    // Their page: the language, then a row each; a followed one says so; a row's help is its address.
+    const char *names[2] = {"Site One", "Site Two"}, *urls[2] = {"https://one.example/rss", "https://two.example/rss"};
+    bool followed[2] = {false, true};
+    settingsSetNewsSuggestions("Deutsch", 2, names, urls, followed);
+    SettingRow rows[SETTINGS_ROWS_MAX];
+    CHECK(settingsRows(SETTINGS_PAGE_NEWS_SUGGESTED, rows) == 3 && rows[0] == SETTING_NEWS_SUGGEST_LANG &&
+          rows[2] == SETTING_NEWS_SUGGEST_0 + 1);
+    CHECK(!strcmp(settingsLabel(rows[1]), "Site One") && !strcmp(settingsHelp(rows[2]), "https://two.example/rss"));
+    CHECK(settingsIsNews(rows[1]) && settingsPickedValue(rows[1]) && settingsHasValue(rows[0]));
+    Prefs p;
+    prefsDefaults(&p);
+    char v[64];
+    bool named;
+    settingsValue(&p, rows[0], v, sizeof(v), &named);
+    CHECK(!strcmp(v, "Deutsch") && !named);
+    settingsValue(&p, rows[1], v, sizeof(v), &named);
+    CHECK(!strcmp(v, ""));
+    settingsValue(&p, rows[2], v, sizeof(v), &named);
+    CHECK(!strcmp(v, "Followed") && named);
+    CHECK(settingsOpens(SETTING_OPEN_NEWS_SUGGESTED) == SETTINGS_PAGE_NEWS_SUGGESTED);
+    settingsSetNewsSuggestions("", 0, NULL, NULL, NULL);
+}
+
 void testNews(void)
 {
+    testSuggestions();
     testFeedList();
     testPaths();
     testMarks();

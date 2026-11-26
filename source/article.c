@@ -12,6 +12,7 @@
 #define ARTICLE_MIN_TEXT 200  // An <article> with less text isn't the article (a teaser).
 #define PARAGRAPHS_MIN 140    // The part with the most paragraphs needs this much text.
 #define PARENTS_MAX 1024
+#define ASIDE_MAX_TEXT 600   // Text a part beside the article has at most (its class says what it is).
 
 static void quiet(void *user, const char *message)
 {
@@ -113,7 +114,28 @@ static void picture(fz_xml *img, TextBuf *b, const char *word)
     textBufStr(b, "</i> ");
 }
 
-// n's children, cleaned, into b.
+// A part of a site's page beside the article, by its class or id: sharing buttons, comments,
+// related links, newsletter boxes (only looked for in a whole page, not in a feed's article).
+static size_t textLength(fz_xml *n);
+
+static bool aside(fz_xml *n)
+{
+    static const char *const WORDS[] = {"share", "social", "comment", "related", "newsletter", "subscribe",
+                                        "promo", "advert", "sponsor", "breadcrumb", "hidden", "sr-only"};
+    const char *attrs[2] = {fz_xml_att(n, "class"), fz_xml_att(n, "id")};
+    for (int a = 0; a < 2; a++) {
+        if (!attrs[a])
+            continue;
+        for (size_t i = 0; i < sizeof(WORDS) / sizeof(WORDS[0]); i++)
+            for (const char *s = attrs[a]; *s; s++)
+                if (!strncasecmp(s, WORDS[i], strlen(WORDS[i])))
+                    return textLength(n) < ASIDE_MAX_TEXT;  // A wrapper of the article itself isn't one.
+    }
+    return false;
+}
+
+// n's children, cleaned, into b (word: a picture's placeholder; NULL in a whole page, where
+// pictures are kept for articlePage and the parts beside the article are left out).
 static void clean(fz_xml *n, TextBuf *b, const char *word, int depth)
 {
     for (fz_xml *c = fz_xml_down(n); c; c = fz_xml_next(c)) {
@@ -123,7 +145,7 @@ static void clean(fz_xml *n, TextBuf *b, const char *word, int depth)
             continue;
         }
         const char *name = nameOf(c);
-        if (!name || AMONG(name, DROP))
+        if (!name || AMONG(name, DROP) || (!word && aside(c)))
             continue;
         if (!strcasecmp(name, "img")) {
             picture(c, b, word);
