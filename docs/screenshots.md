@@ -26,6 +26,10 @@ The screenshots show made-up books.
 |----------------------------|----------------------|----------------------------------|
 | ![Settings and sources](screenshots/settings-sources.png) | ![Credits](screenshots/credits.png) | ![Free books lists](screenshots/free-lists.png) |
 
+| The news (made-up feeds) | An article | Settings > News |
+|--------------------------|------------|-----------------|
+| ![News](screenshots/news.png) | ![An article](screenshots/news-article.png) | ![Settings > News](screenshots/settings-news.png) |
+
 | A comic | Contents |
 |---------|----------|
 | ![A comic](screenshots/comic.png) | ![Contents](screenshots/contents.png) |

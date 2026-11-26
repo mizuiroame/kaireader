@@ -1,7 +1,7 @@
 # News (RSS/Atom feeds) for KaiReader: status
 
 Branch `feat/feeds`, worktree `D:\ns2homebrew\kaireader-feeds`, from main at 2b006c8 (1.2.0).
-**Built** (2026-11-26/27): steps 1-8 below are done; see "Left" for what remains.
+**Built** (2026-11-26/27): all steps done; only the console test is left.
 
 ## Done
 
@@ -59,9 +59,12 @@ Branch `feat/feeds`, worktree `D:\ns2homebrew\kaireader-feeds`, from main at 2b0
 
 ## Left
 
-- Screenshots for docs/screenshots.md (preview's news shots, signed with watermark.py).
-- Console test by the owner (instructions in the final report); nothing uploaded.
+- Console test by the owner, with `KaiReader-news-test.nro` ("KaiReader News test", built from this
+  branch, in the worktree's root) and the local server `kaireader-feeds-test` (left running). Nothing
+  was uploaded. Afterwards: `docker rm -f kaireader-feeds-test`.
 - Not done on purpose: pictures inside articles (placeholders only), fuzz target.
+- Screenshots (news, news-article, settings-news) are in docs/screenshots, signed per file with
+  watermark.py (not `--repos`, which would also touch the other repos' screenshots).
 
 ## Original plan (steps 1-9, done unless said above)
 
