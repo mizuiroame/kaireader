@@ -277,6 +277,8 @@ static void setOptions(CURL *curl, const NetRequest *r, struct curl_slist *heade
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
     curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, onProgress);
     curl_easy_setopt(curl, CURLOPT_XFERINFODATA, (void *)r->cancel);
+    if (r->compressed)
+        curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");  // Every kind curl unpacks (gzip, deflate).
     if (r->range)
         curl_easy_setopt(curl, CURLOPT_RANGE, r->range);
     if (r->post_json)
@@ -299,6 +301,11 @@ static bool fetch(NetClient *c, const NetRequest *request, NetSink sink, void *u
     CURLcode rc = curl_easy_perform(c->curl);
     long code = 0;
     curl_easy_getinfo(c->curl, CURLINFO_RESPONSE_CODE, &code);
+    if (request->final_url && request->final_url_size) {
+        char *final = NULL;
+        curl_easy_getinfo(c->curl, CURLINFO_EFFECTIVE_URL, &final);
+        snprintf(request->final_url, request->final_url_size, "%s", final ? final : "");
+    }
     curl_slist_free_all(headers);
     if (status)
         *status = code;

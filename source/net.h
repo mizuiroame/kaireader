@@ -39,6 +39,9 @@ typedef struct {
                                   // before it answers); connecting still gives up as stall_s says. 0: none.
     bool accept_json;             // Asks for JSON (Plex answers XML otherwise).
     bool any_certificate;         // Takes any https certificate (an IPTV list with Certificate check off).
+    bool compressed;              // Asks for gzip or deflate (a news feed's text), unpacked as it comes.
+    char *final_url;              // If not NULL, gets the address answered from, after any redirect ("" if none).
+    size_t final_url_size;
     const StreamHeaders *stream;  // The Referer, User-Agent and Origin a stream asks for; may be NULL.
 } NetRequest;
 
