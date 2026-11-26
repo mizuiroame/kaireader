@@ -85,7 +85,12 @@ How the accounts are kept on the card: [Security](security.md).
   site's pages that links to its feed: the feed is found), or **Import feeds
   (OPML)** from `feeds.opml`, exported from another reader and put in
   KaiReader's folder (`sdmc:/switch/kaireader/config`). The feeds are kept in
-  `feeds.txt` there. There are no feeds built in.
+  `feeds.txt` there.
+- **Suggested feeds** (Settings > News): well-known news sites, free to read,
+  in each of KaiReader's nine languages (yours first; left and right show
+  another language's), so nothing long has to be typed: **A** follows one,
+  and it says "Followed" from then on. None is followed until you pick it.
+  The list is `source/feedsuggest.c`.
 - **The library**: every feed's articles, newest first, with the feed's name
   and the date; **L**/**R** show one feed alone, or all of them again. An
   article you haven't opened wears a dot (a "New" in the list view). Its
@@ -101,7 +106,7 @@ How the accounts are kept on the card: [Security](security.md).
   that way from then on). Pictures inside articles show as their description,
   or "[picture]".
 - **+ menu**: Mark all as read (the articles shown), the next feed.
-- **Settings > News**: Add a feed, Import feeds (OPML), Feed (the one the rows
+- **Settings > News**: Add a feed, Suggested feeds, Import feeds (OPML), Feed (the one the rows
   under it are about), Rename this feed, Certificate check (off only for a
   site of your own with its own https certificate), Color, Remove this feed.
 
@@ -111,7 +116,9 @@ What the news can't do yet:
 - A feed that needs a sign-in can't be followed; adding a feed always checks
   its https certificate (turn the check off after, for a site of your own).
 - "Read the full article" is a best guess: on some sites it finds only part
-  of the article, or none (it says so).
+  of the article, or none (it says so); a photo's caption may show twice;
+  subscribers' articles show only their free part; and some sites refuse it
+  (El País answered "forbidden" to it in a test from a PC).
 - Read marks are kept for 30 days after an article has left its feed's last
   100.
 - Feeds in charsets other than UTF-8, UTF-16, ISO-8859-1/7, KOI8-R and

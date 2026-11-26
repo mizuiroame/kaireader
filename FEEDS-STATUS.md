@@ -57,6 +57,16 @@ Branch `feat/feeds`, worktree `D:\ns2homebrew\kaireader-feeds`, from main at 2b0
   Color.
 - No bundled newspaper presets.
 
+## Suggested feeds (2026-11-27, owner's request after the console test)
+
+- Settings > News > "Suggested feeds" (second row) opens a page: "Language" (stepped, starts on the
+  app's language), then up to 7 feeds of that language; A or a tap follows one exactly as "Add a feed"
+  does (same messages and "already followed" check), under the suggestion's name and address; a
+  followed one says "Followed". B goes back to News. Table: `source/feedsuggest.c` (9 languages).
+- Every suggested URL was fetched live on 2026-11-26 and parsed with feeds.c (one-off host check, nothing
+  real committed). `article.c` now leaves out parts beside the article (class/id share, comments,
+  related, newsletter, hidden...) when they hold little text.
+
 ## Left
 
 - Console test by the owner, with `KaiReader-news-test.nro` ("KaiReader News test", built from this
