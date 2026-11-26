@@ -1039,3 +1039,204 @@ Try other words from a title, in French.
 
 Show unglue.it's most popular, under Creative Commons
 显示 unglue.it 最热门（知识共享许可）
+
+%d feeds
+%d 个订阅源
+
+1 feed
+1 个订阅源
+
+%s: added. X in the library goes to the news.
+%s：已添加。在书库中按 X 前往新闻。
+
+%s: no longer followed.
+%s：已不再订阅。
+
+[picture]
+[图片]
+
+[Y] Refresh  [L][R] Feeds  
+[Y] 刷新  [L][R] 订阅源  
+
+A feed is being looked for already.
+已在查找订阅源。
+
+A feed's address, or the address of a site's page that links to its feed (it's found).
+订阅源的地址，或链接到其订阅源的网站页面地址（会自动找到）。
+
+Add a feed
+添加订阅源
+
+Add a feed first.
+请先添加订阅源。
+
+Adds the feeds of feeds.opml (exported from another reader), put in KaiReader's folder (sdmc:/switch/kaireader/config).
+添加放在 KaiReader 文件夹（sdmc:/switch/kaireader/config）中的 feeds.opml（从其他阅读器导出）里的订阅源。
+
+All the feeds
+全部订阅源
+
+An article is being brought already.
+已在获取一篇文章。
+
+Bringing the whole article from its site...
+正在从网站获取完整文章...
+
+Check again
+再次检查
+
+Check the feeds again
+再次检查订阅源
+
+Checking the feeds...
+正在检查订阅源...
+
+Checking the feeds... %d of %d
+正在检查订阅源... %d / %d
+
+Every article shown is marked as read.
+所显示的文章已全部标为已读。
+
+Feed
+订阅源
+
+Feeds added: %d.
+已添加订阅源：%d 个。
+
+From the article's page on its site: the part of it that reads as the article.
+来自网站上的文章页面：其中可作为文章阅读的部分。
+
+Go to the news
+前往新闻
+
+Import feeds (OPML)
+导入订阅源（OPML）
+
+It's no longer followed: its articles leave the library.
+不再订阅：其文章会离开书库。
+
+Looking for the feed...
+正在查找订阅源...
+
+Mark all as read
+全部标为已读
+
+New
+新
+
+News
+新闻
+
+News from websites
+网站新闻
+
+No article could be found on its page.
+在其页面上找不到文章。
+
+No articles here yet.
+这里还没有文章。
+
+No more feeds can be followed.
+无法再订阅更多订阅源。
+
+Off only for a site of your own with a certificate it made itself (https).
+仅当是你自己的、使用自签名证书的网站（https）时才关闭。
+
+Put feeds.opml in KaiReader's folder (sdmc:/switch/kaireader/config) first.
+请先把 feeds.opml 放进 KaiReader 文件夹（sdmc:/switch/kaireader/config）。
+
+Read the full article
+阅读完整文章
+
+Refresh
+刷新
+
+Remove this feed
+移除此订阅源
+
+Rename this feed
+重命名此订阅源
+
+Show %s
+显示 %s
+
+Show all the feeds
+显示全部订阅源
+
+Sites' news (RSS or Atom feeds), read like books: X in the library goes to them.
+网站的新闻（RSS 或 Atom 订阅源），像书一样阅读：在书库中按 X 前往。
+
+That address isn't a news feed, and its page doesn't link to one.
+该地址不是新闻订阅源，其页面也没有链接到订阅源。
+
+That article isn't kept on the card any more.
+该文章已不再保存在卡上。
+
+That article's feed isn't followed any more.
+该文章的订阅源已不再订阅。
+
+That feed is followed already.
+已订阅该订阅源。
+
+That file isn't an OPML list of feeds.
+该文件不是 OPML 订阅源列表。
+
+That isn't a web address: harbor.example/rss, http:// or https://.
+这不是网址：harbor.example/rss、http:// 或 https://。
+
+The article's page couldn't be read.
+无法读取文章页面。
+
+The feed couldn't be read.
+无法读取订阅源。
+
+The feed the rows under it are about: left and right choose another.
+下面各行所针对的订阅源：左右键选择其他订阅源。
+
+The feed's address, or the address of a site's page that links to it
+订阅源的地址，或链接到它的网站页面地址
+
+The feed's name
+订阅源名称
+
+The feeds are being checked already.
+已在检查订阅源。
+
+The feeds couldn't be read.
+无法读取订阅源。
+
+The name its articles show under their titles.
+其文章标题下方显示的名称。
+
+The news' dot and its library's color: its own (coral) or one of the accents.
+新闻的圆点及其书库的颜色：它自己的（珊瑚色）或某个强调色。
+
+The RSS or Atom feeds of the sites you read, by their address.
+按地址添加你常读网站的 RSS 或 Atom 订阅源。
+
+The whole article is here: it opens with it from now on.
+完整文章已获取：今后会以此打开。
+
+The whole article, from its site.
+来自网站的完整文章。
+
+Their newest articles show here once they come.
+最新文章一到就会显示在这里。
+
+There's no feed at that address.
+该地址没有订阅源。
+
+There's nothing new to mark.
+没有可标记的新文章。
+
+This article has no page on its site.
+这篇文章在其网站上没有页面。
+
+This is what the feed gives: "Read the full article" in the + menu brings the whole of it from its site.
+这是订阅源提供的内容：+ 菜单中的“阅读完整文章”会从网站获取全文。
+
+Untitled article
+无标题文章
+
+Y checks the feeds again; Settings > News adds more.
+按 Y 再次检查订阅源；在 设置 > 新闻 中添加更多。

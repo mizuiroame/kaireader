@@ -1040,3 +1040,204 @@ Prova altre parole di un titolo, in francese.
 
 Show unglue.it's most popular, under Creative Commons
 Mostra i più popolari di unglue.it, con licenza Creative Commons
+
+%d feeds
+%d feed
+
+1 feed
+1 feed
+
+%s: added. X in the library goes to the news.
+%s: aggiunto. X nella libreria porta alle notizie.
+
+%s: no longer followed.
+%s: non più seguito.
+
+[picture]
+[immagine]
+
+[Y] Refresh  [L][R] Feeds  
+[Y] Aggiorna  [L][R] Feed  
+
+A feed is being looked for already.
+Si sta già cercando un feed.
+
+A feed's address, or the address of a site's page that links to its feed (it's found).
+L'indirizzo di un feed, o di una pagina del sito che rimanda al suo feed (viene trovato).
+
+Add a feed
+Aggiungi un feed
+
+Add a feed first.
+Aggiungi prima un feed.
+
+Adds the feeds of feeds.opml (exported from another reader), put in KaiReader's folder (sdmc:/switch/kaireader/config).
+Aggiunge i feed di feeds.opml (esportato da un altro lettore), messo nella cartella di KaiReader (sdmc:/switch/kaireader/config).
+
+All the feeds
+Tutti i feed
+
+An article is being brought already.
+Si sta già scaricando un articolo.
+
+Bringing the whole article from its site...
+Scarico l'articolo completo dal suo sito...
+
+Check again
+Controlla di nuovo
+
+Check the feeds again
+Controlla di nuovo i feed
+
+Checking the feeds...
+Controllo dei feed...
+
+Checking the feeds... %d of %d
+Controllo dei feed... %d di %d
+
+Every article shown is marked as read.
+Tutti gli articoli mostrati sono segnati come letti.
+
+Feed
+Feed
+
+Feeds added: %d.
+Feed aggiunti: %d.
+
+From the article's page on its site: the part of it that reads as the article.
+Dalla pagina dell'articolo sul suo sito: la parte che si legge come l'articolo.
+
+Go to the news
+Vai alle notizie
+
+Import feeds (OPML)
+Importa feed (OPML)
+
+It's no longer followed: its articles leave the library.
+Non viene più seguito: i suoi articoli lasciano la libreria.
+
+Looking for the feed...
+Cerco il feed...
+
+Mark all as read
+Segna tutto come letto
+
+New
+Nuovo
+
+News
+Notizie
+
+News from websites
+Notizie dai siti web
+
+No article could be found on its page.
+Nessun articolo trovato nella sua pagina.
+
+No articles here yet.
+Ancora nessun articolo.
+
+No more feeds can be followed.
+Non si possono seguire altri feed.
+
+Off only for a site of your own with a certificate it made itself (https).
+Disattivalo solo per un tuo sito con un certificato creato da sé (https).
+
+Put feeds.opml in KaiReader's folder (sdmc:/switch/kaireader/config) first.
+Metti prima feeds.opml nella cartella di KaiReader (sdmc:/switch/kaireader/config).
+
+Read the full article
+Leggi l'articolo completo
+
+Refresh
+Aggiorna
+
+Remove this feed
+Rimuovi questo feed
+
+Rename this feed
+Rinomina questo feed
+
+Show %s
+Mostra %s
+
+Show all the feeds
+Mostra tutti i feed
+
+Sites' news (RSS or Atom feeds), read like books: X in the library goes to them.
+Le notizie dei siti (feed RSS o Atom), lette come libri: X nella libreria porta a loro.
+
+That address isn't a news feed, and its page doesn't link to one.
+Quell'indirizzo non è un feed di notizie, e la sua pagina non ne indica nessuno.
+
+That article isn't kept on the card any more.
+Quell'articolo non è più salvato sulla scheda.
+
+That article's feed isn't followed any more.
+Il feed di quell'articolo non è più seguito.
+
+That feed is followed already.
+Quel feed è già seguito.
+
+That file isn't an OPML list of feeds.
+Quel file non è un elenco OPML di feed.
+
+That isn't a web address: harbor.example/rss, http:// or https://.
+Non è un indirizzo web: harbor.example/rss, http:// o https://.
+
+The article's page couldn't be read.
+Impossibile leggere la pagina dell'articolo.
+
+The feed couldn't be read.
+Impossibile leggere il feed.
+
+The feed the rows under it are about: left and right choose another.
+Il feed a cui si riferiscono le righe sotto: sinistra e destra ne scelgono un altro.
+
+The feed's address, or the address of a site's page that links to it
+L'indirizzo del feed, o di una pagina del sito che rimanda a esso
+
+The feed's name
+Il nome del feed
+
+The feeds are being checked already.
+I feed sono già in controllo.
+
+The feeds couldn't be read.
+Impossibile leggere i feed.
+
+The name its articles show under their titles.
+Il nome che i suoi articoli mostrano sotto i titoli.
+
+The news' dot and its library's color: its own (coral) or one of the accents.
+Il punto delle notizie e il colore della loro libreria: il loro (corallo) o uno dei colori d'accento.
+
+The RSS or Atom feeds of the sites you read, by their address.
+I feed RSS o Atom dei siti che leggi, tramite il loro indirizzo.
+
+The whole article is here: it opens with it from now on.
+L'articolo completo è qui: d'ora in poi si apre così.
+
+The whole article, from its site.
+L'articolo completo, dal suo sito.
+
+Their newest articles show here once they come.
+I loro articoli più recenti compaiono qui appena arrivano.
+
+There's no feed at that address.
+Non c'è nessun feed a quell'indirizzo.
+
+There's nothing new to mark.
+Non c'è niente di nuovo da segnare.
+
+This article has no page on its site.
+Questo articolo non ha una pagina sul suo sito.
+
+This is what the feed gives: "Read the full article" in the + menu brings the whole of it from its site.
+Questo è ciò che dà il feed: "Leggi l'articolo completo" nel menu + lo porta intero dal suo sito.
+
+Untitled article
+Articolo senza titolo
+
+Y checks the feeds again; Settings > News adds more.
+Y controlla di nuovo i feed; Impostazioni > Notizie ne aggiunge altri.

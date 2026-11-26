@@ -1039,3 +1039,204 @@ Try other words from a title, in French.
 
 Show unglue.it's most popular, under Creative Commons
 unglue.it の人気の本を表示（クリエイティブ・コモンズ）
+
+%d feeds
+%d 件のフィード
+
+1 feed
+1 件のフィード
+
+%s: added. X in the library goes to the news.
+%s: 追加しました。ライブラリで X を押すとニュースへ。
+
+%s: no longer followed.
+%s: フォローをやめました。
+
+[picture]
+[画像]
+
+[Y] Refresh  [L][R] Feeds  
+[Y] 更新  [L][R] フィード  
+
+A feed is being looked for already.
+すでにフィードを探しています。
+
+A feed's address, or the address of a site's page that links to its feed (it's found).
+フィードのアドレス、またはフィードへのリンクがあるサイトのページのアドレス（フィードを見つけます）。
+
+Add a feed
+フィードを追加
+
+Add a feed first.
+先にフィードを追加してください。
+
+Adds the feeds of feeds.opml (exported from another reader), put in KaiReader's folder (sdmc:/switch/kaireader/config).
+KaiReader のフォルダー（sdmc:/switch/kaireader/config）に置いた feeds.opml（別のリーダーから書き出したもの）のフィードを追加します。
+
+All the feeds
+すべてのフィード
+
+An article is being brought already.
+すでに記事を取得しています。
+
+Bringing the whole article from its site...
+サイトから記事全体を取得しています...
+
+Check again
+もう一度確認
+
+Check the feeds again
+フィードをもう一度確認
+
+Checking the feeds...
+フィードを確認しています...
+
+Checking the feeds... %d of %d
+フィードを確認しています... %d / %d
+
+Every article shown is marked as read.
+表示中の記事をすべて既読にしました。
+
+Feed
+フィード
+
+Feeds added: %d.
+追加したフィード: %d 件。
+
+From the article's page on its site: the part of it that reads as the article.
+サイトの記事ページから、記事として読める部分です。
+
+Go to the news
+ニュースへ
+
+Import feeds (OPML)
+フィードを読み込む（OPML）
+
+It's no longer followed: its articles leave the library.
+フォローをやめます。その記事はライブラリから消えます。
+
+Looking for the feed...
+フィードを探しています...
+
+Mark all as read
+すべて既読にする
+
+New
+新着
+
+News
+ニュース
+
+News from websites
+ウェブサイトのニュース
+
+No article could be found on its page.
+ページに記事が見つかりませんでした。
+
+No articles here yet.
+まだ記事がありません。
+
+No more feeds can be followed.
+これ以上フィードをフォローできません。
+
+Off only for a site of your own with a certificate it made itself (https).
+自己署名の証明書を使う自分のサイト（https）のときだけオフにします。
+
+Put feeds.opml in KaiReader's folder (sdmc:/switch/kaireader/config) first.
+先に feeds.opml を KaiReader のフォルダー（sdmc:/switch/kaireader/config）に置いてください。
+
+Read the full article
+記事全体を読む
+
+Refresh
+更新
+
+Remove this feed
+このフィードを削除
+
+Rename this feed
+このフィードの名前を変更
+
+Show %s
+%s を表示
+
+Show all the feeds
+すべてのフィードを表示
+
+Sites' news (RSS or Atom feeds), read like books: X in the library goes to them.
+サイトのニュース（RSS や Atom のフィード）を本のように読めます。ライブラリで X を押すとそこへ。
+
+That address isn't a news feed, and its page doesn't link to one.
+そのアドレスはニュースフィードではなく、そのページにもフィードへのリンクがありません。
+
+That article isn't kept on the card any more.
+その記事はもう SD カードに残っていません。
+
+That article's feed isn't followed any more.
+その記事のフィードはもうフォローしていません。
+
+That feed is followed already.
+そのフィードはすでにフォローしています。
+
+That file isn't an OPML list of feeds.
+そのファイルは OPML のフィード一覧ではありません。
+
+That isn't a web address: harbor.example/rss, http:// or https://.
+ウェブのアドレスではありません: harbor.example/rss、http:// または https://。
+
+The article's page couldn't be read.
+記事のページを読み込めませんでした。
+
+The feed couldn't be read.
+フィードを読み込めませんでした。
+
+The feed the rows under it are about: left and right choose another.
+下の行が対象とするフィードです。左右で別のフィードを選びます。
+
+The feed's address, or the address of a site's page that links to it
+フィードのアドレス、またはフィードへのリンクがあるサイトのページのアドレス
+
+The feed's name
+フィードの名前
+
+The feeds are being checked already.
+すでにフィードを確認しています。
+
+The feeds couldn't be read.
+フィードを読み込めませんでした。
+
+The name its articles show under their titles.
+記事のタイトルの下に表示される名前です。
+
+The news' dot and its library's color: its own (coral) or one of the accents.
+ニュースの点とライブラリの色: 専用の色（コーラル）またはアクセントカラーのひとつ。
+
+The RSS or Atom feeds of the sites you read, by their address.
+よく読むサイトの RSS や Atom のフィードを、アドレスで追加。
+
+The whole article is here: it opens with it from now on.
+記事全体を取得しました。今後はこの形で開きます。
+
+The whole article, from its site.
+サイトから取得した記事全体です。
+
+Their newest articles show here once they come.
+最新の記事が届きしだいここに表示されます。
+
+There's no feed at that address.
+そのアドレスにフィードはありません。
+
+There's nothing new to mark.
+既読にする新着はありません。
+
+This article has no page on its site.
+この記事にはサイト上のページがありません。
+
+This is what the feed gives: "Read the full article" in the + menu brings the whole of it from its site.
+これはフィードに含まれる内容です。+ メニューの「記事全体を読む」でサイトから記事全体を取得します。
+
+Untitled article
+無題の記事
+
+Y checks the feeds again; Settings > News adds more.
+Y でフィードをもう一度確認。設定 > ニュース で追加できます。

@@ -1040,3 +1040,204 @@ Prueba otras palabras de un título, en francés.
 
 Show unglue.it's most popular, under Creative Commons
 Ver lo más popular de unglue.it, con licencia Creative Commons
+
+%d feeds
+%d canales
+
+1 feed
+1 canal
+
+%s: added. X in the library goes to the news.
+%s: agregado. X en la biblioteca va a las noticias.
+
+%s: no longer followed.
+%s: ya no se sigue.
+
+[picture]
+[imagen]
+
+[Y] Refresh  [L][R] Feeds  
+[Y] Actualizar  [L][R] Canales  
+
+A feed is being looked for already.
+Ya se está buscando un canal.
+
+A feed's address, or the address of a site's page that links to its feed (it's found).
+La dirección de un canal, o la de una página del sitio que enlaza a su canal (se encuentra solo).
+
+Add a feed
+Agregar un canal
+
+Add a feed first.
+Agrega un canal primero.
+
+Adds the feeds of feeds.opml (exported from another reader), put in KaiReader's folder (sdmc:/switch/kaireader/config).
+Agrega los canales de feeds.opml (exportado de otro lector), puesto en la carpeta de KaiReader (sdmc:/switch/kaireader/config).
+
+All the feeds
+Todos los canales
+
+An article is being brought already.
+Ya se está trayendo un artículo.
+
+Bringing the whole article from its site...
+Trayendo el artículo completo de su sitio...
+
+Check again
+Volver a ver
+
+Check the feeds again
+Revisar los canales de nuevo
+
+Checking the feeds...
+Revisando los canales...
+
+Checking the feeds... %d of %d
+Revisando los canales... %d de %d
+
+Every article shown is marked as read.
+Todos los artículos mostrados quedaron como leídos.
+
+Feed
+Canal
+
+Feeds added: %d.
+Canales agregados: %d.
+
+From the article's page on its site: the part of it that reads as the article.
+De la página del artículo en su sitio: la parte que se lee como el artículo.
+
+Go to the news
+Ir a las noticias
+
+Import feeds (OPML)
+Importar canales (OPML)
+
+It's no longer followed: its articles leave the library.
+Deja de seguirse: sus artículos salen de la biblioteca.
+
+Looking for the feed...
+Buscando el canal...
+
+Mark all as read
+Marcar todo como leído
+
+New
+Nuevo
+
+News
+Noticias
+
+News from websites
+Noticias de sitios web
+
+No article could be found on its page.
+No se encontró ningún artículo en su página.
+
+No articles here yet.
+Todavía no hay artículos.
+
+No more feeds can be followed.
+No se pueden seguir más canales.
+
+Off only for a site of your own with a certificate it made itself (https).
+Desactívalo solo para un sitio tuyo con un certificado hecho por él mismo (https).
+
+Put feeds.opml in KaiReader's folder (sdmc:/switch/kaireader/config) first.
+Pon feeds.opml en la carpeta de KaiReader (sdmc:/switch/kaireader/config) primero.
+
+Read the full article
+Leer el artículo completo
+
+Refresh
+Actualizar
+
+Remove this feed
+Quitar este canal
+
+Rename this feed
+Cambiar el nombre de este canal
+
+Show %s
+Ver %s
+
+Show all the feeds
+Ver todos los canales
+
+Sites' news (RSS or Atom feeds), read like books: X in the library goes to them.
+Las noticias de los sitios (canales RSS o Atom), leídas como libros: X en la biblioteca va a ellas.
+
+That address isn't a news feed, and its page doesn't link to one.
+Esa dirección no es un canal de noticias, y su página no enlaza a ninguno.
+
+That article isn't kept on the card any more.
+Ese artículo ya no está guardado en la tarjeta.
+
+That article's feed isn't followed any more.
+El canal de ese artículo ya no se sigue.
+
+That feed is followed already.
+Ese canal ya se sigue.
+
+That file isn't an OPML list of feeds.
+Ese archivo no es una lista OPML de canales.
+
+That isn't a web address: harbor.example/rss, http:// or https://.
+Eso no es una dirección web: harbor.example/rss, http:// o https://.
+
+The article's page couldn't be read.
+No se pudo leer la página del artículo.
+
+The feed couldn't be read.
+No se pudo leer el canal.
+
+The feed the rows under it are about: left and right choose another.
+El canal del que tratan las filas de abajo: izquierda y derecha eligen otro.
+
+The feed's address, or the address of a site's page that links to it
+La dirección del canal, o la de una página del sitio que enlaza a él
+
+The feed's name
+El nombre del canal
+
+The feeds are being checked already.
+Ya se están revisando los canales.
+
+The feeds couldn't be read.
+No se pudieron leer los canales.
+
+The name its articles show under their titles.
+El nombre que sus artículos muestran bajo sus títulos.
+
+The news' dot and its library's color: its own (coral) or one of the accents.
+El punto de las noticias y el color de su biblioteca: el suyo (coral) o uno de los colores de acento.
+
+The RSS or Atom feeds of the sites you read, by their address.
+Los canales RSS o Atom de los sitios que lees, por su dirección.
+
+The whole article is here: it opens with it from now on.
+El artículo completo ya está aquí: se abre así desde ahora.
+
+The whole article, from its site.
+El artículo completo, de su sitio.
+
+Their newest articles show here once they come.
+Sus artículos más nuevos aparecen aquí en cuanto llegan.
+
+There's no feed at that address.
+No hay ningún canal en esa dirección.
+
+There's nothing new to mark.
+No hay nada nuevo que marcar.
+
+This article has no page on its site.
+Este artículo no tiene página en su sitio.
+
+This is what the feed gives: "Read the full article" in the + menu brings the whole of it from its site.
+Esto es lo que da el canal: "Leer el artículo completo" en el menú + trae el artículo entero de su sitio.
+
+Untitled article
+Artículo sin título
+
+Y checks the feeds again; Settings > News adds more.
+Y revisa los canales de nuevo; Configuración > Noticias agrega más.

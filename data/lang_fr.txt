@@ -1040,3 +1040,204 @@ Essayez d'autres mots d'un titre, en français.
 
 Show unglue.it's most popular, under Creative Commons
 Afficher les plus populaires d'unglue.it, sous licence Creative Commons
+
+%d feeds
+%d flux
+
+1 feed
+1 flux
+
+%s: added. X in the library goes to the news.
+%s : ajouté. X dans la bibliothèque mène aux actualités.
+
+%s: no longer followed.
+%s : n'est plus suivi.
+
+[picture]
+[image]
+
+[Y] Refresh  [L][R] Feeds  
+[Y] Actualiser  [L][R] Flux  
+
+A feed is being looked for already.
+Un flux est déjà en cours de recherche.
+
+A feed's address, or the address of a site's page that links to its feed (it's found).
+L'adresse d'un flux, ou celle d'une page du site qui renvoie à son flux (il est trouvé).
+
+Add a feed
+Ajouter un flux
+
+Add a feed first.
+Ajoutez d'abord un flux.
+
+Adds the feeds of feeds.opml (exported from another reader), put in KaiReader's folder (sdmc:/switch/kaireader/config).
+Ajoute les flux de feeds.opml (exporté d'un autre lecteur), placé dans le dossier de KaiReader (sdmc:/switch/kaireader/config).
+
+All the feeds
+Tous les flux
+
+An article is being brought already.
+Un article est déjà en cours de récupération.
+
+Bringing the whole article from its site...
+Récupération de l'article complet sur son site...
+
+Check again
+Vérifier à nouveau
+
+Check the feeds again
+Vérifier à nouveau les flux
+
+Checking the feeds...
+Vérification des flux...
+
+Checking the feeds... %d of %d
+Vérification des flux... %d sur %d
+
+Every article shown is marked as read.
+Tous les articles affichés sont marqués comme lus.
+
+Feed
+Flux
+
+Feeds added: %d.
+Flux ajoutés : %d.
+
+From the article's page on its site: the part of it that reads as the article.
+De la page de l'article sur son site : la partie qui se lit comme l'article.
+
+Go to the news
+Aller aux actualités
+
+Import feeds (OPML)
+Importer des flux (OPML)
+
+It's no longer followed: its articles leave the library.
+Il n'est plus suivi : ses articles quittent la bibliothèque.
+
+Looking for the feed...
+Recherche du flux...
+
+Mark all as read
+Tout marquer comme lu
+
+New
+Nouveau
+
+News
+Actualités
+
+News from websites
+Actualités des sites web
+
+No article could be found on its page.
+Aucun article n'a été trouvé sur sa page.
+
+No articles here yet.
+Pas encore d'articles ici.
+
+No more feeds can be followed.
+Aucun autre flux ne peut être suivi.
+
+Off only for a site of your own with a certificate it made itself (https).
+À désactiver seulement pour un site à vous avec un certificat qu'il a créé lui-même (https).
+
+Put feeds.opml in KaiReader's folder (sdmc:/switch/kaireader/config) first.
+Placez d'abord feeds.opml dans le dossier de KaiReader (sdmc:/switch/kaireader/config).
+
+Read the full article
+Lire l'article complet
+
+Refresh
+Actualiser
+
+Remove this feed
+Retirer ce flux
+
+Rename this feed
+Renommer ce flux
+
+Show %s
+Afficher %s
+
+Show all the feeds
+Afficher tous les flux
+
+Sites' news (RSS or Atom feeds), read like books: X in the library goes to them.
+Les actualités des sites (flux RSS ou Atom), lues comme des livres : X dans la bibliothèque y mène.
+
+That address isn't a news feed, and its page doesn't link to one.
+Cette adresse n'est pas un flux d'actualités, et sa page n'en mentionne aucun.
+
+That article isn't kept on the card any more.
+Cet article n'est plus gardé sur la carte.
+
+That article's feed isn't followed any more.
+Le flux de cet article n'est plus suivi.
+
+That feed is followed already.
+Ce flux est déjà suivi.
+
+That file isn't an OPML list of feeds.
+Ce fichier n'est pas une liste OPML de flux.
+
+That isn't a web address: harbor.example/rss, http:// or https://.
+Ce n'est pas une adresse web : harbor.example/rss, http:// ou https://.
+
+The article's page couldn't be read.
+La page de l'article n'a pas pu être lue.
+
+The feed couldn't be read.
+Le flux n'a pas pu être lu.
+
+The feed the rows under it are about: left and right choose another.
+Le flux dont parlent les lignes du dessous : gauche et droite en choisissent un autre.
+
+The feed's address, or the address of a site's page that links to it
+L'adresse du flux, ou celle d'une page du site qui y renvoie
+
+The feed's name
+Le nom du flux
+
+The feeds are being checked already.
+Les flux sont déjà en cours de vérification.
+
+The feeds couldn't be read.
+Les flux n'ont pas pu être lus.
+
+The name its articles show under their titles.
+Le nom que ses articles affichent sous leur titre.
+
+The news' dot and its library's color: its own (coral) or one of the accents.
+Le point des actualités et la couleur de leur bibliothèque : la leur (corail) ou l'une des couleurs d'accent.
+
+The RSS or Atom feeds of the sites you read, by their address.
+Les flux RSS ou Atom des sites que vous lisez, par leur adresse.
+
+The whole article is here: it opens with it from now on.
+L'article complet est là : il s'ouvre ainsi désormais.
+
+The whole article, from its site.
+L'article complet, depuis son site.
+
+Their newest articles show here once they come.
+Leurs articles les plus récents s'affichent ici dès leur arrivée.
+
+There's no feed at that address.
+Il n'y a pas de flux à cette adresse.
+
+There's nothing new to mark.
+Il n'y a rien de nouveau à marquer.
+
+This article has no page on its site.
+Cet article n'a pas de page sur son site.
+
+This is what the feed gives: "Read the full article" in the + menu brings the whole of it from its site.
+Voici ce que donne le flux : "Lire l'article complet" dans le menu + récupère l'article entier sur son site.
+
+Untitled article
+Article sans titre
+
+Y checks the feeds again; Settings > News adds more.
+Y vérifie à nouveau les flux ; Paramètres > Actualités en ajoute d'autres.

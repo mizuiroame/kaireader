@@ -1039,3 +1039,204 @@ Try other words from a title, in French.
 
 Show unglue.it's most popular, under Creative Commons
 unglue.it 인기 책 보기(크리에이티브 커먼즈)
+
+%d feeds
+피드 %d개
+
+1 feed
+피드 1개
+
+%s: added. X in the library goes to the news.
+%s: 추가했어요. 서재에서 X를 누르면 뉴스로 가요.
+
+%s: no longer followed.
+%s: 더 이상 구독하지 않아요.
+
+[picture]
+[이미지]
+
+[Y] Refresh  [L][R] Feeds  
+[Y] 새로 고침  [L][R] 피드  
+
+A feed is being looked for already.
+이미 피드를 찾고 있어요.
+
+A feed's address, or the address of a site's page that links to its feed (it's found).
+피드 주소, 또는 피드로 연결되는 사이트 페이지 주소(피드를 찾아요).
+
+Add a feed
+피드 추가
+
+Add a feed first.
+먼저 피드를 추가하세요.
+
+Adds the feeds of feeds.opml (exported from another reader), put in KaiReader's folder (sdmc:/switch/kaireader/config).
+KaiReader 폴더(sdmc:/switch/kaireader/config)에 넣은 feeds.opml(다른 리더에서 내보낸 파일)의 피드를 추가해요.
+
+All the feeds
+모든 피드
+
+An article is being brought already.
+이미 기사를 가져오고 있어요.
+
+Bringing the whole article from its site...
+사이트에서 기사 전체를 가져오고 있어요...
+
+Check again
+다시 확인
+
+Check the feeds again
+피드 다시 확인
+
+Checking the feeds...
+피드를 확인하고 있어요...
+
+Checking the feeds... %d of %d
+피드를 확인하고 있어요... %d / %d
+
+Every article shown is marked as read.
+보이는 기사를 모두 읽음으로 표시했어요.
+
+Feed
+피드
+
+Feeds added: %d.
+추가한 피드: %d개.
+
+From the article's page on its site: the part of it that reads as the article.
+사이트의 기사 페이지에서 기사로 읽히는 부분이에요.
+
+Go to the news
+뉴스로
+
+Import feeds (OPML)
+피드 가져오기(OPML)
+
+It's no longer followed: its articles leave the library.
+더 이상 구독하지 않아요. 그 기사는 서재에서 사라져요.
+
+Looking for the feed...
+피드를 찾고 있어요...
+
+Mark all as read
+모두 읽음으로 표시
+
+New
+새 글
+
+News
+뉴스
+
+News from websites
+웹사이트 뉴스
+
+No article could be found on its page.
+페이지에서 기사를 찾을 수 없어요.
+
+No articles here yet.
+아직 기사가 없어요.
+
+No more feeds can be followed.
+더 이상 피드를 구독할 수 없어요.
+
+Off only for a site of your own with a certificate it made itself (https).
+자체 인증서를 쓰는 내 사이트(https)일 때만 끄세요.
+
+Put feeds.opml in KaiReader's folder (sdmc:/switch/kaireader/config) first.
+먼저 feeds.opml을 KaiReader 폴더(sdmc:/switch/kaireader/config)에 넣으세요.
+
+Read the full article
+기사 전체 읽기
+
+Refresh
+새로 고침
+
+Remove this feed
+이 피드 삭제
+
+Rename this feed
+이 피드 이름 바꾸기
+
+Show %s
+%s 보기
+
+Show all the feeds
+모든 피드 보기
+
+Sites' news (RSS or Atom feeds), read like books: X in the library goes to them.
+사이트 뉴스(RSS나 Atom 피드)를 책처럼 읽어요. 서재에서 X를 누르면 가요.
+
+That address isn't a news feed, and its page doesn't link to one.
+그 주소는 뉴스 피드가 아니고, 그 페이지에도 피드 링크가 없어요.
+
+That article isn't kept on the card any more.
+그 기사는 더 이상 카드에 남아 있지 않아요.
+
+That article's feed isn't followed any more.
+그 기사의 피드는 더 이상 구독하지 않아요.
+
+That feed is followed already.
+그 피드는 이미 구독하고 있어요.
+
+That file isn't an OPML list of feeds.
+그 파일은 OPML 피드 목록이 아니에요.
+
+That isn't a web address: harbor.example/rss, http:// or https://.
+웹 주소가 아니에요: harbor.example/rss, http:// 또는 https://.
+
+The article's page couldn't be read.
+기사 페이지를 읽을 수 없어요.
+
+The feed couldn't be read.
+피드를 읽을 수 없어요.
+
+The feed the rows under it are about: left and right choose another.
+아래 줄들이 가리키는 피드예요. 왼쪽과 오른쪽으로 다른 피드를 골라요.
+
+The feed's address, or the address of a site's page that links to it
+피드 주소, 또는 피드로 연결되는 사이트 페이지 주소
+
+The feed's name
+피드 이름
+
+The feeds are being checked already.
+이미 피드를 확인하고 있어요.
+
+The feeds couldn't be read.
+피드를 읽을 수 없어요.
+
+The name its articles show under their titles.
+기사 제목 아래에 보이는 이름이에요.
+
+The news' dot and its library's color: its own (coral) or one of the accents.
+뉴스 점과 서재 색: 고유 색(코랄) 또는 강조 색 중 하나.
+
+The RSS or Atom feeds of the sites you read, by their address.
+자주 읽는 사이트의 RSS나 Atom 피드를 주소로 추가해요.
+
+The whole article is here: it opens with it from now on.
+기사 전체를 가져왔어요. 이제부터 이렇게 열려요.
+
+The whole article, from its site.
+사이트에서 가져온 기사 전체예요.
+
+Their newest articles show here once they come.
+최신 기사가 도착하는 대로 여기에 보여요.
+
+There's no feed at that address.
+그 주소에는 피드가 없어요.
+
+There's nothing new to mark.
+읽음으로 표시할 새 글이 없어요.
+
+This article has no page on its site.
+이 기사는 사이트에 페이지가 없어요.
+
+This is what the feed gives: "Read the full article" in the + menu brings the whole of it from its site.
+피드에 담긴 내용이에요. + 메뉴의 "기사 전체 읽기"로 사이트에서 전체를 가져와요.
+
+Untitled article
+제목 없는 기사
+
+Y checks the feeds again; Settings > News adds more.
+Y로 피드를 다시 확인해요. 설정 > 뉴스에서 더 추가할 수 있어요.
