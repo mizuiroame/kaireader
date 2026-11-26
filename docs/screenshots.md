@@ -22,9 +22,9 @@ The screenshots show made-up books.
 |-------------------------|------------|------------|
 | ![Book server](screenshots/server.png) | ![Free books](screenshots/free.png) | ![Menu](screenshots/menu.png) |
 
-| Each source with its color | Credits and licenses |
-|----------------------------|----------------------|
-| ![Settings and sources](screenshots/settings-sources.png) | ![Credits](screenshots/credits.png) |
+| Each source with its color | Credits and licenses | Free books in Spanish and French |
+|----------------------------|----------------------|----------------------------------|
+| ![Settings and sources](screenshots/settings-sources.png) | ![Credits](screenshots/credits.png) | ![Free books lists](screenshots/free-lists.png) |
 
 | A comic | Contents |
 |---------|----------|
