@@ -37,6 +37,7 @@ int main(void)
     testNetList();
     testTouch();
     testOpds();
+    testNewsFeeds();
     testCatalogs();
     testUpdate();
     testUpdateRelease();
