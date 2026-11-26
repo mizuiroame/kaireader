@@ -471,6 +471,28 @@ static void drawTurnButton(int x, int y)
     uiHitAdd(x - 4, 0, TURN_BUTTON_W + 8, BARS_TOP_H, HIT_TURN, 0);
 }
 
+// A news article as a web page: its strips one under the other, where it's scrolled to, and a
+// thin bar at the right saying how far down.
+static void drawArticle(const App *app, uint64_t now_ns, Color spin)
+{
+    int w = gfxLayoutWidth(), h = gfxLayoutHeight(), strip = appScrollStrip();
+    int x, y, cw, ch;
+    appColumn(app, 0, &x, &y, &cw, &ch);
+    for (int page = app->page; page < app->pages && page <= app->page + 2; page++) {
+        int top = appScrollStripY(app, page);
+        if (top >= h || top + strip <= 0)
+            continue;
+        const DocImage *img = appPageImage(app, page);
+        if (img)
+            gfxDrawImageScaledFb(fb(x), fb(top), fb(cw), fb(strip), img->width, img->height, img->pixels);
+        else
+            uiDrawSpinner(w / 2.0f, (top > 0 ? top : 0) + 60.0f, 16, now_ns, spin);
+    }
+    float t = appScrollFraction(app);
+    int track = h - 40, knob = 60;
+    gfxFillRoundRect(w - 10, 20 + (int)(t * (track - knob)), 4, knob, 2, spin);
+}
+
 static void drawBars(const App *app)
 {
     int w = gfxLayoutWidth(), h = gfxLayoutHeight();
@@ -489,6 +511,13 @@ static void drawBars(const App *app)
         fontDrawClipped(FONT_REGULAR, 15, MARGIN + 40, 38, title_w, b->author, COLOR_DIM);
     uiDrawStatus(&app->sys, app->prefs.clock_24h, w - MARGIN, 18, COLOR_TEXT, COLOR_DIM);
     drawTurnButton(w - MARGIN - TURN_BUTTON_FROM_RIGHT, 8);
+    if (appScrollView(app)) {  // An article: no bookmarks, contents or pages; how to move it.
+        int top = h - BARS_HELP_H - 12;
+        gfxBlendRect(0, top, w, h - top, COLOR_BG, 240);
+        uiDrawHelp(MARGIN, top + BARS_HELP_H / 2.0f + 6.0f, w - 2 * MARGIN,
+                   T("[^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library"));
+        return;
+    }
     uiDrawMarkButton(app, w - MARGIN - TURN_BUTTON_FROM_RIGHT - MARK_BUTTON_W - 12, 8);
 
     int top = h - BARS_BOTTOM_H - BARS_HELP_H;  // The button help on a line of its own: it's long.
@@ -536,6 +565,12 @@ static void drawReader(App *app, uint64_t now_ns)
         uiDrawSpinner(w / 2.0f, h / 2.0f - 20, 22, now_ns, ink);
         fontDrawCentered(FONT_REGULAR, 18, w / 2.0f, h / 2.0f + 30, T("Opening the book\xE2\x80\xA6"),
                          gfxMix(ink, paper, 80));
+        return;
+    }
+    if (appScrollView(app)) {
+        drawArticle(app, now_ns, gfxMix(ink, paper, 120));
+        if (app->bars)
+            drawBars(app);
         return;
     }
     if (app->turn_from >= 0) {

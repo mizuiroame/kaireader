@@ -441,7 +441,7 @@ void appFree(App *app)
 
 bool appTwoPages(const App *app)
 {
-    return app->prefs.two_pages && gfxTurn() == GFX_TURN_NONE;
+    return !app->scroll_view && app->prefs.two_pages && gfxTurn() == GFX_TURN_NONE;
 }
 
 void appColumn(const App *app, int side, int *x, int *y, int *w, int *h)
@@ -475,7 +475,7 @@ ReadingLayout appLayout(const App *app)
     appColumn(app, 0, &x, &y, &w, &h);
     ReadingLayout l;
     l.box_w = (float)w;
-    l.box_h = (float)h;
+    l.box_h = (float)(app->scroll_view ? appScrollStrip() : h);  // An article: strips a screen tall.
     l.fixed_w = (float)(appTwoPages(app) ? gfxLayoutWidth() / 2 - 12 : gfxLayoutWidth());
     l.fixed_h = (float)gfxLayoutHeight();
     l.em = prefsEm(app->prefs.text_size);
@@ -508,8 +508,12 @@ void appOpenBook(App *app, int order_index, uint64_t now_ns)
             return;
         open = local;
     }
+    bool article = !strncmp(app->shelf.items[app->order[order_index]].path, NEWS_PREFIX, strlen(NEWS_PREFIX));
     appCloseBook(app);
     app->book = app->order[order_index];
+    app->scroll_view = article;  // Read as a web page, scrolled.
+    app->scroll_y = 0;
+    app->scroll_end = -1;
     appZoomReset(app);  // A book opens fitted.
     ReadingLayout layout = appLayout(app);
     const ShelfBook *b = &app->shelf.items[app->book];
@@ -540,6 +544,8 @@ void appCloseBook(App *app)
     app->ready = false;
     app->view = VIEW_LIBRARY;
     app->panel = PANEL_NONE;
+    app->scroll_view = false;
+    kineticStop(&app->kinetic);
     sortShelf(app);  // The book just read may move (first, sorted by recent).
     keepCursorVisible(app);
 }
@@ -683,6 +689,7 @@ static void keepPage(App *app, ReadingPage *p)
     best->zoom = p->zoom;
     best->image = p->image;
     p->image.pixels = NULL;
+    appScrollKept(app, best->page, &best->image);
     for (int i = 0; i < PAGE_SLOTS; i++)  // The same page of a layout gone isn't needed now (zoomed, they're big).
         if (&app->slots[i] != best && app->slots[i].page == best->page && app->slots[i].generation != app->generation)
             freeSlot(&app->slots[i]);
@@ -707,6 +714,8 @@ static void followBook(App *app, uint64_t now_ns)
             app->reflowable = st.reflowable;
             app->pages = st.pages;
             app->page = firstShown(app, st.start_page);
+            if (app->scroll_view)
+                appScrollOpened(app, st.start_page);
             free(app->chapters);
             app->chapters = NULL;
             app->chapter_count = 0;
@@ -815,6 +824,8 @@ void appUpdate(App *app, uint64_t now_ns)
         resumeLastBook(app, now_ns);
     if (app->view == VIEW_READER)
         followBook(app, now_ns);
+    if (appScrollView(app))
+        appScrollTick(app, now_ns);
     if (app->turn_from >= 0 && now_ns - app->turn_start_ns >= READ_TURN_NS)
         app->turn_from = -1;
     if (app->view == VIEW_LIBRARY) {
@@ -925,11 +936,12 @@ int appMenuGroup(MenuItem item)
 int appMenuRows(const App *app, MenuItem *out)
 {
     int n = 0;
-    if (app->view == VIEW_READER) {
+    if (app->view == VIEW_READER && appNewsReading(app)) {  // An article: the whole of it, from its site.
+        out[n++] = MENU_NEWS_FULL;
+        out[n++] = MENU_LIBRARY;
+    } else if (app->view == VIEW_READER) {
         out[n++] = MENU_CONTENTS;
         out[n++] = MENU_BOOKMARK;
-        if (appNewsReading(app))  // An article: the whole of it, from its site.
-            out[n++] = MENU_NEWS_FULL;
         out[n++] = MENU_LIBRARY;
     }
     if (app->view == VIEW_LIBRARY) {
@@ -1506,8 +1518,29 @@ static void turnPage(App *app, int dir, uint64_t now_ns)
         app->turn_from = -1;  // A zoomed page doesn't slide: it's shown at its top left.
 }
 
+// An article read as a web page: up and down scroll it, the rest move a screen; no contents, no bookmarks.
+static void articleButtons(App *app, uint64_t pressed, uint64_t now_ns)
+{
+    if (pressed & HidNpadButton_B) {
+        if (app->bars)
+            app->bars = false;
+        else
+            appCloseBook(app);
+    } else if (app->ready && appScrollButtons(app, pressed, now_ns)) {
+        return;
+    } else if (pressed & HidNpadButton_Y) {
+        quickStep(app, SETTING_COLORS, 1, now_ns);
+    } else if (pressed & HidNpadButton_Minus) {
+        app->bars = !app->bars;
+    }
+}
+
 static void readerButtons(App *app, uint64_t pressed, uint64_t now_ns)
 {
+    if (app->scroll_view) {
+        articleButtons(app, pressed, now_ns);
+        return;
+    }
     if (appZoomed(app)) {  // The left stick moves the zoomed page; the d-pad and L/R still turn it.
         int dx = (pressed & HidNpadButton_StickLRight) ? 1 : (pressed & HidNpadButton_StickLLeft) ? -1 : 0;
         int dy = (pressed & HidNpadButton_StickLDown) ? 1 : (pressed & HidNpadButton_StickLUp) ? -1 : 0;
@@ -1728,7 +1761,9 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
         break;
     case HIT_PAGE: {
         int w = gfxLayoutWidth();
-        if (x < w / 3)
+        if (app->scroll_view)  // An article: a tap shows or hides the bars (a drag scrolls it).
+            app->bars = !app->bars;
+        else if (x < w / 3)
             turnPage(app, -1, now_ns);
         else if (x > w * 2 / 3)
             turnPage(app, 1, now_ns);
@@ -1785,6 +1820,9 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
             app->scroll -= e.dy;
             kineticDrag(&app->kinetic, -e.dy, now_ns);
             app->scroll = app->scroll < 0 ? 0 : app->scroll > maxScroll(app) ? maxScroll(app) : app->scroll;
+        } else if (appScrollView(app) && app->panel == PANEL_NONE && start && start->kind == HIT_PAGE) {
+            appScrollBy(app, (float)-e.dy);  // The article follows the finger.
+            kineticDrag(&app->kinetic, -e.dy, now_ns);
         } else if (app->view == VIEW_READER && app->panel == PANEL_NONE && start && start->kind == HIT_SLIDER) {
             sliderTo(app, e.x);
         } else if (app->view == VIEW_READER && app->panel == PANEL_NONE && appZoomed(app) && start &&
@@ -1803,8 +1841,8 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
         break;
     }
     case TOUCH_DRAG_END:
-        if (app->view == VIEW_LIBRARY && app->panel == PANEL_NONE) {
-            kineticRelease(&app->kinetic, now_ns);
+        if ((app->view == VIEW_LIBRARY || appScrollView(app)) && app->panel == PANEL_NONE) {
+            kineticRelease(&app->kinetic, now_ns);  // Let go moving: it glides on.
         } else if (app->view == VIEW_READER && app->panel == PANEL_NONE) {
             const HitRegion *start = uiHitFind(e.start_x, e.start_y);
             int dx = e.x - e.start_x, dy = e.y - e.start_y;

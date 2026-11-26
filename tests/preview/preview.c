@@ -363,13 +363,18 @@ static void keepFeed(const App *app, const char *url, const char *title, const c
         snprintf(it->title, sizeof(it->title), "%s", titles[i]);
         snprintf(it->link, sizeof(it->link), "%s/%d.html", url, i);
         it->date = newest - (int64_t)i * 86400 - (int64_t)i * 3600;
-        char html[1024];
-        snprintf(html, sizeof(html),
+        char html[4096];
+        int n = snprintf(html, sizeof(html),
                  "<p>%s: a made-up article for the previews.</p><p>The harbor was quiet this morning; the ferry "
                  "left on time and the gulls followed it out past the breakwater.</p>"
                  "<p><img src=\"pic.jpg\" alt=\"The ferry at dawn\"> Next week, the lighthouse opens to visitors "
                  "<b>every</b> afternoon.</p><ul><li>Tides at 6:10 and 18:32</li><li>Wind from the west</li></ul>",
                  titles[i]);
+        for (int p = 0; p < 7 && n > 0 && (size_t)n < sizeof(html); p++)  // Long enough to scroll.
+            n += snprintf(html + n, sizeof(html) - (size_t)n,
+                          "<p>Paragraph %d. The harbor master wrote it all down in the logbook: the tides, the "
+                          "wind, the boats that came in late and the ones that never left the pier.</p>",
+                          p + 2);
         it->html = strdup(html);
     }
     size_t size;
@@ -467,6 +472,28 @@ static void newsShots(App *app, const char *dir)
     render(app, dir, "news-article");
     app->bars = true;
     render(app, dir, "news-article-bars");
+    app->bars = false;
+    // Scrolled as a web page: down five times, then a finger's drag up (it glides on).
+    for (int i = 0; i < 5; i++)
+        appHandleButtons(app, HidNpadButton_Down, 76);
+    float stepped = app->scroll_y;
+    settle(app);
+    render(app, dir, "news-article-scrolled");
+    uint64_t t = 5000000000ull;
+    appHandleTouch(app, true, 640, 600, t);
+    for (int i = 1; i <= 8; i++)
+        appHandleTouch(app, true, 640, 600 - i * 40, t + (uint64_t)i * 16000000ull);
+    appHandleTouch(app, false, 640, 280, t + 9 * 16000000ull);
+    for (int i = 0; i < 60; i++)
+        appUpdate(app, t + (uint64_t)(10 + i) * 16000000ull);
+    settle(app);
+    if (stepped <= 0 || app->scroll_y <= stepped) {
+        printf("PREVIEW: the article didn't scroll (%.0f, then %.0f)\n", stepped, (double)app->scroll_y);
+        g_problems++;
+    }
+    render(app, dir, "news-article-dragged");
+    app->bars = true;
+    render(app, dir, "news-article-scrolled-bars");
     app->bars = false;
     app->panel = PANEL_MENU;
     app->menu_cursor = 0;
@@ -566,6 +593,12 @@ static void newsShots(App *app, const char *dir)
         settle(app);
         appOpenBook(app, 1, 82);
         settle(app);
+        appHandleButtons(app, HidNpadButton_R, 82);  // A screen down, and the bars.
+        settle(app);
+        app->bars = true;
+        snprintf(name, sizeof(name), "%s-news-article-bars", LANGS[i]);
+        render(app, dir, name);
+        app->bars = false;
         app->panel = PANEL_MENU;
         app->menu_cursor = 0;
         snprintf(name, sizeof(name), "%s-news-article-menu", LANGS[i]);

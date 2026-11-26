@@ -212,6 +212,10 @@ typedef struct {
     float pinch_distance, pinch_zoom, pinch_x, pinch_y;
     DocChapter *chapters;
     int chapter_count;
+    // A news article reads as a web page (app_scroll.c): its strips under one another, scrolled.
+    bool scroll_view;
+    float scroll_y;           // Layout pixels the article is moved up.
+    int scroll_end;           // Where the last strip's text ends (layout pixels); -1 not known yet.
     int drag_rows;            // A drag in the contents: rows moved so far.
 } App;
 
@@ -348,6 +352,18 @@ void appServerFeedSettings(void);
 float appNetCopyProgress(int64_t *done, int64_t *total);
 void appOpenBook(App *app, int order_index, uint64_t now_ns);
 void appCloseBook(App *app);
+
+// app_scroll.c: a news article scrolled as a web page.
+bool appScrollView(const App *app);    // Reading an article that way.
+int appScrollStrip(void);              // A strip's height (layout units): the screen's.
+int appScrollStripY(const App *app, int page);  // Where a strip's top is on screen.
+void appScrollTo(App *app, float y);
+void appScrollBy(App *app, float dy);
+void appScrollOpened(App *app, int start_page);  // Laid out (again): at the strip it starts at.
+void appScrollTick(App *app, uint64_t now_ns);   // Each frame: a drag let go glides on.
+void appScrollKept(App *app, int page, const DocImage *image);  // A strip come (the last: where it ends).
+bool appScrollButtons(App *app, uint64_t pressed, uint64_t now_ns);  // True if a button scrolled it.
+float appScrollFraction(const App *app);  // How far down, 0..1.
 
 // The page shown first for page (the left one of two, with two pages side by side).
 int appFirstShown(const App *app, int page);
