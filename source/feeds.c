@@ -293,14 +293,15 @@ void feedsPlainText(const char *in, char *out, size_t size)
     if (!size)
         return;
     size_t o = 0;
-    bool space = false;
+    bool space = false, closes = true;
     for (const char *s = in ? in : ""; *s && o + 1 < size;) {
-        if (isTagStart(s)) {
+        if (closes && isTagStart(s)) {
             const char *end = strchr(s, '>');
             if (end) {
                 s = end + 1;
                 continue;
             }
+            closes = false;  // No '>' after here: no tag either (never looked for again).
         }
         char bytes[4];
         size_t n = 1;
