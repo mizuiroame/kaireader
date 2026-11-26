@@ -170,6 +170,7 @@ typedef struct {
     char free_problem[256];              // and why the list couldn't be read.
     FeedList feeds;                      // News: the feeds followed (feeds.txt),
     int news_settings_feed;              // the one Settings > News's rows are about,
+    int news_suggest_lang;               // the suggested feeds' language (feedsuggest.h),
     bool news_checked;                   // the feeds checked since KaiReader started,
     char news_problem[256];              // why none could be read ("" if one could),
     char news_full[SHELF_PATH_MAX];      // and the article whose whole page is being fetched ("" none).

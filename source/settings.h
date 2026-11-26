@@ -19,6 +19,7 @@ typedef enum {
     SETTINGS_PAGE_SERVER,
     SETTINGS_PAGE_CREDITS,  // About's: who made it, and their licenses.
     SETTINGS_PAGE_NEWS,     // The news feeds followed (app_news.c does its rows).
+    SETTINGS_PAGE_NEWS_SUGGESTED,  // News' suggested feeds, by language (a row each, A follows it).
     SETTINGS_PAGE_COUNT,
 } SettingsPage;
 
@@ -67,6 +68,10 @@ typedef enum {
     SETTING_NEWS_REMOVE,
     SETTING_NEWS_CERTIFICATE,  // That feed's https certificate checked, or any taken.
     SETTING_NEWS_COLOR,    // The news' color.
+    SETTING_OPEN_NEWS_SUGGESTED,  // Opens the suggested feeds (app_news.c fills them in).
+    SETTING_NEWS_SUGGEST_LANG,    // The suggestions' language (stepped).
+    SETTING_NEWS_SUGGEST_0,       // A suggested feed: its name; A follows it. Then _1... up to
+    SETTING_NEWS_SUGGEST_LAST = SETTING_NEWS_SUGGEST_0 + 6,  // seven (feedsuggest.h's FEED_SUGGEST_MAX).
     SETTING_COUNT,
 } SettingRow;
 
@@ -105,6 +110,10 @@ bool settingsIsServer(SettingRow row);
 bool settingsIsNews(SettingRow row);
 // What the news' rows show: how many feeds, the one chosen's name and its certificate check.
 void settingsSetNews(int count, const char *feed_name, bool check_certificate);
+// What the suggested feeds' page shows: its language's name, and each feed's name, address and
+// whether it's followed (count at most 7).
+void settingsSetNewsSuggestions(const char *language, int count, const char *const *names, const char *const *urls,
+                                const bool *followed);
 // What the book server's rows show: its address as shown, and the user.
 void settingsSetServer(const char *address, const char *user);
 // The language in use's name, as its row shows it ("Español (Latinoamérica)").

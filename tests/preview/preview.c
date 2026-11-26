@@ -485,6 +485,32 @@ static void newsShots(App *app, const char *dir)
     app->settings_cursor = rowAt(SETTINGS_PAGE_NEWS, SETTING_NEWS_FEED);
     appHandleButtons(app, HidNpadButton_Right, 77);  // The second feed's rows.
     render(app, dir, "settings-news");
+    // Suggested feeds: opened with A, in the app's language; the second followed with A (it says so).
+    app->settings_cursor = rowAt(SETTINGS_PAGE_NEWS, SETTING_OPEN_NEWS_SUGGESTED);
+    appHandleButtons(app, HidNpadButton_A, 78);
+    if (app->settings_page != SETTINGS_PAGE_NEWS_SUGGESTED || app->settings_cursor != 1) {
+        printf("PREVIEW: Suggested feeds didn't open on its first feed\n");
+        g_problems++;
+    }
+    appHandleButtons(app, HidNpadButton_Down, 79);
+    appHandleButtons(app, HidNpadButton_A, 79);
+    appUpdate(app, 79);  // The find comes (the preview's is at once).
+    {
+        char value[64];
+        bool named;
+        settingsValue(&app->prefs, SETTING_NEWS_SUGGEST_0 + 1, value, sizeof(value), &named);
+        if (app->feeds.count != 3 || strcmp(value, "Followed") != 0 ||
+            strcmp(app->feeds.items[2].name, "The Guardian: World") != 0) {
+            printf("PREVIEW: a suggestion picked isn't followed (%d feeds, \"%s\")\n", app->feeds.count, value);
+            g_problems++;
+        }
+    }
+    render(app, dir, "settings-news-suggested");
+    appHandleButtons(app, HidNpadButton_B, 80);  // Back to News, on its row.
+    if (app->settings_page != SETTINGS_PAGE_NEWS) {
+        printf("PREVIEW: B on Suggested feeds didn't go back to News\n");
+        g_problems++;
+    }
     app->panel = PANEL_NONE;
     appOpenWelcome(app);
     app->welcome_cursor = WELCOME_NEWS;
@@ -506,6 +532,14 @@ static void newsShots(App *app, const char *dir)
         app->settings_page = SETTINGS_PAGE_NEWS;
         app->settings_cursor = 0;
         snprintf(name, sizeof(name), "%s-settings-news", LANGS[i]);
+        render(app, dir, name);
+        app->settings_cursor = rowAt(SETTINGS_PAGE_NEWS, SETTING_OPEN_NEWS_SUGGESTED);
+        appHandleButtons(app, HidNpadButton_A, 81);  // Its own language's suggestions.
+        snprintf(name, sizeof(name), "%s-settings-news-suggested", LANGS[i]);
+        render(app, dir, name);
+        app->settings_cursor = 0;
+        appHandleButtons(app, HidNpadButton_Right, 81);  // The next language's.
+        snprintf(name, sizeof(name), "%s-settings-news-suggested-next", LANGS[i]);
         render(app, dir, name);
         app->settings_page = SETTINGS_PAGE_MAIN;
         app->settings_cursor = rowAt(SETTINGS_PAGE_MAIN, SETTING_OPEN_NEWS);

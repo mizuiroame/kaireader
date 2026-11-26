@@ -16,6 +16,7 @@ static const char *const PAGE_TITLES[SETTINGS_PAGE_COUNT] = {
     N_("Book server"),
     N_("Credits and licenses"),
     N_("News"),
+    N_("Suggested feeds"),
 };
 
 static const char *const LABELS[SETTING_COUNT] = {
@@ -63,6 +64,9 @@ static const char *const LABELS[SETTING_COUNT] = {
     N_("Remove this feed"),
     N_("Certificate check"),
     N_("Color"),
+    N_("Suggested feeds"),
+    N_("Language"),
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL,  // The suggestions: their names (settingsSetNewsSuggestions).
 };
 
 static const char *const HELP[SETTING_COUNT] = {
@@ -112,6 +116,9 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("It's no longer followed: its articles leave the library."),
     N_("Off only for a site of your own with a certificate it made itself (https)."),
     N_("The news' dot and its library's color: its own (coral) or one of the accents."),
+    N_("Well-known news sites in each language, followed with A: nothing to type."),
+    N_("The suggestions' language: left and right show another's. A on a feed follows it."),
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL,  // The suggestions: their addresses.
 };
 
 static char g_language_name[64] = "English";
@@ -132,9 +139,32 @@ void settingsSetNews(int count, const char *feed_name, bool check_certificate)
     g_news_check = check_certificate;
 }
 
+#define SUGGEST_ROWS (SETTING_NEWS_SUGGEST_LAST - SETTING_NEWS_SUGGEST_0 + 1)
+static char g_suggest_language[64], g_suggest_names[SUGGEST_ROWS][96], g_suggest_urls[SUGGEST_ROWS][256];
+static bool g_suggest_followed[SUGGEST_ROWS];
+static int g_suggest_count;
+
+void settingsSetNewsSuggestions(const char *language, int count, const char *const *names, const char *const *urls,
+                                const bool *followed)
+{
+    snprintf(g_suggest_language, sizeof(g_suggest_language), "%s", language ? language : "");
+    g_suggest_count = count < 0 ? 0 : count > SUGGEST_ROWS ? SUGGEST_ROWS : count;
+    for (int i = 0; i < g_suggest_count; i++) {
+        snprintf(g_suggest_names[i], sizeof(g_suggest_names[i]), "%s", names[i]);
+        snprintf(g_suggest_urls[i], sizeof(g_suggest_urls[i]), "%s", urls[i]);
+        g_suggest_followed[i] = followed[i];
+    }
+}
+
+static bool isSuggestion(SettingRow row)
+{
+    return row >= SETTING_NEWS_SUGGEST_0 && row <= SETTING_NEWS_SUGGEST_LAST;
+}
+
 bool settingsIsNews(SettingRow row)
 {
-    return row >= SETTING_NEWS_ADD && row <= SETTING_NEWS_CERTIFICATE;
+    return (row >= SETTING_NEWS_ADD && row <= SETTING_NEWS_CERTIFICATE) ||
+           (row >= SETTING_OPEN_NEWS_SUGGESTED && row <= SETTING_NEWS_SUGGEST_LAST);
 }
 
 static char g_srv_address[256], g_srv_user[128];
@@ -173,7 +203,7 @@ bool settingsPickedValue(SettingRow row)
 {
     return row == SETTING_UPDATE_NOW || row == SETTING_OPEN_NETWORK || row == SETTING_NET_ADDRESS || row == SETTING_NET_ACCOUNT ||
            row == SETTING_OPEN_SERVER || row == SETTING_SRV_ADDRESS || row == SETTING_SRV_ACCOUNT ||
-           row == SETTING_OPEN_NEWS;
+           row == SETTING_OPEN_NEWS || isSuggestion(row);
 }
 
 int settingsRows(SettingsPage page, SettingRow *out)
@@ -228,12 +258,18 @@ int settingsRows(SettingsPage page, SettingRow *out)
         break;
     case SETTINGS_PAGE_NEWS:
         out[n++] = SETTING_NEWS_ADD;
+        out[n++] = SETTING_OPEN_NEWS_SUGGESTED;
         out[n++] = SETTING_NEWS_IMPORT;
         out[n++] = SETTING_NEWS_FEED;
         out[n++] = SETTING_NEWS_RENAME;
         out[n++] = SETTING_NEWS_CERTIFICATE;
         out[n++] = SETTING_NEWS_COLOR;
         out[n++] = SETTING_NEWS_REMOVE;
+        break;
+    case SETTINGS_PAGE_NEWS_SUGGESTED:
+        out[n++] = SETTING_NEWS_SUGGEST_LANG;
+        for (int i = 0; i < g_suggest_count; i++)
+            out[n++] = (SettingRow)(SETTING_NEWS_SUGGEST_0 + i);
         break;
     case SETTINGS_PAGE_ABOUT:
         out[n++] = SETTING_CREDITS;
@@ -253,12 +289,16 @@ const char *settingsPageTitle(SettingsPage page)
 
 const char *settingsLabel(SettingRow row)
 {
-    return row >= 0 && row < SETTING_COUNT ? LABELS[row] : "";
+    if (isSuggestion(row))
+        return g_suggest_names[row - SETTING_NEWS_SUGGEST_0];
+    return row >= 0 && row < SETTING_COUNT && LABELS[row] ? LABELS[row] : "";
 }
 
 const char *settingsHelp(SettingRow row)
 {
-    return row >= 0 && row < SETTING_COUNT ? HELP[row] : "";
+    if (isSuggestion(row))
+        return g_suggest_urls[row - SETTING_NEWS_SUGGEST_0];
+    return row >= 0 && row < SETTING_COUNT && HELP[row] ? HELP[row] : "";
 }
 
 SettingsPage settingsOpens(SettingRow row)
@@ -280,6 +320,8 @@ SettingsPage settingsOpens(SettingRow row)
         return SETTINGS_PAGE_SERVER;
     case SETTING_OPEN_NEWS:
         return SETTINGS_PAGE_NEWS;
+    case SETTING_OPEN_NEWS_SUGGESTED:
+        return SETTINGS_PAGE_NEWS_SUGGESTED;
     default:
         return SETTINGS_PAGE_MAIN;
     }
@@ -291,7 +333,7 @@ bool settingsHasValue(SettingRow row)
            row == SETTING_VIEW || row == SETTING_LANGUAGE || row == SETTING_RESUME || row == SETTING_SRV_CERTIFICATE || row == SETTING_UPDATE_AUTO || row == SETTING_ACCENT ||
            row == SETTING_BACKGROUND || row == SETTING_BLUR || row == SETTING_NET_COLOR || row == SETTING_SRV_COLOR ||
            row == SETTING_SCREEN || row == SETTING_CLOCK || row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED ||
-           row == SETTING_NET_CERTIFICATE || row == SETTING_NEWS_FEED || row == SETTING_NEWS_CERTIFICATE ||
+           row == SETTING_NET_CERTIFICATE || row == SETTING_NEWS_FEED || row == SETTING_NEWS_CERTIFICATE || row == SETTING_NEWS_SUGGEST_LANG ||
            row == SETTING_NEWS_COLOR || settingsPickedValue(row);
 }
 
@@ -391,6 +433,10 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
     case SETTING_NEWS_CERTIFICATE:
         snprintf(out, size, "%s", g_news_check ? N_("On") : N_("Off: any certificate"));
         break;
+    case SETTING_NEWS_SUGGEST_LANG:  // Its own name, in itself.
+        *translate_name = false;
+        snprintf(out, size, "%s", g_suggest_language);
+        break;
     case SETTING_NET_UNSIGNED:
         snprintf(out, size, "%s", !g_net_smb ? N_("Only for shared folders (SMB)") : g_net_unsigned ? N_("On: not signed") : N_("Off"));
         break;
@@ -398,6 +444,10 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
         *translate_name = false;
         if (size)
             out[0] = 0;
+        if (isSuggestion(row) && g_suggest_followed[row - SETTING_NEWS_SUGGEST_0]) {
+            *translate_name = true;
+            snprintf(out, size, "%s", N_("Followed"));
+        }
         break;
     }
 }

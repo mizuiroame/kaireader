@@ -1314,6 +1314,15 @@ static void settingsBack(App *app)
         app->settings_cursor = 0;
         return;
     }
+    if (app->settings_page == SETTINGS_PAGE_NEWS_SUGGESTED) {  // Back to News, on its row.
+        SettingRow rows[SETTINGS_ROWS_MAX];
+        int n = settingsRows(SETTINGS_PAGE_NEWS, rows);
+        app->settings_page = SETTINGS_PAGE_NEWS;
+        for (int i = 0; i < n; i++)
+            if (rows[i] == SETTING_OPEN_NEWS_SUGGESTED)
+                app->settings_cursor = i;
+        return;
+    }
     if (app->settings_page == SETTINGS_PAGE_MAIN) {
         app->panel = PANEL_NONE;
         return;

@@ -7,7 +7,7 @@ SRC     := ../../source
 OUT     := build
 CFLAGS  := -std=gnu11 -O1 -g -Wall -Wextra -pthread -DKAIREADER_VERSION=\"preview\" -I$(SRC) -I../../third_party -I$(OUT)
 UI_SRC  := gfx.c font.c ui.c ui_common.c ui_buttons.c ui_hit.c ui_notice.c util.c app.c touch.c kinetic.c \
-           image_impl.c lang.c notice.c approot.c shelf.c doc.c reading.c covers.c prefs.c settings.c            motion.c ui_brand.c bookmarks.c app_marks.c ui_marks.c app_zoom.c app_netlib.c ui_net.c netlist.c dav.c md4.c app_server.c opds.c app_free.c catalogs.c languages.c app_welcome.c theme.c background.c app_update.c update.c copybar.c app_news.c feeds.c feedlist.c article.c textbuf.c
+           image_impl.c lang.c notice.c approot.c shelf.c doc.c reading.c covers.c prefs.c settings.c            motion.c ui_brand.c bookmarks.c app_marks.c ui_marks.c app_zoom.c app_netlib.c ui_net.c netlist.c dav.c md4.c app_server.c opds.c app_free.c catalogs.c languages.c app_welcome.c theme.c background.c app_update.c update.c copybar.c app_news.c feeds.c feedlist.c article.c textbuf.c feedsuggest.c
 
 .PHONY: run clean
 

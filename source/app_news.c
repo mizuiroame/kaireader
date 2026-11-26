@@ -22,6 +22,8 @@
 #include "article.h"
 #include "feedlist.h"
 #include "feeds.h"
+#include "feedsuggest.h"
+#include "languages.h"
 #include "keyboard_system.h"
 #include "lang.h"
 #include "newsjob.h"
@@ -100,8 +102,27 @@ static bool writeFile(const char *path, const char *data, size_t size)
     return fclose(f) == 0 && ok;
 }
 
+// The suggested feeds of the language chosen, as their page shows them.
+static void pushSuggestions(const App *app)
+{
+    const FeedSuggestion *list;
+    int count = feedSuggestions(app->news_suggest_lang, &list);
+    const char *names[FEED_SUGGEST_MAX], *urls[FEED_SUGGEST_MAX];
+    bool followed[FEED_SUGGEST_MAX];
+    for (int i = 0; i < count; i++) {
+        char hash[FEED_HASH_LEN + 1];
+        feedsHash(list[i].url, hash);
+        names[i] = list[i].name;
+        urls[i] = list[i].url;
+        followed[i] = feedListFind(&app->feeds, hash) >= 0;
+    }
+    const char *id = feedSuggestLanguage(app->news_suggest_lang);
+    settingsSetNewsSuggestions(languageName(languageIndex(id)), count, names, urls, followed);
+}
+
 void appNewsFeedSettings(const App *app)
 {
+    pushSuggestions(app);
     int at = app->news_settings_feed;
     if (at < 0 || at >= app->feeds.count) {
         settingsSetNews(app->feeds.count, "", true);
@@ -565,6 +586,42 @@ void appNewsOpenSettings(App *app)
     app->settings_cursor = 0;  // Add a feed.
 }
 
+// A suggestion being looked for: followed by its own address and name (not the feed's title).
+static char g_pending_url[FEED_URL_MAX], g_pending_name[FEED_TEXT_MAX];
+
+// url looked for (a feed, or a page that links to one), then followed (takeFind).
+static void findFeed(App *app, const char *url, uint64_t now_ns)
+{
+    appNetworkWantNews();
+    if (!newsJobFind(url)) {
+        appNotify(app, NOTICE_INFO, T("A feed is being looked for already."), now_ns);
+        return;
+    }
+    appNotify(app, NOTICE_INFO, T("Looking for the feed..."), now_ns);
+}
+
+// A suggested feed (its row on the page): followed as a typed one is, under its name.
+static void followSuggestion(App *app, int index, uint64_t now_ns)
+{
+    const FeedSuggestion *list;
+    int count = feedSuggestions(app->news_suggest_lang, &list);
+    if (index < 0 || index >= count)
+        return;
+    char hash[FEED_HASH_LEN + 1];
+    feedsHash(list[index].url, hash);
+    if (feedListFind(&app->feeds, hash) >= 0) {
+        appNotify(app, NOTICE_INFO, T("That feed is followed already."), now_ns);
+        return;
+    }
+    if (newsJobFinding()) {
+        appNotify(app, NOTICE_INFO, T("A feed is being looked for already."), now_ns);
+        return;
+    }
+    snprintf(g_pending_url, sizeof(g_pending_url), "%s", list[index].url);
+    snprintf(g_pending_name, sizeof(g_pending_name), "%s", list[index].name);
+    findFeed(app, list[index].url, now_ns);
+}
+
 static void addFeed(App *app, uint64_t now_ns)
 {
     char text[FEED_URL_MAX], url[FEED_URL_MAX];
@@ -590,12 +647,12 @@ static void addFeed(App *app, uint64_t now_ns)
         appNotify(app, NOTICE_ERROR, T("That isn't a web address: harbor.example/rss, http:// or https://."), now_ns);
         return;
     }
-    appNetworkWantNews();
-    if (!newsJobFind(url)) {
+    if (newsJobFinding()) {
         appNotify(app, NOTICE_INFO, T("A feed is being looked for already."), now_ns);
         return;
     }
-    appNotify(app, NOTICE_INFO, T("Looking for the feed..."), now_ns);
+    g_pending_url[0] = g_pending_name[0] = '\0';
+    findFeed(app, url, now_ns);
 }
 
 static void takeFind(App *app, uint64_t now_ns)
@@ -604,6 +661,11 @@ static void takeFind(App *app, uint64_t now_ns)
     bool ok;
     if (!newsJobTakeFind(url, sizeof(url), title, sizeof(title), &ok, why, sizeof(why)))
         return;
+    if (ok && g_pending_url[0]) {  // A suggestion: kept by the address it's suggested at, with its name.
+        snprintf(url, sizeof(url), "%s", g_pending_url);
+        snprintf(title, sizeof(title), "%s", g_pending_name);
+    }
+    g_pending_url[0] = g_pending_name[0] = '\0';
     if (!ok) {
         appNotify(app, NOTICE_ERROR, why, now_ns);
         return;
@@ -731,6 +793,22 @@ bool appNewsActivate(App *app, SettingRow row, int dir, uint64_t now_ns)
         return true;
     }
     switch (row) {
+    case SETTING_OPEN_NEWS_SUGGESTED:  // Its page, in the app's language (or English).
+        if (dir < 0)
+            return true;
+        app->news_suggest_lang = feedSuggestLanguageIndex(app->prefs.language);
+        if (app->news_suggest_lang < 0)
+            app->news_suggest_lang = 0;
+        appNewsFeedSettings(app);
+        app->settings_page = SETTINGS_PAGE_NEWS_SUGGESTED;
+        app->settings_cursor = 1;  // Its first feed.
+        return true;
+    case SETTING_NEWS_SUGGEST_LANG: {
+        int n = feedSuggestLanguages();
+        app->news_suggest_lang = ((app->news_suggest_lang + (dir ? dir : 1)) % n + n) % n;
+        appNewsFeedSettings(app);
+        return true;
+    }
     case SETTING_NEWS_FEED: {
         int n = app->feeds.count;
         app->news_settings_feed = ((at + (dir ? dir : 1)) % n + n) % n;
@@ -751,6 +829,14 @@ bool appNewsActivate(App *app, SettingRow row, int dir, uint64_t now_ns)
     case SETTING_NEWS_IMPORT: importOpml(app, now_ns); return true;
     case SETTING_NEWS_RENAME: renameFeed(app, at, now_ns); return true;
     case SETTING_NEWS_REMOVE: removeFeed(app, at, now_ns); return true;
+    default:
+        break;
+    }
+    if (row >= SETTING_NEWS_SUGGEST_0 && row <= SETTING_NEWS_SUGGEST_LAST) {
+        followSuggestion(app, row - SETTING_NEWS_SUGGEST_0, now_ns);
+        return true;
+    }
+    switch (row) {
     default: return false;
     }
 }

@@ -701,7 +701,8 @@ static int drawAboutText(int x, int y, int w, bool draw)
 
 static bool isSourcePage(int page)
 {
-    return page == SETTINGS_PAGE_NETWORK || page == SETTINGS_PAGE_SERVER || page == SETTINGS_PAGE_NEWS;
+    return page == SETTINGS_PAGE_NETWORK || page == SETTINGS_PAGE_SERVER || page == SETTINGS_PAGE_NEWS ||
+           page == SETTINGS_PAGE_NEWS_SUGGESTED;
 }
 
 // A source's page's color, or the color of the row that opens it.

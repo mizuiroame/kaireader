@@ -16,7 +16,7 @@ void testSettings(void)
     {  // The news' page: its feeds' rows are the app's, its color a setting; how many feeds on the main page.
         SettingRow news[SETTINGS_ROWS_MAX];
         int n = settingsRows(SETTINGS_PAGE_NEWS, news);
-        CHECK(n == 7 && news[0] == SETTING_NEWS_ADD && news[n - 1] == SETTING_NEWS_REMOVE);
+        CHECK(n == 8 && news[0] == SETTING_NEWS_ADD && news[1] == SETTING_OPEN_NEWS_SUGGESTED && news[n - 1] == SETTING_NEWS_REMOVE);
         CHECK(settingsIsNews(SETTING_NEWS_FEED) && !settingsIsNews(SETTING_NEWS_COLOR) &&
               settingsHasValue(SETTING_NEWS_FEED) && !settingsHasValue(SETTING_NEWS_ADD));
         Prefs p;
