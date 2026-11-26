@@ -59,6 +59,8 @@ void prefsDefaults(Prefs *p)
     p->accent = 0;
     p->network_color = 0;
     p->server_color = 0;
+    p->news_color = 0;
+    p->news_feed = -1;
     p->background[0] = '\0';
     p->background_blur = 2;  // Medium.
     p->update_checked = 0;
@@ -120,7 +122,7 @@ bool prefsLoad(Prefs *p, const char *file)
             p->welcomed = v != 0;
         else if (!strcmp(key, "resume") && number(value, 0, 1, &v))
             p->resume = v != 0;
-        else if (!strcmp(key, "last_tab") && number(value, 0, 3, &v))
+        else if (!strcmp(key, "last_tab") && number(value, 0, 4, &v))
             p->last_tab = v;
         else if (!strcmp(key, "last_book") && strlen(value) < sizeof(p->last_book) && !strpbrk(value, "\r\n"))
             snprintf(p->last_book, sizeof(p->last_book), "%s", value);
@@ -132,6 +134,10 @@ bool prefsLoad(Prefs *p, const char *file)
             p->network_color = v;
         else if (!strcmp(key, "server_color") && number(value, 0, 6, &v))
             p->server_color = v;
+        else if (!strcmp(key, "news_color") && number(value, 0, 6, &v))
+            p->news_color = v;
+        else if (!strcmp(key, "news_feed") && number(value, -1, 63, &v))
+            p->news_feed = v;
         else if (!strcmp(key, "background_blur") && number(value, 0, 3, &v))
             p->background_blur = v;
         else if (!strcmp(key, "background") && strlen(value) < sizeof(p->background) && !strpbrk(value, "/\\\r\n"))
@@ -170,7 +176,8 @@ bool prefsSave(const Prefs *p, const char *file)
     fprintf(f, "resume = %d\nlast_tab = %d\nlast_book = %s\nserver_any_certificate = %d\n", p->resume ? 1 : 0,
             p->last_tab, p->last_book, p->server_any_certificate ? 1 : 0);
     fprintf(f, "accent = %d\nbackground = %s\nbackground_blur = %d\n", p->accent, p->background, p->background_blur);
-    fprintf(f, "network_color = %d\nserver_color = %d\n", p->network_color, p->server_color);
+    fprintf(f, "network_color = %d\nserver_color = %d\nnews_color = %d\nnews_feed = %d\n", p->network_color,
+            p->server_color, p->news_color, p->news_feed);
     fprintf(f, "update_check = %d\nupdate_checked = %lld\nupdate_tag = %s\n", p->update_check ? 1 : 0, p->update_checked,
             p->update_tag);
     bool ok = !ferror(f);

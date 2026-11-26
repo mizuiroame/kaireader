@@ -117,6 +117,7 @@ void readingWantCover(const char *path, int w, int h);
 // Books whose covers come from elsewhere (a book server's thumbnails): paths with this prefix
 // are asked of the fetcher, which fills out (w x h at most) and returns true, or false for none.
 #define READING_FETCHED_PREFIX "opds:"
+#define READING_FETCHED_PREFIX2 "news:"  // A news article's picture, fetched the same way.
 typedef bool (*ReadingCoverFetcher)(const char *path, int w, int h, DocImage *out);
 void readingSetCoverFetcher(ReadingCoverFetcher fetch);
 bool readingTakeCover(ReadingCover *out);

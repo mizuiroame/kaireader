@@ -15,6 +15,7 @@ static const char *const PAGE_TITLES[SETTINGS_PAGE_COUNT] = {
     N_("Network folder"),
     N_("Book server"),
     N_("Credits and licenses"),
+    N_("News"),
 };
 
 static const char *const LABELS[SETTING_COUNT] = {
@@ -54,6 +55,14 @@ static const char *const LABELS[SETTING_COUNT] = {
     N_("Color"),
     N_("Color"),
     N_("Certificate check"),
+    N_("News"),
+    N_("Add a feed"),
+    N_("Import feeds (OPML)"),
+    N_("Feed"),
+    N_("Rename this feed"),
+    N_("Remove this feed"),
+    N_("Certificate check"),
+    N_("Color"),
 };
 
 static const char *const HELP[SETTING_COUNT] = {
@@ -94,6 +103,15 @@ static const char *const HELP[SETTING_COUNT] = {
     N_("The book server's dot and its library's color: its own (blue) or one of the accents."),
     N_("Off only for a WebDAV folder of your own with a certificate it made itself (https). The folder's "
        "sign-in still only goes to it."),
+    N_("Sites' news (RSS or Atom feeds), read like books: X in the library goes to them."),
+    N_("A feed's address, or the address of a site's page that links to its feed (it's found)."),
+    N_("Adds the feeds of feeds.opml (exported from another reader), put in KaiReader's folder "
+       "(sdmc:/switch/kaireader/config)."),
+    N_("The feed the rows under it are about: left and right choose another."),
+    N_("The name its articles show under their titles."),
+    N_("It's no longer followed: its articles leave the library."),
+    N_("Off only for a site of your own with a certificate it made itself (https)."),
+    N_("The news' dot and its library's color: its own (coral) or one of the accents."),
 };
 
 static char g_language_name[64] = "English";
@@ -101,6 +119,22 @@ static char g_language_name[64] = "English";
 void settingsSetLanguageName(const char *name)
 {
     snprintf(g_language_name, sizeof(g_language_name), "%s", name);
+}
+
+static int g_news_count;
+static char g_news_feed[256];
+static bool g_news_check = true;
+
+void settingsSetNews(int count, const char *feed_name, bool check_certificate)
+{
+    g_news_count = count;
+    snprintf(g_news_feed, sizeof(g_news_feed), "%s", feed_name ? feed_name : "");
+    g_news_check = check_certificate;
+}
+
+bool settingsIsNews(SettingRow row)
+{
+    return row >= SETTING_NEWS_ADD && row <= SETTING_NEWS_CERTIFICATE;
 }
 
 static char g_srv_address[256], g_srv_user[128];
@@ -138,7 +172,8 @@ bool settingsIsNetwork(SettingRow row)
 bool settingsPickedValue(SettingRow row)
 {
     return row == SETTING_UPDATE_NOW || row == SETTING_OPEN_NETWORK || row == SETTING_NET_ADDRESS || row == SETTING_NET_ACCOUNT ||
-           row == SETTING_OPEN_SERVER || row == SETTING_SRV_ADDRESS || row == SETTING_SRV_ACCOUNT;
+           row == SETTING_OPEN_SERVER || row == SETTING_SRV_ADDRESS || row == SETTING_SRV_ACCOUNT ||
+           row == SETTING_OPEN_NEWS;
 }
 
 int settingsRows(SettingsPage page, SettingRow *out)
@@ -149,6 +184,7 @@ int settingsRows(SettingsPage page, SettingRow *out)
         out[n++] = SETTING_OPEN_LIBRARY;  // As KaiPlayer's: the library, where it comes from, then the rest.
         out[n++] = SETTING_OPEN_NETWORK;
         out[n++] = SETTING_OPEN_SERVER;
+        out[n++] = SETTING_OPEN_NEWS;
         out[n++] = SETTING_OPEN_READING;
         out[n++] = SETTING_OPEN_DISPLAY;
         out[n++] = SETTING_OPEN_ABOUT;
@@ -189,6 +225,15 @@ int settingsRows(SettingsPage page, SettingRow *out)
         out[n++] = SETTING_SRV_COLOR;
         out[n++] = SETTING_SRV_TEST;
         out[n++] = SETTING_SRV_FORGET;
+        break;
+    case SETTINGS_PAGE_NEWS:
+        out[n++] = SETTING_NEWS_ADD;
+        out[n++] = SETTING_NEWS_IMPORT;
+        out[n++] = SETTING_NEWS_FEED;
+        out[n++] = SETTING_NEWS_RENAME;
+        out[n++] = SETTING_NEWS_CERTIFICATE;
+        out[n++] = SETTING_NEWS_COLOR;
+        out[n++] = SETTING_NEWS_REMOVE;
         break;
     case SETTINGS_PAGE_ABOUT:
         out[n++] = SETTING_CREDITS;
@@ -233,6 +278,8 @@ SettingsPage settingsOpens(SettingRow row)
         return SETTINGS_PAGE_NETWORK;
     case SETTING_OPEN_SERVER:
         return SETTINGS_PAGE_SERVER;
+    case SETTING_OPEN_NEWS:
+        return SETTINGS_PAGE_NEWS;
     default:
         return SETTINGS_PAGE_MAIN;
     }
@@ -244,8 +291,8 @@ bool settingsHasValue(SettingRow row)
            row == SETTING_VIEW || row == SETTING_LANGUAGE || row == SETTING_RESUME || row == SETTING_SRV_CERTIFICATE || row == SETTING_UPDATE_AUTO || row == SETTING_ACCENT ||
            row == SETTING_BACKGROUND || row == SETTING_BLUR || row == SETTING_NET_COLOR || row == SETTING_SRV_COLOR ||
            row == SETTING_SCREEN || row == SETTING_CLOCK || row == SETTING_NET_REMEMBER || row == SETTING_NET_UNSIGNED ||
-           row == SETTING_NET_CERTIFICATE ||
-           settingsPickedValue(row);
+           row == SETTING_NET_CERTIFICATE || row == SETTING_NEWS_FEED || row == SETTING_NEWS_CERTIFICATE ||
+           row == SETTING_NEWS_COLOR || settingsPickedValue(row);
 }
 
 void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool *translate_name)
@@ -278,8 +325,9 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
         snprintf(out, size, "%s", themeAccentName(p->accent));
         break;
     case SETTING_NET_COLOR:
-    case SETTING_SRV_COLOR: {
-        int choice = row == SETTING_NET_COLOR ? p->network_color : p->server_color;
+    case SETTING_SRV_COLOR:
+    case SETTING_NEWS_COLOR: {
+        int choice = row == SETTING_NET_COLOR ? p->network_color : row == SETTING_SRV_COLOR ? p->server_color : p->news_color;
         snprintf(out, size, "%s", choice ? themeAccentName(choice - 1) : N_("Its own"));
         break;
     }
@@ -328,6 +376,20 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
         break;
     case SETTING_NET_CERTIFICATE:
         snprintf(out, size, "%s", g_net_check_certificate ? N_("On") : N_("Off: any certificate"));
+        break;
+    case SETTING_OPEN_NEWS:  // How many feeds.
+        *translate_name = g_news_count == 0;
+        if (g_news_count == 0)
+            snprintf(out, size, "%s", N_("Not set"));
+        else
+            snprintf(out, size, g_news_count == 1 ? T("1 feed") : T("%d feeds"), g_news_count);
+        break;
+    case SETTING_NEWS_FEED:
+        *translate_name = g_news_feed[0] == 0;
+        snprintf(out, size, "%s", g_news_feed[0] ? g_news_feed : N_("None"));
+        break;
+    case SETTING_NEWS_CERTIFICATE:
+        snprintf(out, size, "%s", g_news_check ? N_("On") : N_("Off: any certificate"));
         break;
     case SETTING_NET_UNSIGNED:
         snprintf(out, size, "%s", !g_net_smb ? N_("Only for shared folders (SMB)") : g_net_unsigned ? N_("On: not signed") : N_("Off"));
@@ -404,6 +466,9 @@ int settingsStep(Prefs *p, SettingRow row, int dir)
         return SETTINGS_CHANGED_SOURCE_COLOR;
     case SETTING_SRV_COLOR:
         p->server_color = around(p->server_color, dir, THEME_ACCENT_COUNT + 1);
+        return SETTINGS_CHANGED_SOURCE_COLOR;
+    case SETTING_NEWS_COLOR:
+        p->news_color = around(p->news_color, dir, THEME_ACCENT_COUNT + 1);
         return SETTINGS_CHANGED_SOURCE_COLOR;
     case SETTING_SRV_CERTIFICATE:
         p->server_any_certificate = !p->server_any_certificate;

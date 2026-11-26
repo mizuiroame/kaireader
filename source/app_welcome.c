@@ -1,6 +1,6 @@
 // The first run's welcome, as KaiPlayer's: where are the books? On the SD
-// card (how to put them there), a network folder or a book server (their
-// Settings pages, back here with B), Free books, or later. It shows once, while
+// card (how to put them there), a network folder, a book server or the news
+// (their Settings pages, back here with B), Free books, or later. It shows once, while
 // the card has no books and nothing else is set up; nothing has to be chosen.
 #include "app.h"
 
@@ -11,7 +11,7 @@
 
 static bool sourceSet(void)
 {
-    return davConfigured() || opdsConfigured();
+    return davConfigured() || opdsConfigured() || appNewsSet();
 }
 
 bool appWelcomeNeeded(const App *app)
@@ -57,6 +57,11 @@ void appWelcomeChoose(App *app, int row, uint64_t now_ns)
     case WELCOME_FREE:
         answered(app);
         appLibTab(app, LIB_FREE, now_ns);
+        break;
+    case WELCOME_NEWS:  // Settings > News, on "Add a feed"; back here with B if none is added.
+        appNewsOpenSettings(app);
+        app->welcome_away = true;
+        app->settings_from_welcome = true;
         break;
     case WELCOME_LATER:
         answered(app);

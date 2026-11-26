@@ -23,7 +23,7 @@
 
 // Each source's name, as the pill and the help line say it, and its color.
 static const char *const SOURCE_NAMES[LIB_SOURCES] = {N_("SD card"), N_("Network folder"), N_("Book server"),
-                                                       N_("Free books")};
+                                                       N_("Free books"), N_("News")};
 
 const char *uiSourceName(int tab)
 {
@@ -32,7 +32,8 @@ const char *uiSourceName(int tab)
 
 Color uiSourceColor(int tab)
 {
-    return tab == LIB_NETWORK ? COLOR_NETWORK : tab == LIB_SERVER ? COLOR_SERVER : tab == LIB_FREE ? COLOR_FREE : COLOR_ACCENT;
+    return tab == LIB_NETWORK ? COLOR_NETWORK : tab == LIB_SERVER ? COLOR_SERVER : tab == LIB_FREE ? COLOR_FREE
+           : tab == LIB_NEWS ? COLOR_NEWS : COLOR_ACCENT;
 }
 
 int uiDrawSourcePill(const App *app)
@@ -80,6 +81,16 @@ void uiDrawNetScan(int tab, int x, float cy, uint64_t now_ns)
             return;
         uiDrawSpinner(x + 10.0f, cy, 9.0f, now_ns, COLOR_FREE);
         fontDrawMiddle(FONT_REGULAR, 16, x + 28, cy, T("Loading..."), COLOR_DIM);
+        return;
+    }
+    if (tab == LIB_NEWS) {  // The feeds being checked, one after another.
+        int done, count;
+        if (!appNewsChecking(&done, &count))
+            return;
+        char text[96];
+        snprintf(text, sizeof(text), T("Checking the feeds... %d of %d"), done + 1 > count ? count : done + 1, count);
+        uiDrawSpinner(x + 10.0f, cy, 9.0f, now_ns, COLOR_NEWS);
+        fontDrawMiddle(FONT_REGULAR, 16, x + 28, cy, text, COLOR_DIM);
         return;
     }
     if (tab == LIB_NETWORK ? !appNetScanning(&found) : tab == LIB_SERVER ? !appServerScanning(&found) : true)
@@ -150,8 +161,29 @@ static void drawFreeEmpty(const App *app, uint64_t now_ns)
     }
 }
 
+// The news with no articles shown: being checked, why not, or none yet.
+static void drawNewsEmpty(const App *app, uint64_t now_ns)
+{
+    int done, count;
+    if (appNewsChecking(&done, &count)) {
+        uiDrawSpinner(gfxLayoutWidth() / 2.0f, LIB_TOP + 60.0f, 16.0f, now_ns, COLOR_NEWS);
+        const char *lines[] = {T("Checking the feeds..."), T("Their newest articles show here once they come.")};
+        drawMessage(lines, 2, NULL, HIT_RESCAN_NET);
+    } else if (app->news_problem[0]) {
+        const char *lines[] = {T("The feeds couldn't be read."), app->news_problem};
+        drawMessage(lines, 2, T("Try again"), HIT_RESCAN_NET);
+    } else {
+        const char *lines[] = {T("No articles here yet."), T("Y checks the feeds again; Settings > News adds more.")};
+        drawMessage(lines, 2, T("Check again"), HIT_RESCAN_NET);
+    }
+}
+
 void uiDrawNetEmpty(const App *app, uint64_t now_ns)
 {
+    if (app->lib_tab == LIB_NEWS) {
+        drawNewsEmpty(app, now_ns);
+        return;
+    }
     if (app->lib_tab == LIB_FREE) {
         drawFreeEmpty(app, now_ns);
         return;

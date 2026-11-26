@@ -248,6 +248,13 @@ bool opdsFetchCover(const char *path, int w, int h, DocImage *out)
 {
     const char *slash = strrchr(path, '/'), *hash = strrchr(path, '#');
     char file[256];
+    if (!strncmp(path, "news:", 5)) {  // A made-up article: a fixture's cover for half of them, none for the rest.
+        char last = path[strlen(path) - 1];
+        if (last < '0' || last > '7')
+            return false;
+        snprintf(file, sizeof(file), "books/library%c.epub", last == '0' ? '8' : last);
+        return docEpubCover(file, w, h, out);
+    }
     snprintf(file, sizeof(file), "books/%.*s", (int)(hash && slash && hash > slash ? hash - slash - 1 : 64),
              slash ? slash + 1 : path);
     return docEpubCover(file, w, h, out);
@@ -396,3 +403,136 @@ void updateFetchStatus(UpdateStatus *out) { memset(out, 0, sizeof(*out)); }
 void updateFetchExit(void) {}
 
 void opdsCheckCertificate(bool check) { (void)check; }
+
+// --- The news: the made-up feeds preview.c keeps in the folder, read as newsjob.c reads them ---
+
+#include "feedlist.h"
+#include "feeds.h"
+#include "newsjob.h"
+
+bool g_preview_news_down;      // The sites don't answer: the articles kept, and why.
+bool g_preview_news_checking;  // A check under way.
+static NewsJobFeed g_news_feeds[FEEDLIST_MAX];
+static int g_news_count;
+static char g_news_folder[512];
+static bool g_news_ready, g_find_ready, g_full_ready;
+static char g_find_url[FEED_URL_MAX];
+
+bool newsJobCheck(const NewsJobFeed *feeds, int count, const char *folder)
+{
+    g_news_count = count < FEEDLIST_MAX ? count : FEEDLIST_MAX;
+    memcpy(g_news_feeds, feeds, (size_t)g_news_count * sizeof(*feeds));
+    snprintf(g_news_folder, sizeof(g_news_folder), "%s", folder);
+    g_news_ready = true;
+    return true;
+}
+
+bool newsJobChecking(int *done, int *count)
+{
+    *done = 1;
+    *count = g_news_count;
+    return g_preview_news_checking;
+}
+
+static int newest(const void *x, const void *y)
+{
+    const NewsArticle *a = x, *b = y;
+    return a->date != b->date ? (a->date > b->date ? -1 : 1) : a->seq - b->seq;
+}
+
+bool newsJobTakeCheck(NewsArticle **articles, int *count, NewsFeedState **feeds, int *feed_count, bool *asked)
+{
+    if (!g_news_ready || g_preview_news_checking)
+        return false;
+    g_news_ready = false;
+    *articles = calloc(SHELF_MAX_BOOKS, sizeof(**articles));
+    *feeds = calloc((size_t)(g_news_count ? g_news_count : 1), sizeof(**feeds));
+    *count = 0;
+    *feed_count = g_news_count;
+    *asked = true;
+    for (int i = 0; *articles && *feeds && i < g_news_count; i++) {
+        char path[700];
+        snprintf(path, sizeof(path), "%s/%s.xml", g_news_folder, g_news_feeds[i].hash);
+        FILE *f = fopen(path, "rb");
+        static char data[1 << 20];
+        size_t n = f ? fread(data, 1, sizeof(data) - 1, f) : 0;
+        if (f)
+            fclose(f);
+        Feed feed;
+        (*feeds)[i].ok = !g_preview_news_down;
+        snprintf((*feeds)[i].hash, sizeof((*feeds)[i].hash), "%s", g_news_feeds[i].hash);
+        if (g_preview_news_down)
+            snprintf((*feeds)[i].why, sizeof((*feeds)[i].why), "%s",
+                     T("The server doesn't answer: check its address, and that it's on."));
+        if (!n || !feedsParse(data, n, g_news_feeds[i].url, &feed))
+            continue;
+        snprintf((*feeds)[i].title, sizeof((*feeds)[i].title), "%s", feed.title);
+        for (int j = 0; j < feed.count; j++) {
+            NewsArticle *a = &(*articles)[*count];
+            newsPath(g_news_feeds[i].hash, feed.items[j].id, a->path, sizeof(a->path));
+            snprintf(a->title, sizeof(a->title), "%s", feed.items[j].title);
+            snprintf(a->image, sizeof(a->image), "%s", feed.items[j].image);
+            a->date = feed.items[j].date;
+            a->feed = i;
+            a->seq = (*count)++;
+        }
+        feedsFree(&feed);
+    }
+    if (*articles)
+        qsort(*articles, (size_t)*count, sizeof(**articles), newest);
+    return true;
+}
+
+bool newsJobFind(const char *url)
+{
+    snprintf(g_find_url, sizeof(g_find_url), "%s", url);
+    g_find_ready = true;
+    return true;
+}
+
+bool newsJobFinding(void)
+{
+    return false;
+}
+
+bool newsJobTakeFind(char *url, size_t url_size, char *title, size_t title_size, bool *ok, char *why,
+                     size_t why_size)
+{
+    if (!g_find_ready)
+        return false;
+    g_find_ready = false;
+    snprintf(url, url_size, "%s", g_find_url);
+    snprintf(title, title_size, "%s", "Bay Log");
+    *ok = true;
+    if (why_size)
+        why[0] = '\0';
+    return true;
+}
+
+bool newsJobFull(const char *link, bool any_certificate)
+{
+    (void)link;
+    (void)any_certificate;
+    g_full_ready = true;
+    return true;
+}
+
+bool newsJobTakeFull(char **html, bool *ok, char *why, size_t why_size)
+{
+    if (!g_full_ready)
+        return false;
+    g_full_ready = false;
+    *html = strdup("<div><p>The whole made-up article, as its site would show it.</p></div>");
+    *ok = *html != NULL;
+    if (why_size)
+        why[0] = '\0';
+    return true;
+}
+
+void newsJobStop(void)
+{
+}
+
+void appNetworkWantNews(void)
+{
+}

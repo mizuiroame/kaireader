@@ -14,10 +14,12 @@ static const Color COLORS[THEME_ACCENT_COUNT] = {
 Color g_accent = GFX_RGB(0xF2, 0xB5, 0x4A);
 #define NETWORK_OWN GFX_RGB(0x2E, 0xC4, 0xB6)  // Turquoise, as in KaiPlayer and KaiVideo.
 #define SERVER_OWN GFX_RGB(0x3D, 0x6B, 0xFF)   // The deep blue of KaiPlayer's server.
-Color g_network_color = NETWORK_OWN, g_server_color = SERVER_OWN;
+#define NEWS_OWN GFX_RGB(0xFF, 0x86, 0x5E)     // Coral, the news'.
+Color g_network_color = NETWORK_OWN, g_server_color = SERVER_OWN, g_news_color = NEWS_OWN;
 
-void themeApplySources(int network, int server)
+void themeApplySources(int network, int server, int news)
 {
+    g_news_color = news > 0 && news <= THEME_ACCENT_COUNT ? COLORS[news - 1] : NEWS_OWN;
     g_network_color = network > 0 && network <= THEME_ACCENT_COUNT ? COLORS[network - 1] : NETWORK_OWN;
     g_server_color = server > 0 && server <= THEME_ACCENT_COUNT ? COLORS[server - 1] : SERVER_OWN;
 }

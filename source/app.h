@@ -9,6 +9,7 @@
 #include "bookmarks.h"
 #include "covers.h"
 #include "dav.h"
+#include "feedlist.h"
 #include "kinetic.h"
 #include "notice.h"
 #include "prefs.h"
@@ -37,8 +38,9 @@
 #define LIB_CARD 0     // The library's sources: the SD card's books,
 #define LIB_NETWORK 1  // the network folder's,
 #define LIB_SERVER 2   // the book server's (OPDS),
-#define LIB_FREE 3     // and the free catalogs' (app_free.c).
-#define LIB_SOURCES 4
+#define LIB_FREE 3     // the free catalogs' (app_free.c),
+#define LIB_NEWS 4     // and the news feeds' articles (app_news.c).
+#define LIB_SOURCES 5
 
 #define CONTENTS_ROW_H 48
 #define READ_TURN_NS 180000000ull  // A page sliding to the next.
@@ -62,6 +64,7 @@ typedef enum {
     WELCOME_NETWORK,
     WELCOME_SERVER,
     WELCOME_FREE,
+    WELCOME_NEWS,
     WELCOME_LATER,
     WELCOME_ROW_COUNT,
 } WelcomeRow;
@@ -78,6 +81,9 @@ typedef enum {
     MENU_RESCAN,      // The card's books looked for again, or the network folder read again.
     MENU_FREE_SEARCH, // Free books: search the shown list's catalog.
     MENU_FREE_LIST,   // Free books: the next list.
+    MENU_NEWS_READ,   // News: every article shown marked as read.
+    MENU_NEWS_FEED,   // News: the next feed (or all of them).
+    MENU_NEWS_FULL,   // Reading an article: the whole of it, from its site.
     MENU_EXIT,
     MENU_COUNT,
 } MenuItem;
@@ -162,6 +168,11 @@ typedef struct {
     bool free_more, free_loading;
     char free_next[1024];                // the list's next page ("" at its end),
     char free_problem[256];              // and why the list couldn't be read.
+    FeedList feeds;                      // News: the feeds followed (feeds.txt),
+    int news_settings_feed;              // the one Settings > News's rows are about,
+    bool news_checked;                   // the feeds checked since KaiReader started,
+    char news_problem[256];              // why none could be read ("" if one could),
+    char news_full[SHELF_PATH_MAX];      // and the article whose whole page is being fetched ("" none).
     char net_problem[256];               // Why the folder couldn't be read; "" if it could.
     int net_open;                        // A network book copied to be opened: its shelf index; -1 none.
     char net_copying[DAV_NAME_MAX];      // The book being copied to the card; "" none.
@@ -296,6 +307,30 @@ const char *appFreeNextListLine(const App *app);
 void appOpenCardBook(App *app, const char *path, uint64_t now_ns);
 // The network started for Free books too (app_network.c).
 void appNetworkWantFree(void);
+
+// News (app_news.c): RSS and Atom feeds' articles, read as books.
+void appNewsStart(App *app);     // The feeds and their shelf read from the card, what was kept shown.
+bool appNewsSet(void);           // A feed is followed (X goes to News).
+// An article in the library's order: present, of the feed shown (or all of them).
+bool appNewsShown(const App *app, const ShelfBook *b);
+void appNewsEntered(App *app, uint64_t now_ns);   // Checked once a session, when News is first shown.
+void appNewsRefresh(App *app, uint64_t now_ns);   // Y: every feed asked for its new articles.
+void appNewsUpdate(App *app, uint64_t now_ns);
+bool appNewsChecking(int *done, int *count);
+void appNewsStepFeed(App *app, int dir);          // L and R: all the feeds, or one.
+void appNewsMarkAllRead(App *app, uint64_t now_ns);
+void appNewsFull(App *app, uint64_t now_ns);      // The open article's whole page, from its site.
+bool appNewsReading(const App *app);              // An article is open (and has a link).
+// An article (shelf index) to open: true with its page on the card in local.
+bool appNewsReady(App *app, int book, char *local, size_t size, uint64_t now_ns);
+const char *appNewsFeedName(const App *app);      // The feed shown ("All the feeds"), translated.
+const char *appNewsNextFeedLine(const App *app);  // The + menu's "Show <next feed>", translated.
+bool appNewsActivate(App *app, SettingRow row, int dir, uint64_t now_ns);
+void appNewsFeedSettings(const App *app);
+// Settings > News, its cursor on "Add a feed" (the welcome's News).
+void appNewsOpenSettings(App *app);
+// The network started for the news too (app_network.c).
+void appNetworkWantNews(void);
 
 // The book server's library and Settings page (app_server.c).
 Shelf *appServerShelf(App *app);

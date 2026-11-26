@@ -18,6 +18,7 @@ typedef enum {
     SETTINGS_PAGE_NETWORK,
     SETTINGS_PAGE_SERVER,
     SETTINGS_PAGE_CREDITS,  // About's: who made it, and their licenses.
+    SETTINGS_PAGE_NEWS,     // The news feeds followed (app_news.c does its rows).
     SETTINGS_PAGE_COUNT,
 } SettingsPage;
 
@@ -58,6 +59,14 @@ typedef enum {
     SETTING_NET_COLOR,     // The color the network folder wears: its own, or an accent.
     SETTING_SRV_COLOR,     // The book server's.
     SETTING_NET_CERTIFICATE,  // The network folder's https certificate checked, or any taken (its own).
+    SETTING_OPEN_NEWS,     // The news' page (app_news.c does its rows).
+    SETTING_NEWS_ADD,      // A feed's address, or a page linking to it (the keyboard).
+    SETTING_NEWS_IMPORT,   // The feeds of feeds.opml.
+    SETTING_NEWS_FEED,     // The feed the rows under it are about (stepped).
+    SETTING_NEWS_RENAME,
+    SETTING_NEWS_REMOVE,
+    SETTING_NEWS_CERTIFICATE,  // That feed's https certificate checked, or any taken.
+    SETTING_NEWS_COLOR,    // The news' color.
     SETTING_COUNT,
 } SettingRow;
 
@@ -92,6 +101,10 @@ void settingsValue(const Prefs *p, SettingRow row, char *out, size_t size, bool 
 bool settingsIsNetwork(SettingRow row);
 // The book server's rows are the app's too (app_server.c).
 bool settingsIsServer(SettingRow row);
+// The news' rows are the app's too (app_news.c); its color is a setting.
+bool settingsIsNews(SettingRow row);
+// What the news' rows show: how many feeds, the one chosen's name and its certificate check.
+void settingsSetNews(int count, const char *feed_name, bool check_certificate);
 // What the book server's rows show: its address as shown, and the user.
 void settingsSetServer(const char *address, const char *user);
 // The language in use's name, as its row shows it ("Español (Latinoamérica)").

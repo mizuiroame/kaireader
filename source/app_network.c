@@ -10,6 +10,7 @@
 #include "lang.h"
 #include "net.h"
 #include "netjob.h"
+#include "newsjob.h"
 #include "netstream.h"
 #include "opdsnet.h"
 #include "roots_sslcom_pem.h"
@@ -36,6 +37,12 @@ static bool g_free_wanted;  // Free books opened: the network stays.
 void appNetworkWantFree(void)
 {
     g_free_wanted = true;
+    appNetworkUse();
+}
+
+void appNetworkWantNews(void)
+{
+    g_free_wanted = true;  // As Free books: the network stays on from then.
     appNetworkUse();
 }
 
@@ -336,6 +343,7 @@ void appNetworkUpdate(App *app, uint64_t now)
 
 void appNetworkExit(void)
 {
+    newsJobStop();
     netJobStop();
     davForget();
     if (g_network)

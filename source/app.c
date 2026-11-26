@@ -39,7 +39,8 @@ static void pathIn(const App *app, const char *name, char *out, size_t size)
     snprintf(out, size, "%s/%s", app->folder, name);
 }
 
-static const char *const SHELF_FILES[LIB_SOURCES] = {"shelf.txt", "shelf-network.txt", "shelf-server.txt", ""};
+static const char *const SHELF_FILES[LIB_SOURCES] = {"shelf.txt", "shelf-network.txt", "shelf-server.txt", "",
+                                                       "shelf-news.txt"};
 
 // The library shown to its file (Free books' isn't kept: it's the catalog's page).
 static void saveShelf(App *app)
@@ -54,7 +55,7 @@ static void saveShelf(App *app)
 bool appSourceSet(int tab)
 {
     return tab == LIB_CARD || tab == LIB_FREE || (tab == LIB_NETWORK && davConfigured()) ||
-           (tab == LIB_SERVER && opdsConfigured());
+           (tab == LIB_SERVER && opdsConfigured()) || (tab == LIB_NEWS && appNewsSet());
 }
 
 void appSavePrefs(App *app);
@@ -116,7 +117,7 @@ static void layoutLibrary(App *app)
         return;
     int y = 0;
     char group[SHELF_TEXT_MAX], last[SHELF_TEXT_MAX] = "";
-    bool grouped = app->lib_tab != LIB_FREE && (app->prefs.sort == SHELF_SORT_AUTHOR || app->prefs.sort == SHELF_SORT_GENRE);
+    bool grouped = app->lib_tab != LIB_FREE && app->lib_tab != LIB_NEWS && (app->prefs.sort == SHELF_SORT_AUTHOR || app->prefs.sort == SHELF_SORT_GENRE);
     for (int i = 0; i < app->order_count;) {
         if (grouped) {
             shelfGroupOf(&app->shelf.items[app->order[i]], (ShelfSort)app->prefs.sort, group, sizeof(group));
@@ -161,6 +162,11 @@ static void sortShelf(App *app)
         app->order_count = 0;
         for (int i = 0; i < app->shelf.count && app->order_count < SHELF_MAX_BOOKS; i++)
             app->order[app->order_count++] = i;
+    } else if (app->lib_tab == LIB_NEWS) {  // The news: newest first, of the feed shown.
+        app->order_count = 0;
+        for (int i = 0; i < app->shelf.count && app->order_count < SHELF_MAX_BOOKS; i++)
+            if (appNewsShown(app, &app->shelf.items[i]))
+                app->order[app->order_count++] = i;
     } else {
         app->order_count = shelfOrder(&app->shelf, (ShelfSort)app->prefs.sort, app->order, SHELF_MAX_BOOKS);
     }
@@ -223,6 +229,10 @@ void appRescan(App *app, uint64_t now_ns)
         appFreeLookAgain(app, now_ns);
         return;
     }
+    if (app->lib_tab == LIB_NEWS) {  // The feeds: asked again.
+        appNewsRefresh(app, now_ns);
+        return;
+    }
     int found = shelfScan(&app->shelf, app->books_folder);
     sortShelf(app);
     if (now_ns) {
@@ -257,9 +267,10 @@ void appInit(App *app, const char *folder)
     appNetworkStart(app);
     appNetStart(app);
     appServerStart(app);
+    appNewsStart(app);
     opdsCheckCertificate(!app->prefs.server_any_certificate);
     themeApply(app->prefs.accent);
-    themeApplySources(app->prefs.network_color, app->prefs.server_color);
+    themeApplySources(app->prefs.network_color, app->prefs.server_color, app->prefs.news_color);
     backgroundLoad(app->folder, app->prefs.background, app->prefs.background_blur);
     appNetworkUse();
     if (appWelcomeNeeded(app))  // The first run, with no books anywhere yet.
@@ -490,6 +501,10 @@ void appOpenBook(App *app, int order_index, uint64_t now_ns)
         open = local;
     } else if (!strncmp(open, OPDS_PREFIX, strlen(OPDS_PREFIX))) {  // The server's: downloaded first.
         if (!appServerReady(app, app->order[order_index], local, sizeof(local), now_ns))
+            return;
+        open = local;
+    } else if (!strncmp(open, NEWS_PREFIX, strlen(NEWS_PREFIX))) {  // An article: made a page on the card.
+        if (!appNewsReady(app, app->order[order_index], local, sizeof(local), now_ns))
             return;
         open = local;
     }
@@ -793,6 +808,7 @@ void appUpdate(App *app, uint64_t now_ns)
     appServerUpdate(app, now_ns);
     appServerTestUpdate(app, now_ns);
     appFreeUpdate(app, now_ns);
+    appNewsUpdate(app, now_ns);
     appWelcomeTick(app);
     appUpdatesTick(app, now_ns);
     if (app->resume_pending)
@@ -840,7 +856,7 @@ static void applyChange(App *app, int changed, uint64_t now_ns)
     if (changed & SETTINGS_CHANGED_ACCENT)
         themeApply(app->prefs.accent);
     if (changed & SETTINGS_CHANGED_SOURCE_COLOR)
-        themeApplySources(app->prefs.network_color, app->prefs.server_color);
+        themeApplySources(app->prefs.network_color, app->prefs.server_color, app->prefs.news_color);
     if (changed & SETTINGS_CHANGED_BLUR)
         backgroundSetBlur(app->prefs.background_blur);
 }
@@ -894,6 +910,9 @@ int appMenuGroup(MenuItem item)
     case MENU_FAVORITE:
     case MENU_FREE_SEARCH:
     case MENU_FREE_LIST:
+    case MENU_NEWS_READ:
+    case MENU_NEWS_FEED:
+    case MENU_NEWS_FULL:
         return 0;
     case MENU_SETTINGS:
     case MENU_EXIT:
@@ -909,12 +928,18 @@ int appMenuRows(const App *app, MenuItem *out)
     if (app->view == VIEW_READER) {
         out[n++] = MENU_CONTENTS;
         out[n++] = MENU_BOOKMARK;
+        if (appNewsReading(app))  // An article: the whole of it, from its site.
+            out[n++] = MENU_NEWS_FULL;
         out[n++] = MENU_LIBRARY;
     }
     if (app->view == VIEW_LIBRARY) {
         if (app->lib_tab == LIB_FREE) {  // Free books: its lists and search.
             out[n++] = MENU_FREE_SEARCH;
             out[n++] = MENU_FREE_LIST;
+        } else if (app->lib_tab == LIB_NEWS) {  // The news: read, and the feeds (L/R).
+            out[n++] = MENU_NEWS_READ;
+            if (app->feeds.count > 1)
+                out[n++] = MENU_NEWS_FEED;
         } else if (appSelectedBook(app)) {
             out[n++] = MENU_FAVORITE;
         }
@@ -1047,6 +1072,8 @@ void appLibTab(App *app, int tab, uint64_t now_ns)
         appServerScan(app, now_ns);
     if (tab == LIB_FREE)
         appFreeEntered(app, now_ns);
+    if (tab == LIB_NEWS)
+        appNewsEntered(app, now_ns);
 }
 
 // The book open when KaiReader last closed, in its library, opened again (if it's still there).
@@ -1054,7 +1081,7 @@ static void resumeLastBook(App *app, uint64_t now_ns)
 {
     app->resume_pending = false;
     int tab = app->prefs.last_tab;
-    if (tab == LIB_FREE || !appSourceSet(tab))
+    if (tab == LIB_FREE || tab == LIB_NEWS || !appSourceSet(tab))  // A list asked for anew: not there yet.
         return;
     if (tab != app->lib_tab)
         appLibTab(app, tab, now_ns);
@@ -1152,6 +1179,15 @@ static void menuPick(App *app, MenuItem item, uint64_t now_ns)
     case MENU_FREE_LIST:
         appFreeStepList(app, 1, now_ns);
         break;
+    case MENU_NEWS_READ:
+        appNewsMarkAllRead(app, now_ns);
+        break;
+    case MENU_NEWS_FEED:
+        appNewsStepFeed(app, 1);
+        break;
+    case MENU_NEWS_FULL:
+        appNewsFull(app, now_ns);
+        break;
     case MENU_VIEW:
         quickStep(app, SETTING_VIEW, 1, now_ns);
         keepCursorVisible(app);
@@ -1235,6 +1271,10 @@ static void settingsPick(App *app, int index, int dir, uint64_t now_ns)
     if (row == SETTING_UPDATE_NOW) {
         if (!dir)
             appUpdatesActivate(app, now_ns);
+        return;
+    }
+    if (settingsIsNews(row)) {  // The news' rows: the keyboard, the feed chosen, its switch.
+        appNewsActivate(app, row, dir, now_ns);
         return;
     }
     if (settingsIsServer(row)) {  // The book server's rows: the keyboard, the test, forgetting it.
@@ -1408,6 +1448,13 @@ static void libraryButtons(App *app, uint64_t pressed, uint64_t now_ns)
             appFreeSearch(app, now_ns);
         else
             appFreeStepList(app, (pressed & HidNpadButton_R) ? 1 : -1, now_ns);
+        return;
+    }
+    if (app->lib_tab == LIB_NEWS && (pressed & (HidNpadButton_Y | HidNpadButton_L | HidNpadButton_R))) {
+        if (pressed & HidNpadButton_Y)  // The news: Y checks the feeds, L and R change the feed shown.
+            appNewsRefresh(app, now_ns);
+        else
+            appNewsStepFeed(app, (pressed & HidNpadButton_R) ? 1 : -1);
         return;
     }
     if (pressed & HidNpadButton_Y) {
@@ -1609,6 +1656,8 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
     case HIT_SORT:  // The sort; in Free books, the search.
         if (app->lib_tab == LIB_FREE)
             appFreeSearch(app, now_ns);
+        else if (app->lib_tab == LIB_NEWS)
+            appNewsRefresh(app, now_ns);
         else
             quickStep(app, SETTING_SORT, 1, now_ns);
         break;
@@ -1714,7 +1763,8 @@ void appHandleTouch(App *app, bool touching, int x, int y, uint64_t now_ns)
         break;
     case TOUCH_LONG: {  // Held on a cover: a favorite, or not any more.
         const HitRegion *hit = uiHitFind(e.x, e.y);
-        if (hit && hit->kind == HIT_BOOK && app->panel == PANEL_NONE && app->lib_tab != LIB_FREE) {
+        if (hit && hit->kind == HIT_BOOK && app->panel == PANEL_NONE && app->lib_tab != LIB_FREE &&
+            app->lib_tab != LIB_NEWS) {
             app->cursor = hit->arg;
             appToggleFavorite(app, hit->arg, now_ns);
         }

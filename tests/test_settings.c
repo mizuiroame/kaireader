@@ -9,9 +9,34 @@
 void testSettings(void)
 {
     SettingRow rows[SETTINGS_ROWS_MAX];
-    CHECK(settingsRows(SETTINGS_PAGE_MAIN, rows) == 6 && rows[0] == SETTING_OPEN_LIBRARY);
+    CHECK(settingsRows(SETTINGS_PAGE_MAIN, rows) == 7 && rows[0] == SETTING_OPEN_LIBRARY);
     CHECK(settingsOpens(rows[1]) == SETTINGS_PAGE_NETWORK && settingsOpens(rows[2]) == SETTINGS_PAGE_SERVER);
-    CHECK(settingsOpens(rows[3]) == SETTINGS_PAGE_READING && settingsOpens(rows[5]) == SETTINGS_PAGE_ABOUT);
+    CHECK(settingsOpens(rows[3]) == SETTINGS_PAGE_NEWS && settingsPickedValue(rows[3]));
+    CHECK(settingsOpens(rows[4]) == SETTINGS_PAGE_READING && settingsOpens(rows[6]) == SETTINGS_PAGE_ABOUT);
+    {  // The news' page: its feeds' rows are the app's, its color a setting; how many feeds on the main page.
+        SettingRow news[SETTINGS_ROWS_MAX];
+        int n = settingsRows(SETTINGS_PAGE_NEWS, news);
+        CHECK(n == 7 && news[0] == SETTING_NEWS_ADD && news[n - 1] == SETTING_NEWS_REMOVE);
+        CHECK(settingsIsNews(SETTING_NEWS_FEED) && !settingsIsNews(SETTING_NEWS_COLOR) &&
+              settingsHasValue(SETTING_NEWS_FEED) && !settingsHasValue(SETTING_NEWS_ADD));
+        Prefs p;
+        prefsDefaults(&p);
+        char v[64];
+        bool named;
+        settingsSetNews(0, "", true);
+        settingsValue(&p, SETTING_OPEN_NEWS, v, sizeof(v), &named);
+        CHECK(!strcmp(v, "Not set") && named);
+        settingsSetNews(3, "Harbor", false);
+        settingsValue(&p, SETTING_OPEN_NEWS, v, sizeof(v), &named);
+        CHECK(!strcmp(v, "3 feeds") && !named);
+        settingsValue(&p, SETTING_NEWS_FEED, v, sizeof(v), &named);
+        CHECK(!strcmp(v, "Harbor") && !named);
+        settingsValue(&p, SETTING_NEWS_CERTIFICATE, v, sizeof(v), &named);
+        CHECK(!strcmp(v, "Off: any certificate"));
+        CHECK(settingsStep(&p, SETTING_NEWS_COLOR, 1) == SETTINGS_CHANGED_SOURCE_COLOR && p.news_color == 1);
+        CHECK(settingsOpens(SETTING_OPEN_NEWS) == SETTINGS_PAGE_NEWS);
+        settingsSetNews(0, "", true);
+    }
     // A source's page, as the other Kai apps': address, sign-in, options (its color last), test, forget.
     CHECK(settingsRows(SETTINGS_PAGE_SERVER, rows) == 6 && rows[0] == SETTING_SRV_ADDRESS && settingsIsServer(rows[5]));
     CHECK(rows[2] == SETTING_SRV_CERTIFICATE && !settingsIsServer(rows[2]) && settingsHasValue(rows[2]));

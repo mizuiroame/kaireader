@@ -35,6 +35,8 @@ typedef struct {
     int accent;             // theme.h's accent.
     int network_color;      // The network folder's color: 0 its own, else an accent + 1.
     int server_color;       // The book server's, the same way.
+    int news_color;         // The news', the same way.
+    int news_feed;          // The news shown: -1 all the feeds, else one (its place in feeds.txt).
     char background[128];   // An image in the Backgrounds folder, "" none.
     int background_blur;    // background.h's BackgroundBlur.
     bool update_check;      // Look for a new version once a day.

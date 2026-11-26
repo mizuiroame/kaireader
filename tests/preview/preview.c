@@ -345,6 +345,205 @@ static void networkShots(App *app, const char *dir)
     appNetworkFeedSettings();
 }
 
+extern bool g_preview_news_down;
+extern bool g_preview_news_checking;
+
+// A made-up feed kept on the card, as newsjob.c keeps one: its articles' dates a day apart.
+static void keepFeed(const App *app, const char *url, const char *title, const char *const *titles, int count,
+                     int64_t newest)
+{
+    Feed f = {0};
+    snprintf(f.title, sizeof(f.title), "%s", title);
+    f.items = calloc((size_t)count, sizeof(*f.items));
+    if (!f.items)
+        return;
+    for (int i = 0; i < count; i++) {
+        FeedItem *it = &f.items[f.count++];
+        snprintf(it->id, sizeof(it->id), "%s#%d", url, i);
+        snprintf(it->title, sizeof(it->title), "%s", titles[i]);
+        snprintf(it->link, sizeof(it->link), "%s/%d.html", url, i);
+        it->date = newest - (int64_t)i * 86400 - (int64_t)i * 3600;
+        char html[1024];
+        snprintf(html, sizeof(html),
+                 "<p>%s: a made-up article for the previews.</p><p>The harbor was quiet this morning; the ferry "
+                 "left on time and the gulls followed it out past the breakwater.</p>"
+                 "<p><img src=\"pic.jpg\" alt=\"The ferry at dawn\"> Next week, the lighthouse opens to visitors "
+                 "<b>every</b> afternoon.</p><ul><li>Tides at 6:10 and 18:32</li><li>Wind from the west</li></ul>",
+                 titles[i]);
+        it->html = strdup(html);
+    }
+    size_t size;
+    char *xml = feedsWrite(&f, &size), hash[FEED_HASH_LEN + 1], path[700];
+    feedsHash(url, hash);
+    snprintf(path, sizeof(path), "%s/news/%s.xml", app->folder, hash);
+    FILE *out = fopen(path, "wb");
+    if (out && xml)
+        fwrite(xml, 1, size, out);
+    if (out)
+        fclose(out);
+    free(xml);
+    feedsFree(&f);
+}
+
+// The news: two made-up feeds, their articles (some read), a feed alone, an article open, the
+// menus and Settings > News; then the same in every language (every target checked in each).
+static void newsShots(App *app, const char *dir)
+{
+    static const char *const HARBOR[] = {"New ferry makes its first crossing", "Fog expected along the coast tonight",
+                                         "Lighthouse opens to visitors", "Fish market moves to the old pier",
+                                         "Harbor festival: the program", "Storm closes the north breakwater"};
+    static const char *const NOTES[] = {"Keeping the lamp lit", "Notes on the spring tides", "A visit from the gulls",
+                                        "Painting the tower again"};
+    char path[700];
+    FeedList l = {0};
+    bool added;
+    feedListAdd(&l, "https://harbor.example/rss", "The Harbor Gazette", &added);
+    feedListAdd(&l, "https://notes.example/atom.xml", "Lighthouse Notes", &added);
+    snprintf(path, sizeof(path), "%s/%s", app->folder, FEEDLIST_FILE);
+    feedListSave(&l, path);
+    snprintf(path, sizeof(path), "%s/news", app->folder);
+    mkdir(path, 0755);
+    keepFeed(app, "https://harbor.example/rss", "The Harbor Gazette", HARBOR, 6, 1795219200);
+    keepFeed(app, "https://notes.example/atom.xml", "Lighthouse Notes", NOTES, 4, 1795219200 - 43200);
+    appNewsStart(app);
+    appNetworkFeedSettings();
+    appLibTab(app, LIB_NEWS, 70);
+    settle(app);
+    if (app->lib_tab != LIB_NEWS || app->order_count != 10) {
+        printf("PREVIEW: the news shows %d articles, not 10\n", app->order_count);
+        g_problems++;
+    }
+    for (int i = 1; i < 4 && i < app->order_count; i++)  // Some read: no dot.
+        shelfMarkRead(&app->shelf.items[app->order[i * 2]], (DocPlace){0, 0}, i == 1 ? 35 : 100, 1000);
+    render(app, dir, "news");
+    app->panel = PANEL_MENU;
+    app->menu_cursor = 0;
+    render(app, dir, "news-menu");
+    app->panel = PANEL_NONE;
+    app->prefs.list_view = true;
+    appResort(app);
+    settle(app);
+    render(app, dir, "news-list");
+    app->prefs.list_view = false;
+    appResort(app);
+    appHandleButtons(app, HidNpadButton_R, 71);  // R: the first feed alone.
+    settle(app);
+    if (app->order_count != 6) {
+        printf("PREVIEW: R shows %d articles of the first feed, not 6\n", app->order_count);
+        g_problems++;
+    }
+    render(app, dir, "news-feed");
+    appHandleButtons(app, HidNpadButton_L, 72);  // L: all the feeds again.
+    settle(app);
+    g_preview_news_checking = true;  // Being checked: the spinner by the feed's name.
+    appHandleButtons(app, HidNpadButton_Y, 73);
+    render(app, dir, "news-checking");
+    g_preview_news_checking = false;
+    settle(app);
+    // The sites don't answer, and nothing kept: why, and a button to try again.
+    g_preview_news_down = true;
+    snprintf(path, sizeof(path), "rm -f %s/news/*.xml", app->folder);
+    if (system(path) != 0)
+        g_problems++;
+    appNewsRefresh(app, 74);
+    settle(app);
+    if (app->order_count != 0 || !app->news_problem[0]) {
+        printf("PREVIEW: the news down still shows %d articles\n", app->order_count);
+        g_problems++;
+    }
+    render(app, dir, "news-down");
+    g_preview_news_down = false;
+    keepFeed(app, "https://harbor.example/rss", "The Harbor Gazette", HARBOR, 6, 1795219200);
+    keepFeed(app, "https://notes.example/atom.xml", "Lighthouse Notes", NOTES, 4, 1795219200 - 43200);
+    appNewsRefresh(app, 75);
+    settle(app);
+    // An article open (its picture a placeholder), its bars and the reader's menu.
+    appOpenBook(app, 0, 76);
+    settle(app);
+    if (app->view != VIEW_READER || !app->ready) {
+        printf("PREVIEW: an article didn't open\n");
+        g_problems++;
+    }
+    render(app, dir, "news-article");
+    app->bars = true;
+    render(app, dir, "news-article-bars");
+    app->bars = false;
+    app->panel = PANEL_MENU;
+    app->menu_cursor = 0;
+    render(app, dir, "news-article-menu");
+    app->panel = PANEL_NONE;
+    appCloseBook(app);
+    if (app->shelf.items[app->order[0]].percent < 0) {
+        printf("PREVIEW: an article read still shows as new\n");
+        g_problems++;
+    }
+    app->panel = PANEL_SETTINGS;
+    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_cursor = rowAt(SETTINGS_PAGE_MAIN, SETTING_OPEN_NEWS);
+    render(app, dir, "settings-main-news");
+    app->settings_page = SETTINGS_PAGE_NEWS;
+    app->settings_cursor = rowAt(SETTINGS_PAGE_NEWS, SETTING_NEWS_FEED);
+    appHandleButtons(app, HidNpadButton_Right, 77);  // The second feed's rows.
+    render(app, dir, "settings-news");
+    app->panel = PANEL_NONE;
+    appOpenWelcome(app);
+    app->welcome_cursor = WELCOME_NEWS;
+    render(app, dir, "welcome-news");
+    app->panel = PANEL_NONE;
+
+    static const char *const LANGS[] = {"es", "de", "fr", "it", "pt", "ja", "ko", "zh"};
+    for (int i = 0; i < 8; i++) {
+        char name[64];
+        snprintf(app->prefs.language, sizeof(app->prefs.language), "%s", LANGS[i]);
+        appUseLanguage(app);
+        snprintf(name, sizeof(name), "%s-news", LANGS[i]);
+        render(app, dir, name);
+        app->panel = PANEL_MENU;
+        app->menu_cursor = 0;
+        snprintf(name, sizeof(name), "%s-news-menu", LANGS[i]);
+        render(app, dir, name);
+        app->panel = PANEL_SETTINGS;
+        app->settings_page = SETTINGS_PAGE_NEWS;
+        app->settings_cursor = 0;
+        snprintf(name, sizeof(name), "%s-settings-news", LANGS[i]);
+        render(app, dir, name);
+        app->settings_page = SETTINGS_PAGE_MAIN;
+        app->settings_cursor = rowAt(SETTINGS_PAGE_MAIN, SETTING_OPEN_NEWS);
+        snprintf(name, sizeof(name), "%s-settings-main", LANGS[i]);
+        render(app, dir, name);
+        app->panel = PANEL_NONE;
+        appOpenWelcome(app);
+        app->welcome_cursor = WELCOME_NEWS;
+        snprintf(name, sizeof(name), "%s-welcome", LANGS[i]);
+        render(app, dir, name);
+        app->panel = PANEL_NONE;
+        g_preview_news_down = true;
+        snprintf(path, sizeof(path), "rm -f %s/news/*.xml", app->folder);
+        if (system(path) != 0)
+            g_problems++;
+        appNewsRefresh(app, 80);
+        settle(app);
+        snprintf(name, sizeof(name), "%s-news-down", LANGS[i]);
+        render(app, dir, name);
+        g_preview_news_down = false;
+        keepFeed(app, "https://harbor.example/rss", "The Harbor Gazette", HARBOR, 6, 1795219200);
+        keepFeed(app, "https://notes.example/atom.xml", "Lighthouse Notes", NOTES, 4, 1795219200 - 43200);
+        appNewsRefresh(app, 81);
+        settle(app);
+        appOpenBook(app, 1, 82);
+        settle(app);
+        app->panel = PANEL_MENU;
+        app->menu_cursor = 0;
+        snprintf(name, sizeof(name), "%s-news-article-menu", LANGS[i]);
+        render(app, dir, name);
+        app->panel = PANEL_NONE;
+        appCloseBook(app);
+    }
+    snprintf(app->prefs.language, sizeof(app->prefs.language), "%s", "en");
+    appUseLanguage(app);
+    appLibTab(app, LIB_CARD, 90);
+}
+
 int main(int argc, char **argv)
 {
     const char *dir = argc > 1 ? argv[1] : ".";
@@ -617,6 +816,7 @@ int main(int argc, char **argv)
     }
     snprintf(app.prefs.language, sizeof(app.prefs.language), "%s", "en");
     appUseLanguage(&app);
+    newsShots(&app, dir);
 
     appFree(&app);
     readingStop();

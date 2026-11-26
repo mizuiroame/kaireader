@@ -20,6 +20,7 @@
 #define COLOR_ERROR GFX_RGB(0xFF, 0x8A, 0x5C)
 #define COLOR_NETWORK g_network_color  // The network folder's, as in KaiPlayer and KaiVideo.
 #define COLOR_SERVER g_server_color   // The book server's: the deep blue of KaiPlayer's server.
+#define COLOR_NEWS g_news_color       // The news': coral.
 #define COLOR_FREE GFX_RGB(0x5B, 0xD6, 0x7A)     // Free books': green.
 #define COLOR_CHARGING GFX_RGB(0x5B, 0xD6, 0x7A)
 

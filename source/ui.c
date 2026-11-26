@@ -138,6 +138,19 @@ static void sourceDot(int x, float middle, Color color)
 
 // --- The library ---
 
+// A news article (app_news.c's "news:..." paths).
+static bool isNews(const ShelfBook *b)
+{
+    return !strncmp(b->path, NEWS_PREFIX, strlen(NEWS_PREFIX));
+}
+
+// An article not opened yet: a dot in the news' color, in a dark disc at the cover's top left.
+static void drawUnread(int x, int y)
+{
+    gfxFillRoundRect(x + 6, y + 6, 32, 32, 16, gfxMix(COLOR_BG, COLOR_SURFACE, 128));
+    gfxFillRoundRect(x + 14, y + 14, 16, 16, 8, COLOR_NEWS);
+}
+
 static void drawPlaceholder(int x, int y, const ShelfBook *b, const char *name)
 {
     Color bg = PLACEHOLDER_COLORS[nameHash(b->path) % (sizeof(PLACEHOLDER_COLORS) / sizeof(PLACEHOLDER_COLORS[0]))];
@@ -145,9 +158,11 @@ static void drawPlaceholder(int x, int y, const ShelfBook *b, const char *name)
     gfxFillRect(x + 10, y, 3, LIB_COVER_H, gfxMix(bg, COLOR_BG, 90));  // A spine.
     char lines[5][160];
     int n = wrapLines(FONT_BOLD, 19, name, LIB_COVER_W - 34, lines, 5);
+    int top = isNews(b) ? 50 : 20;  // An article's title under its "new" dot.
     for (int i = 0; i < n; i++)
-        fontDraw(FONT_BOLD, 19, x + 22, y + 20 + i * 25, lines[i], COLOR_TEXT);
-    fontDraw(FONT_BOLD, 13, x + 22, y + LIB_COVER_H - 30, formatOf(b->path), gfxMix(COLOR_TEXT, bg, 110));
+        fontDraw(FONT_BOLD, 19, x + 22, y + top + i * 25, lines[i], COLOR_TEXT);
+    fontDraw(FONT_BOLD, 13, x + 22, y + LIB_COVER_H - 30, isNews(b) ? b->genre : formatOf(b->path),
+             gfxMix(COLOR_TEXT, bg, 110));
 }
 
 static void coverSize(int *w, int *h)
@@ -183,6 +198,9 @@ static void drawBook(App *app, int index, int x, int y, bool selected)
         gfxFillRoundRect(x + 6, y + 6, 32, 32, 16, gfxMix(COLOR_BG, COLOR_SURFACE, 128));
         uiDrawOnCard(x + 22.0f, y + 22.0f, 12.0f);
     }
+    bool news = isNews(b);
+    if (news && b->percent < 0)
+        drawUnread(x, y);
 
     int ty = y + LIB_COVER_H + 12;
     if (b->percent >= 0) {
@@ -195,7 +213,9 @@ static void drawBook(App *app, int index, int x, int y, bool selected)
     // Under the title: how far in; and the author, unless the group above already says it.
     const char *author = app->prefs.sort == SHELF_SORT_AUTHOR ? "" : b->author;
     char line[SHELF_TEXT_MAX + 16];
-    if (b->percent >= 100)
+    if (news && (b->percent <= 0 || b->percent >= 100))  // An article: its feed (and how far, while read).
+        snprintf(line, sizeof(line), "%s", b->author);
+    else if (b->percent >= 100)
         snprintf(line, sizeof(line), "%s", T("Finished"));
     else if (b->percent >= 0)
         snprintf(line, sizeof(line), "%d%%%s%s", b->percent, author[0] ? " \xC2\xB7 " : "", author);
@@ -242,6 +262,10 @@ static void drawRow(App *app, int index, int y, bool selected)
     } else if (b->percent >= 100) {
         int fw = fontTextWidth(FONT_BOLD, 15, T("Finished"));
         fontDrawMiddle(FONT_BOLD, 15, right - fw, y + rh / 2.0f, T("Finished"), COLOR_DIM);
+    } else if (isNews(b) && b->percent < 0) {  // An article not opened yet.
+        int nw = fontTextWidth(FONT_BOLD, 15, T("New"));
+        fontDrawMiddle(FONT_BOLD, 15, right - nw, y + rh / 2.0f, T("New"), COLOR_NEWS);
+        gfxFillRoundRect(right - nw - 26, (int)(y + rh / 2.0f) - 7, 14, 14, 7, COLOR_NEWS);
     } else if (b->on_card) {  // A free book downloaded already: A opens it there.
         int ow = fontTextWidth(FONT_BOLD, 15, T("On the card"));
         fontDrawMiddle(FONT_BOLD, 15, right - ow, y + rh / 2.0f, T("On the card"), COLOR_DIM);
@@ -256,7 +280,8 @@ static void drawRow(App *app, int index, int y, bool selected)
     }
     fontDrawClipped(FONT_REGULAR, 17, tx, y + 47, text_w, b->author[0] ? b->author : T("Unknown author"), COLOR_DIM);
     char kind[SHELF_TEXT_MAX + 16];
-    snprintf(kind, sizeof(kind), "%s%s%s", formatOf(b->path), b->genre[0] ? " \xC2\xB7 " : "", b->genre);
+    const char *format = formatOf(b->path);  // An article has none: its date alone.
+    snprintf(kind, sizeof(kind), "%s%s%s", format, format[0] && b->genre[0] ? " \xC2\xB7 " : "", b->genre);
     fontDrawClipped(FONT_REGULAR, 14, tx, y + 72, text_w, kind, COLOR_FAINT);
     uiHitAdd(x - 8, y, rw + 16, rh, HIT_BOOK, index);
 }
@@ -329,6 +354,8 @@ static void drawLibrary(App *app, uint64_t now_ns)
     char sub[160];
     if (app->lib_tab == LIB_FREE)  // Free books: the list shown, not a count (its end isn't known).
         snprintf(sub, sizeof(sub), "%s", appFreeListName(app));
+    else if (app->lib_tab == LIB_NEWS)  // The news: the feed shown.
+        snprintf(sub, sizeof(sub), "%s", appNewsFeedName(app));
     else
         snprintf(sub, sizeof(sub), app->order_count == 1 ? T("1 book") : T("%d books"), app->order_count);
     bool remote = app->lib_tab != LIB_CARD;
@@ -336,10 +363,12 @@ static void drawLibrary(App *app, uint64_t now_ns)
     int sw0 = fontDraw(FONT_REGULAR, 18, MARGIN + tw + 14, 77, sub, COLOR_DIM);
     if (remote)  // The folder or catalog being looked through, after the count.
         uiDrawNetScan(app->lib_tab, MARGIN + tw + 14 + sw0 + 20, 89.0f, now_ns);
-    if (app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES || app->lib_tab == LIB_FREE) {
-        // The sort, at the right: a tap (or Y) changes it. Free books: the search there.
+    bool news = app->lib_tab == LIB_NEWS;
+    if (app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES || app->lib_tab == LIB_FREE || news) {
+        // The sort, at the right: a tap (or Y) changes it. Free books: the search there; the news: checking.
         char sort[64];
-        snprintf(sort, sizeof(sort), "%s", app->lib_tab == LIB_FREE ? T("Search") : T(prefsSortName(app->prefs.sort)));
+        snprintf(sort, sizeof(sort), "%s", app->lib_tab == LIB_FREE ? T("Search") : news ? T("Refresh")
+                                                                                   : T(prefsSortName(app->prefs.sort)));
         int sw = fontTextWidth(FONT_REGULAR, 17, sort), bw = uiButtonWidth("Y");
         int x = w - MARGIN - sw;
         fontDraw(FONT_REGULAR, 17, x, 78, sort, COLOR_DIM);
@@ -396,7 +425,8 @@ static void drawLibrary(App *app, uint64_t now_ns)
     bool sortable = app->order_count || app->prefs.sort == SHELF_SORT_FAVORITES;
     char help[200];
     snprintf(help, sizeof(help), "%s%s%s[X] %s  ", app->order_count ? T("[A] Read  ") : "",
-             free_books ? T("[Y] Search  [L][R] Lists  ") : sortable ? T("[Y] Sort  ") : "", "",
+             free_books ? T("[Y] Search  [L][R] Lists  ") : news ? T("[Y] Refresh  [L][R] Feeds  ")
+                        : sortable ? T("[Y] Sort  ") : "", "",
              uiSourceName(appNextSource(app)));
     snprintf(help + strlen(help), sizeof(help) - strlen(help), "%s", T("[+] Menu"));
     drawFooter(help);
@@ -570,11 +600,18 @@ static const char *menuLabel(const App *app, MenuItem item)
         return appNextSource(app) == LIB_NETWORK  ? T("Go to the network folder")
                : appNextSource(app) == LIB_SERVER ? T("Go to the book server")
                : appNextSource(app) == LIB_FREE   ? T("Go to free books")
+               : appNextSource(app) == LIB_NEWS   ? T("Go to the news")
                                                   : T("Go to the SD card library");
     case MENU_FREE_SEARCH:
         return appFreeSearchLine(app);
     case MENU_FREE_LIST:
         return appFreeNextListLine(app);
+    case MENU_NEWS_READ:
+        return T("Mark all as read");
+    case MENU_NEWS_FEED:
+        return appNewsNextFeedLine(app);
+    case MENU_NEWS_FULL:
+        return T("Read the full article");
     case MENU_NET_SETUP:
         return T("Add a network folder or book server");
     case MENU_SETTINGS:
@@ -583,6 +620,7 @@ static const char *menuLabel(const App *app, MenuItem item)
         return app->lib_tab == LIB_NETWORK  ? T("Look through the network folder again")
                : app->lib_tab == LIB_SERVER ? T("Look through the server's catalog again")
                : app->lib_tab == LIB_FREE   ? T("Load the list again")
+               : app->lib_tab == LIB_NEWS   ? T("Check the feeds again")
                                             : T("Look for books again");
     case MENU_EXIT:
         return T("Exit KaiReader");
@@ -663,7 +701,13 @@ static int drawAboutText(int x, int y, int w, bool draw)
 
 static bool isSourcePage(int page)
 {
-    return page == SETTINGS_PAGE_NETWORK || page == SETTINGS_PAGE_SERVER;
+    return page == SETTINGS_PAGE_NETWORK || page == SETTINGS_PAGE_SERVER || page == SETTINGS_PAGE_NEWS;
+}
+
+// A source's page's color, or the color of the row that opens it.
+static Color pageColor(int page)
+{
+    return page == SETTINGS_PAGE_NETWORK ? COLOR_NETWORK : page == SETTINGS_PAGE_SERVER ? COLOR_SERVER : COLOR_NEWS;
 }
 
 static void drawSettingsPanel(const App *app)
@@ -691,8 +735,8 @@ static void drawSettingsPanel(const App *app)
         uiHitAdd(x + 20, y + 14, bw + 16, 52, HIT_SETTINGS_BACK, 0);
         tx = x + 28 + bw + 18;
     }
-    if (app->settings_page == SETTINGS_PAGE_NETWORK || app->settings_page == SETTINGS_PAGE_SERVER) {
-        sourceDot(tx, y + 40.0f, app->settings_page == SETTINGS_PAGE_NETWORK ? COLOR_NETWORK : COLOR_SERVER);
+    if (isSourcePage(app->settings_page)) {
+        sourceDot(tx, y + 40.0f, pageColor(app->settings_page));
         tx += SOURCE_DOT_ROOM;
     }
     fontDrawMiddle(FONT_BOLD, 22, tx, y + 40.0f, T(settingsPageTitle(app->settings_page)), COLOR_TEXT);
@@ -712,8 +756,8 @@ static void drawSettingsPanel(const App *app)
             rowHighlight(x + 14, ry, w - 28, SETTINGS_ROW_H - 4);
         float mid = ry + (SETTINGS_ROW_H - 4) / 2.0f;
         int label_x = x + 32;
-        if (rows[i] == SETTING_OPEN_NETWORK || rows[i] == SETTING_OPEN_SERVER) {  // A source: its color.
-            sourceDot(label_x, mid, rows[i] == SETTING_OPEN_NETWORK ? COLOR_NETWORK : COLOR_SERVER);
+        if (rows[i] == SETTING_OPEN_NETWORK || rows[i] == SETTING_OPEN_SERVER || rows[i] == SETTING_OPEN_NEWS) {
+            sourceDot(label_x, mid, pageColor(settingsOpens(rows[i])));  // A source: its color.
             label_x += SOURCE_DOT_ROOM;
         }
         fontDrawMiddle(on ? FONT_BOLD : FONT_REGULAR, 21, label_x, mid, T(settingsLabel(rows[i])), COLOR_TEXT);
@@ -785,7 +829,7 @@ static void drawSettings(const App *app)
 {
     Color accent = g_accent;
     if (isSourcePage(app->settings_page))
-        g_accent = app->settings_page == SETTINGS_PAGE_NETWORK ? COLOR_NETWORK : COLOR_SERVER;
+        g_accent = pageColor(app->settings_page);
     drawSettingsPanel(app);
     g_accent = accent;
 }
@@ -797,13 +841,15 @@ static void drawSettings(const App *app)
 static void drawWelcome(const App *app)
 {
     static const char *const TITLES[WELCOME_ROW_COUNT] = {
-        N_("On the SD card"), N_("A network folder"), N_("A book server"), N_("Free books"), N_("Later"),
+        N_("On the SD card"), N_("A network folder"), N_("A book server"), N_("Free books"), N_("News from websites"),
+        N_("Later"),
     };
     static const char *const NOTES[WELCOME_ROW_COUNT] = {
         N_("Copy them to sdmc:/books; KaiDrop does it from your PC."),
         N_("A shared folder, a NAS or Nextcloud, FTP or SFTP."),
         N_("Calibre-Web, Kavita or Komga, by its address."),
         N_("Public-domain classics, in English, Spanish and French."),
+        N_("The RSS or Atom feeds of the sites you read, by their address."),
         N_("Start with an empty library; it's all in + > Settings."),
     };
     dim();
