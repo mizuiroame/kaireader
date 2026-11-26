@@ -1253,3 +1253,6 @@ O idioma das sugestões: esquerda e direita mostram as de outro. A num feed pass
 
 Well-known news sites in each language, followed with A: nothing to type.
 Sites de notícias conhecidos em cada idioma, seguidos com A: nada para digitar.
+
+[^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[^v] Rolar  [L][R] Uma tela  [Y] Cores  [RS] Girar  [-] Ocultar  [B] Biblioteca

@@ -1253,3 +1253,6 @@ La langue des suggestions : gauche et droite montrent celles d'une autre. A sur 
 
 Well-known news sites in each language, followed with A: nothing to type.
 Des sites d'actualités connus dans chaque langue, suivis avec A : rien à taper.
+
+[^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[^v] Défiler  [L][R] Un écran  [Y] Couleurs  [RS] Pivoter  [-] Masquer  [B] Bibliothèque

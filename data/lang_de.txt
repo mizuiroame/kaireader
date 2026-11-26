@@ -1253,3 +1253,6 @@ Die Sprache der Vorschläge: links und rechts zeigen die einer anderen. A auf ei
 
 Well-known news sites in each language, followed with A: nothing to type.
 Bekannte Nachrichtenseiten in jeder Sprache, mit A verfolgt: nichts zu tippen.
+
+[^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[^v] Scrollen  [L][R] Ein Bildschirm  [Y] Farben  [RS] Drehen  [-] Ausblenden  [B] Bibliothek

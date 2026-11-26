@@ -1252,3 +1252,6 @@ The suggestions' language: left and right show another's. A on a feed follows it
 
 Well-known news sites in each language, followed with A: nothing to type.
 各言語の有名なニュースサイトを A でフォロー。入力は不要です。
+
+[^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[^v] スクロール  [L][R] 1画面  [Y] 配色  [RS] 回転  [-] 隠す  [B] ライブラリー

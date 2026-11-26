@@ -1252,3 +1252,6 @@ The suggestions' language: left and right show another's. A on a feed follows it
 
 Well-known news sites in each language, followed with A: nothing to type.
 언어별로 잘 알려진 뉴스 사이트를 A로 구독해요. 입력할 필요가 없어요.
+
+[^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[^v] 스크롤  [L][R] 한 화면  [Y] 색상  [RS] 회전  [-] 숨기기  [B] 서재

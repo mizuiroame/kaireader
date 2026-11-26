@@ -1252,3 +1252,6 @@ The suggestions' language: left and right show another's. A on a feed follows it
 
 Well-known news sites in each language, followed with A: nothing to type.
 各语言的知名新闻网站，按 A 即可订阅，无需输入。
+
+[^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[^v] 滚动  [L][R] 一屏  [Y] 配色  [RS] 旋转  [-] 隐藏  [B] 书库
