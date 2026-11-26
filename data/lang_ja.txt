@@ -1240,3 +1240,15 @@ Untitled article
 
 Y checks the feeds again; Settings > News adds more.
 Y でフィードをもう一度確認。設定 > ニュース で追加できます。
+
+Followed
+フォロー中
+
+Suggested feeds
+おすすめのフィード
+
+The suggestions' language: left and right show another's. A on a feed follows it.
+おすすめの言語です。左右で別の言語に切り替え、フィードで A を押すとフォローします。
+
+Well-known news sites in each language, followed with A: nothing to type.
+各言語の有名なニュースサイトを A でフォロー。入力は不要です。

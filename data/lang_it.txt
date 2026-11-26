@@ -1241,3 +1241,15 @@ Articolo senza titolo
 
 Y checks the feeds again; Settings > News adds more.
 Y controlla di nuovo i feed; Impostazioni > Notizie ne aggiunge altri.
+
+Followed
+Seguito
+
+Suggested feeds
+Feed suggeriti
+
+The suggestions' language: left and right show another's. A on a feed follows it.
+La lingua dei suggerimenti: sinistra e destra mostrano quelli di un'altra. A su un feed lo segue.
+
+Well-known news sites in each language, followed with A: nothing to type.
+Siti di notizie noti in ogni lingua, da seguire con A: niente da digitare.

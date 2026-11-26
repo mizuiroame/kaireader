@@ -1240,3 +1240,15 @@ Untitled article
 
 Y checks the feeds again; Settings > News adds more.
 按 Y 再次检查订阅源；在 设置 > 新闻 中添加更多。
+
+Followed
+已订阅
+
+Suggested feeds
+推荐订阅源
+
+The suggestions' language: left and right show another's. A on a feed follows it.
+推荐的语言：左右键切换到其他语言。在订阅源上按 A 即可订阅。
+
+Well-known news sites in each language, followed with A: nothing to type.
+各语言的知名新闻网站，按 A 即可订阅，无需输入。

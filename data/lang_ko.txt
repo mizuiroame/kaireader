@@ -1240,3 +1240,15 @@ Untitled article
 
 Y checks the feeds again; Settings > News adds more.
 Y로 피드를 다시 확인해요. 설정 > 뉴스에서 더 추가할 수 있어요.
+
+Followed
+구독 중
+
+Suggested feeds
+추천 피드
+
+The suggestions' language: left and right show another's. A on a feed follows it.
+추천 언어예요. 왼쪽과 오른쪽으로 다른 언어를 보고, 피드에서 A를 누르면 구독해요.
+
+Well-known news sites in each language, followed with A: nothing to type.
+언어별로 잘 알려진 뉴스 사이트를 A로 구독해요. 입력할 필요가 없어요.

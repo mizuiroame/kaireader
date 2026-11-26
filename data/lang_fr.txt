@@ -1241,3 +1241,15 @@ Article sans titre
 
 Y checks the feeds again; Settings > News adds more.
 Y vérifie à nouveau les flux ; Paramètres > Actualités en ajoute d'autres.
+
+Followed
+Suivi
+
+Suggested feeds
+Flux suggérés
+
+The suggestions' language: left and right show another's. A on a feed follows it.
+La langue des suggestions : gauche et droite montrent celles d'une autre. A sur un flux le suit.
+
+Well-known news sites in each language, followed with A: nothing to type.
+Des sites d'actualités connus dans chaque langue, suivis avec A : rien à taper.
