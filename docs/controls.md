@@ -16,6 +16,11 @@
 | **B** | | Back to the library |
 | **+** | Menu: favorite, SD card or network folder, grid or list, look again, Settings, Exit (news: mark all as read, the next feed) | Menu: Contents, Bookmark, Library, Settings, Exit (an article: read the full article) |
 
+A news article scrolls like a web page: **Up**/**Down** (D-pad or sticks,
+held for more) scroll it, **L**/**R**, **ZL**/**ZR**, **Left**/**Right** and
+**A** move a screen up or down, **Y** colors, **−** the bars, **B** back to
+the news; a finger drags it (it glides on), a tap shows or hides the bars.
+
 The right stick moves like the D-pad. Upright, every direction turns with the
 console: up is up as you hold it.
 

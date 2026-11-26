@@ -67,6 +67,17 @@ Branch `feat/feeds`, worktree `D:\ns2homebrew\kaireader-feeds`, from main at 2b0
   real committed). `article.c` now leaves out parts beside the article (class/id share, comments,
   related, newsletter, hidden...) when they hold little text.
 
+## Articles scroll like a web page (2026-11-27, owner's request)
+
+- `app_scroll.c`: a news article is laid out in strips a screen tall at the column's width (the reading
+  thread's pages, margin 0), drawn one under the other with a scroll offset; only the strips near the
+  top are rendered/kept (the usual PAGE_SLOTS). The last strip's text end is measured once from its
+  image so the scroll stops under the text. Drag (with the library's kinetic glide), up/down (repeat
+  while held), L/R/ZL/ZR/left/right/A a screen. Tap: bars. No two pages, page numbers, contents or
+  bookmarks for articles; read mark = the strip reached; it reopens at that strip. Books unchanged.
+- Known: where two strips meet, a line can sit a little lower than the others (MuPDF moves a line that
+  doesn't fit to the next page).
+
 ## Left
 
 - Console test by the owner, with `KaiReader-news-test.nro` ("KaiReader News test", built from this
