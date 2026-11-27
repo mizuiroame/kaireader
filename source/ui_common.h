@@ -46,5 +46,7 @@ void uiDrawStar(float cx, float cy, float r, Color color);
 // On the card (a free book downloaded already), as KaiVideo marks a download: an SD card
 // in a filled circle of the accent, radius r around (cx, cy).
 void uiDrawOnCard(float cx, float cy, float r);
+// Splits text into up to max_lines lines of width w (words kept whole when they can be): how many (ui.c).
+int uiWrapLines(FontFace face, int px, const char *text, int w, char lines[][160], int max_lines);
 // A spinner: dots around (cx, cy) going round.
 void uiDrawSpinner(float cx, float cy, float r, uint64_t now_ns, Color color);

@@ -248,12 +248,9 @@ bool opdsFetchCover(const char *path, int w, int h, DocImage *out)
 {
     const char *slash = strrchr(path, '/'), *hash = strrchr(path, '#');
     char file[256];
-    if (!strncmp(path, "news:", 5)) {  // A made-up article: a fixture's cover for half of them, none for the rest.
-        char last = path[strlen(path) - 1];
-        if (last < '0' || last > '7')
-            return false;
-        snprintf(file, sizeof(file), "books/library%c.epub", last == '0' ? '8' : last);
-        return docEpubCover(file, w, h, out);
+    if (!strncmp(path, "news:", 5)) {  // A made-up article: a made-up picture for some, none for the rest.
+        bool previewNewsCover(const char *path, int w, int h, DocImage *out);
+        return previewNewsCover(path, w, h, out);
     }
     snprintf(file, sizeof(file), "books/%.*s", (int)(hash && slash && hash > slash ? hash - slash - 1 : 64),
              slash ? slash + 1 : path);
@@ -472,6 +469,7 @@ bool newsJobTakeCheck(NewsArticle **articles, int *count, NewsFeedState **feeds,
             newsPath(g_news_feeds[i].hash, feed.items[j].id, a->path, sizeof(a->path));
             snprintf(a->title, sizeof(a->title), "%s", feed.items[j].title);
             snprintf(a->image, sizeof(a->image), "%s", feed.items[j].image);
+            feedsPlainText(feed.items[j].html, a->summary, sizeof(a->summary));
             a->date = feed.items[j].date;
             a->feed = i;
             a->seq = (*count)++;
@@ -535,4 +533,57 @@ void newsJobStop(void)
 
 void appNetworkWantNews(void)
 {
+}
+
+// An article's pictures: the made-up dusk picture of the previews (make_background.py), kept as
+// newsjob.c keeps them (fitted, as JPEG files).
+static bool g_pictures_ready;
+static int g_pictures_kept;
+
+static bool duskPicture(int max_w, int max_h, DocImage *out)
+{
+    static char data[1 << 20];
+    FILE *f = fopen("/tmp/kaireader_preview/Backgrounds/dusk.png", "rb");
+    size_t n = f ? fread(data, 1, sizeof(data), f) : 0;
+    if (f)
+        fclose(f);
+    return n && docImageFromData(data, n, max_w, max_h, out);
+}
+
+bool newsJobPictures(const char (*urls)[FEED_URL_MAX], const char (*files)[NEWSJOB_PICTURE_PATH], int count,
+                     bool any_certificate, int max_w)
+{
+    (void)urls;
+    (void)any_certificate;
+    g_pictures_kept = 0;
+    for (int i = 0; i < count; i++) {
+        DocImage image;
+        if (duskPicture(max_w, max_w * 3, &image)) {
+            g_pictures_kept += docImageSaveJpeg(&image, files[i], 82);
+            docImageFree(&image);
+        }
+    }
+    g_pictures_ready = true;
+    return true;
+}
+
+bool newsJobPicturesBusy(void)
+{
+    return false;
+}
+
+bool newsJobTakePictures(int *kept)
+{
+    if (!g_pictures_ready)
+        return false;
+    g_pictures_ready = false;
+    *kept = g_pictures_kept;
+    return true;
+}
+
+// A news article's cover: the dusk picture for some (the ones whose hash ends in 0-7), none for the rest.
+bool previewNewsCover(const char *path, int w, int h, DocImage *out)
+{
+    char last = path[strlen(path) - 1];
+    return last >= '0' && last <= '7' && duskPicture(w, h, out);
 }

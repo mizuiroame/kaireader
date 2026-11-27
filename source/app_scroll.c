@@ -77,6 +77,11 @@ void appScrollOpened(App *app, int start_page)
     app->scroll_end = -1;
     kineticStop(&app->kinetic);
     app->scroll_y = start_page > 0 ? (float)(SCROLL_TOP + start_page * appScrollStrip()) : 0;
+    if (app->scroll_restore >= 0) {  // Opened again (its pictures came): where it was.
+        app->scroll_y = app->scroll_restore;
+        app->scroll_restore = -1;
+        appScrollTo(app, app->scroll_y);
+    }
     followStrip(app);
 }
 

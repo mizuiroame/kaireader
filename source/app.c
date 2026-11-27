@@ -105,8 +105,34 @@ static int maxScroll(const App *app)
 // genre), then its books in rows of as many as fit across.
 static void useTurnSetting(App *app);
 
+// The news' showcase: its lead story, then rows of wide cards (newest first, no groups).
+static void layoutShowcase(App *app)
+{
+    app->columns = appNewsColumns();
+    free(app->lines);
+    app->lines = malloc((size_t)(app->order_count + 1) * sizeof(*app->lines));
+    app->line_count = 0;
+    if (!app->lines)
+        return;
+    int y = 0;
+    for (int i = 0; i < app->order_count;) {
+        bool lead = i == 0;
+        int n = lead ? 1 : app->order_count - i < app->columns ? app->order_count - i : app->columns;
+        int h = lead ? appNewsLeadH() : appNewsRowH();
+        app->lines[app->line_count++] = (LibLine){y, h, i, n, -1, lead};
+        y += h;
+        i += n;
+    }
+    if (app->scroll > maxScroll(app))
+        app->scroll = maxScroll(app);
+}
+
 static void layoutLibrary(App *app)
 {
+    if (appNewsShowcase(app)) {
+        layoutShowcase(app);
+        return;
+    }
     int columns = (gfxLayoutWidth() - 2 * LIB_SIDE) / LIB_CELL_W;
     app->columns = app->prefs.list_view ? 1 : columns < 2 ? 2 : columns;
     int line_h = app->prefs.list_view ? LIB_ROW_H : LIB_CELL_H;
@@ -122,7 +148,7 @@ static void layoutLibrary(App *app)
         if (grouped) {
             shelfGroupOf(&app->shelf.items[app->order[i]], (ShelfSort)app->prefs.sort, group, sizeof(group));
             if (i == 0 || strcmp(group, last)) {
-                app->lines[app->line_count++] = (LibLine){y, LIB_GROUP_H, -1, 0, i};
+                app->lines[app->line_count++] = (LibLine){y, LIB_GROUP_H, -1, 0, i, false};
                 y += LIB_GROUP_H;
                 snprintf(last, sizeof(last), "%s", group);
             }
@@ -136,7 +162,7 @@ static void layoutLibrary(App *app)
             }
             n++;
         }
-        app->lines[app->line_count++] = (LibLine){y, line_h, i, n, -1};
+        app->lines[app->line_count++] = (LibLine){y, line_h, i, n, -1, false};
         y += line_h;
         i += n;
     }
@@ -514,6 +540,7 @@ void appOpenBook(App *app, int order_index, uint64_t now_ns)
     app->book = app->order[order_index];
     app->scroll_view = article;  // Read as a web page, scrolled.
     app->scroll_y = 0;
+    app->scroll_restore = -1;
     app->scroll_end = -1;
     appZoomReset(app);  // A book opens fitted.
     ReadingLayout layout = appLayout(app);
@@ -528,6 +555,24 @@ void appOpenBook(App *app, int order_index, uint64_t now_ns)
     app->pages = 0;
     app->turn_from = -1;
     readingForgetCovers();
+}
+
+void appReopenBook(App *app, const char *path, bool at_start)
+{
+    if (app->book < 0)
+        return;
+    ReadingStatus st;
+    readingGetStatus(&st);
+    DocPlace place = st.generation == app->generation && st.state == READING_OPEN ? st.current_place
+                                                                                    : app->shelf.items[app->book].place;
+    if (at_start)
+        place = (DocPlace){0, 0};
+    app->scroll_restore = at_start ? -1 : app->scroll_y;
+    ReadingLayout layout = appLayout(app);
+    freeSlots(app);
+    app->generation = readingOpen(path, &layout, place);
+    app->ready = false;
+    app->turn_from = -1;
 }
 
 void appCloseBook(App *app)

@@ -20,6 +20,7 @@
 #include "davnet.h"
 #include "ui_net.h"
 #include "ui_hit.h"
+#include "ui_news.h"
 #include "ui_notice.h"
 #include "util.h"
 
@@ -72,7 +73,7 @@ static void drawFitted(int x, int y, int w, int h, const uint32_t *pixels, int i
 }
 
 // Splits text into up to max_lines lines of width w (words kept whole when they can be).
-static int wrapLines(FontFace face, int px, const char *text, int w, char lines[][160], int max_lines)
+int uiWrapLines(FontFace face, int px, const char *text, int w, char lines[][160], int max_lines)
 {
     int n = 0;
     const char *s = text;
@@ -157,7 +158,7 @@ static void drawPlaceholder(int x, int y, const ShelfBook *b, const char *name)
     gfxFillRoundRect(x, y, LIB_COVER_W, LIB_COVER_H, 8, bg);
     gfxFillRect(x + 10, y, 3, LIB_COVER_H, gfxMix(bg, COLOR_BG, 90));  // A spine.
     char lines[5][160];
-    int n = wrapLines(FONT_BOLD, 19, name, LIB_COVER_W - 34, lines, 5);
+    int n = uiWrapLines(FONT_BOLD, 19, name, LIB_COVER_W - 34, lines, 5);
     int top = isNews(b) ? 50 : 20;  // An article's title under its "new" dot.
     for (int i = 0; i < n; i++)
         fontDraw(FONT_BOLD, 19, x + 22, y + top + i * 25, lines[i], COLOR_TEXT);
@@ -171,6 +172,15 @@ static void coverSize(int *w, int *h)
     *h = (int)(fb(LIB_COVER_H) * gfxDetail());
 }
 
+// The size a book's cover is asked for at: an article's picture is wide, and the same in every view.
+static void coverSizeOf(const ShelfBook *b, int *w, int *h)
+{
+    if (!strncmp(b->path, NEWS_PREFIX, strlen(NEWS_PREFIX)))
+        uiNewsCoverSize(w, h);
+    else
+        coverSize(w, h);
+}
+
 static void drawBook(App *app, int index, int x, int y, bool selected)
 {
     const ShelfBook *b = &app->shelf.items[app->order[index]];
@@ -179,7 +189,7 @@ static void drawBook(App *app, int index, int x, int y, bool selected)
     if (selected)
         gfxFillRoundRect(x - 6, y - 6, LIB_COVER_W + 12, LIB_COVER_H + 12, 12, COLOR_ACCENT);
     int cw, ch;
-    coverSize(&cw, &ch);
+    coverSizeOf(b, &cw, &ch);
     bool failed;
     const Cover *cv = coversGet(&app->covers, b->path, b->size, cw, ch, &failed);
     if (cv) {
@@ -237,7 +247,7 @@ static void drawRow(App *app, int index, int y, bool selected)
         gfxFillRect(x - 8, y + 16, 3, rh - 32, COLOR_ACCENT);
     }
     int cx = x + 10, cy = y + (rh - LIB_ROW_COVER_H) / 2, cw, ch;
-    coverSize(&cw, &ch);
+    coverSizeOf(b, &cw, &ch);
     bool failed;
     const Cover *cv = coversGet(&app->covers, b->path, b->size, cw, ch, &failed);
     if (cv) {
@@ -280,8 +290,12 @@ static void drawRow(App *app, int index, int y, bool selected)
     }
     fontDrawClipped(FONT_REGULAR, 17, tx, y + 47, text_w, b->author[0] ? b->author : T("Unknown author"), COLOR_DIM);
     char kind[SHELF_TEXT_MAX + 16];
-    const char *format = formatOf(b->path);  // An article has none: its date alone.
-    snprintf(kind, sizeof(kind), "%s%s%s", format, format[0] && b->genre[0] ? " \xC2\xB7 " : "", b->genre);
+    const char *format = formatOf(b->path);  // An article has none: when it came.
+    char when[48];
+    if (isNews(b))
+        uiNewsWhen(b, when, sizeof(when));
+    snprintf(kind, sizeof(kind), "%s%s%s", format, format[0] && b->genre[0] ? " \xC2\xB7 " : "",
+             isNews(b) ? when : b->genre);
     fontDrawClipped(FONT_REGULAR, 14, tx, y + 72, text_w, kind, COLOR_FAINT);
     uiHitAdd(x - 8, y, rw + 16, rh, HIT_BOOK, index);
 }
@@ -301,11 +315,11 @@ static void drawGroup(const App *app, const LibLine *line, int y)
 static void askAhead(App *app, int line)
 {
     int cw, ch;
-    coverSize(&cw, &ch);
     for (int l = line; l < app->line_count && l < line + 2; l++) {
         const LibLine *ln = &app->lines[l];
         for (int i = 0; ln->first >= 0 && i < ln->count; i++) {
             const ShelfBook *b = &app->shelf.items[app->order[ln->first + i]];
+            coverSizeOf(b, &cw, &ch);
             coversGet(&app->covers, b->path, b->size, cw, ch, NULL);
         }
     }
@@ -324,7 +338,7 @@ static void drawEmpty(int w)
         FontFace face = i == 0 || i == 2 ? FONT_BOLD : FONT_REGULAR;
         int px = i == 0 ? 28 : 19;
         char wrapped[3][160];
-        int n = wrapLines(face, px, lines[i], w - 2 * MARGIN, wrapped, 3);
+        int n = uiWrapLines(face, px, lines[i], w - 2 * MARGIN, wrapped, 3);
         for (int j = 0; j < n; j++, y += px + 12) {
             int tw = fontTextWidth(face, px, wrapped[j]);
             fontDraw(face, px, (w - tw) / 2, y, wrapped[j], i == 2 ? COLOR_ACCENT : i == 0 ? COLOR_TEXT : COLOR_DIM);
@@ -398,6 +412,10 @@ static void drawLibrary(App *app, uint64_t now_ns)
                 continue;
             if (first_shown < 0)
                 first_shown = l;
+            if (appNewsShowcase(app)) {  // The news: a lead story and wide cards.
+                uiNewsDrawLine(app, ln, y, LIB_TOP - 8, LIB_TOP + view);
+                continue;
+            }
             if (ln->first < 0) {
                 drawGroup(app, ln, y);
                 continue;
@@ -722,7 +740,7 @@ static int drawAboutText(int x, int y, int w, bool draw)
     };
     for (int p = 1; p < 6; p++) {  // The first (the name and version) is the page's header.
         char lines[6][160];
-        int n = wrapLines(p ? FONT_REGULAR : FONT_BOLD, p ? 17 : 22, paragraphs[p], w, lines, 6);
+        int n = uiWrapLines(p ? FONT_REGULAR : FONT_BOLD, p ? 17 : 22, paragraphs[p], w, lines, 6);
         for (int i = 0; i < n; i++, y += p ? 25 : 32)
             if (draw)
                 fontDraw(p ? FONT_REGULAR : FONT_BOLD, p ? 17 : 22, x, y, lines[i],
@@ -849,7 +867,7 @@ static void drawSettingsPanel(const App *app)
     // The help of the row selected.
     if (app->settings_cursor < n) {
         char lines[3][160];
-        int lines_n = wrapLines(FONT_REGULAR, 16, T(settingsHelp(rows[app->settings_cursor])), w - 64, lines, 3);
+        int lines_n = uiWrapLines(FONT_REGULAR, 16, T(settingsHelp(rows[app->settings_cursor])), w - 64, lines, 3);
         int hy = y + 84 + n * SETTINGS_ROW_H + 10;
         for (int i = 0; i < lines_n; i++)
             fontDraw(FONT_REGULAR, 16, x + 32, hy + i * 22, lines[i], COLOR_DIM);

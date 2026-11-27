@@ -34,6 +34,10 @@
 #define LIB_TOP 116
 #define LIB_SIDE 24          // Room at each side of the grid, at least.
 #define FOOTER_H 56          // The help line at the bottom.
+// The news' showcase (app_news.c, ui_news.c): a lead story across the width, then rows of wide cards.
+#define NEWS_GAP 24          // Between cards.
+#define NEWS_CARD_TEXT 108   // Under a card's picture: its headline (two lines) and feed and time.
+#define NEWS_LEAD_SHARE 46   // Percent of the width the lead story's picture takes (the console lying down).
 #define NET_LOCAL_MAX (APP_FOLDER_MAX + 512)
 #define LIB_CARD 0     // The library's sources: the SD card's books,
 #define LIB_NETWORK 1  // the network folder's,
@@ -110,6 +114,7 @@ typedef struct {
     int first;       // Its first book, in order; -1 for a group's name.
     int count;       // Books on it.
     int group_book;  // A group's name: the book whose group it is.
+    bool lead;       // The news' showcase: its first story, large, across the whole width.
 } LibLine;
 
 typedef struct {
@@ -173,7 +178,9 @@ typedef struct {
     int news_suggest_lang;               // the suggested feeds' language (feedsuggest.h),
     bool news_checked;                   // the feeds checked since KaiReader started,
     char news_problem[256];              // why none could be read ("" if one could),
-    char news_full[SHELF_PATH_MAX];      // and the article whose whole page is being fetched ("" none).
+    char news_full[SHELF_PATH_MAX];      // the article whose whole page is being fetched ("" none),
+    char news_full_link[FEED_URL_MAX];   // from there,
+    char news_pictures[SHELF_PATH_MAX];  // and the one whose pictures are ("" none).
     char net_problem[256];               // Why the folder couldn't be read; "" if it could.
     int net_open;                        // A network book copied to be opened: its shelf index; -1 none.
     char net_copying[DAV_NAME_MAX];      // The book being copied to the card; "" none.
@@ -216,6 +223,7 @@ typedef struct {
     bool scroll_view;
     float scroll_y;           // Layout pixels the article is moved up.
     int scroll_end;           // Where the last strip's text ends (layout pixels); -1 not known yet.
+    float scroll_restore;     // Opened again: where it was scrolled to; -1 none.
     int drag_rows;            // A drag in the contents: rows moved so far.
 } App;
 
@@ -313,6 +321,14 @@ void appOpenCardBook(App *app, const char *path, uint64_t now_ns);
 // The network started for Free books too (app_network.c).
 void appNetworkWantFree(void);
 
+// The news' showcase, as wide as the screen: cards across, a card's picture's width and height
+// (16:9), a row's height, and the lead story's height.
+int appNewsColumns(void);
+void appNewsCardSize(int *w, int *picture_h);
+int appNewsRowH(void);
+int appNewsLeadH(void);
+bool appNewsShowcase(const App *app);  // The news shown as a showcase (not as a list).
+
 // News (app_news.c): RSS and Atom feeds' articles, read as books.
 void appNewsStart(App *app);     // The feeds and their shelf read from the card, what was kept shown.
 bool appNewsSet(void);           // A feed is followed (X goes to News).
@@ -352,6 +368,10 @@ void appServerFeedSettings(void);
 float appNetCopyProgress(int64_t *done, int64_t *total);
 void appOpenBook(App *app, int order_index, uint64_t now_ns);
 void appCloseBook(App *app);
+
+// The book open made again from path (its page changed: an article's pictures came), where it's read,
+// or (at_start) from its start.
+void appReopenBook(App *app, const char *path, bool at_start);
 
 // app_scroll.c: a news article scrolled as a web page.
 bool appScrollView(const App *app);    // Reading an article that way.

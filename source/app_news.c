@@ -19,6 +19,7 @@
 #include <time.h>
 
 #include "approot.h"
+#include "gfx.h"
 #include "article.h"
 #include "feedlist.h"
 #include "feeds.h"
@@ -149,7 +150,7 @@ static void saveFeeds(App *app, uint64_t now_ns)
     appNewsFeedSettings(app);
 }
 
-// Articles' pages not opened for NEWS_MARK_DAYS go (they're made again if opened).
+// Articles' pages, whole pages and pictures not made for NEWS_MARK_DAYS go (made again if opened).
 static void forgetOldPages(const char *folder)
 {
     DIR *dir = opendir(folder);
@@ -159,7 +160,10 @@ static void forgetOldPages(const char *folder)
     struct dirent *e;
     while ((e = readdir(dir))) {
         size_t n = strlen(e->d_name);
-        if (n < 6 || strcmp(e->d_name + n - 6, ".xhtml"))
+        bool page = n > 6 && !strcmp(e->d_name + n - 6, ".xhtml"), html = n > 5 && !strcmp(e->d_name + n - 5, ".html");
+        bool picture = (n > 4 && !strcmp(e->d_name + n - 4, ".jpg")) || (n > 5 && !strcmp(e->d_name + n - 5, ".none")) ||
+                       (n > 5 && !strcmp(e->d_name + n - 5, ".part"));
+        if (!page && !html && !picture)  // Its page, its whole page, its pictures.
             continue;
         char path[PATH_MAX_LEN + 300];
         struct stat st;
@@ -305,14 +309,16 @@ static void takeCheck(App *app, uint64_t now_ns)
         const ShelfBook *was = shelfFind(old, a->path);
         if (was)
             copyMarks(b, was);
-        char name[FEED_TEXT_MAX], date[16];
+        char name[FEED_TEXT_MAX], date[24];
         feedName(&app->feeds.items[at], name, sizeof(name));
         if (!app->feeds.items[at].name[0] && states && a->feed >= 0 && a->feed < state_count &&
             states[a->feed].title[0])
             snprintf(name, sizeof(name), "%s", states[a->feed].title);
-        feedsDateText(a->date, date, sizeof(date));
+        feedsDateTimeText(a->date, date, sizeof(date));
         shelfSetInfo(b, a->title[0] ? a->title : T("Untitled article"), name);
-        shelfSetDetails(b, date, "");
+        // An article's genre is its date and time (UTC); its author_sort, its first words (the showcase's).
+        snprintf(b->genre, sizeof(b->genre), "%s", date);
+        snprintf(b->author_sort, sizeof(b->author_sort), "%s", a->summary);
         opdsRememberCover(a->path, a->image);
     }
     for (int i = 0; i < old->count; i++) {  // The marks of articles not kept any more, for a while.
@@ -371,6 +377,40 @@ static void takeCheck(App *app, uint64_t now_ns)
 }
 
 // --- The library ---
+
+#define NEWS_SIDE 32  // The showcase's margins (ui_common.h's MARGIN).
+
+bool appNewsShowcase(const App *app)
+{
+    return app->lib_tab == LIB_NEWS && !app->prefs.list_view;
+}
+
+int appNewsColumns(void)
+{
+    return gfxLayoutWidth() >= 1000 ? 4 : 2;
+}
+
+void appNewsCardSize(int *w, int *picture_h)
+{
+    int cols = appNewsColumns();
+    *w = (gfxLayoutWidth() - 2 * NEWS_SIDE - (cols - 1) * NEWS_GAP) / cols;
+    *picture_h = *w * 9 / 16;
+}
+
+int appNewsRowH(void)
+{
+    int w, ph;
+    appNewsCardSize(&w, &ph);
+    return ph + NEWS_CARD_TEXT + NEWS_GAP;
+}
+
+int appNewsLeadH(void)
+{
+    if (gfxLayoutWidth() >= 1000)  // Its picture at the right, its words beside it.
+        return (gfxLayoutWidth() - 2 * NEWS_SIDE) * NEWS_LEAD_SHARE / 100 * 9 / 16 + 20 + NEWS_GAP;
+    int w = gfxLayoutWidth() - 2 * NEWS_SIDE;  // Upright: its picture across, its words under it.
+    return w * 9 / 16 + 230 + NEWS_GAP;
+}
 
 void appNewsStepFeed(App *app, int dir)
 {
@@ -473,40 +513,141 @@ static bool pagePath(const App *app, const char *path, bool full, char *out, siz
     return true;
 }
 
-static bool writePage(App *app, const ShelfBook *b, const char *html, bool full, bool has_link, const char *local,
-                      uint64_t now_ns)
+// An article's whole page, as brought from its site (its address on the first line, then the
+// part that reads as the article): news/articles/<hash>-full.html, kept to make its page again.
+static bool sidecarPath(const App *app, const char *path, char *out, size_t size)
+{
+    char feed[FEED_HASH_LEN + 1], item[FEED_HASH_LEN + 1], name[96];
+    if (!newsPathParts(path, feed, item))
+        return false;
+    snprintf(name, sizeof(name), "%s/%s-full.html", ARTICLES_FOLDER, item);
+    pathIn(app, name, out, size);
+    return true;
+}
+
+// The pictures of a page being made: where they go, and the ones not on the card yet.
+typedef struct {
+    const App *app;
+    const char *base;   // The article's address (its pictures' src are relative to it).
+    char item[FEED_HASH_LEN + 1];
+    char urls[NEWSJOB_PICTURES][FEED_URL_MAX];
+    char files[NEWSJOB_PICTURES][NEWSJOB_PICTURE_PATH];
+    int missing;
+} Pictures;
+
+static ArticlePicture pictureFile(void *user, const char *src, char *file, size_t size)
+{
+    Pictures *p = user;
+    char url[FEED_URL_MAX], hash[FEED_HASH_LEN + 1], name[96], path[NEWSJOB_PICTURE_PATH], none[NEWSJOB_PICTURE_PATH + 8];
+    if (!opdsResolve(p->base, src, url, sizeof(url)) || (strncmp(url, "http://", 7) && strncmp(url, "https://", 8)))
+        return ARTICLE_PICTURE_NONE;
+    feedsHash(url, hash);
+    snprintf(name, sizeof(name), "%s-%s.jpg", p->item, hash);
+    char rel[128];
+    snprintf(rel, sizeof(rel), "%s/%s", ARTICLES_FOLDER, name);
+    pathIn(p->app, rel, path, sizeof(path));
+    struct stat st;
+    if (stat(path, &st) == 0) {
+        if (st.st_size == 0)
+            return ARTICLE_PICTURE_OMIT;  // Too small to be a picture (a tracking pixel).
+        snprintf(file, size, "%s", name);  // Next to the page.
+        return ARTICLE_PICTURE_FILE;
+    }
+    snprintf(none, sizeof(none), "%s.none", path);
+    if (stat(none, &st) != 0 && p->missing < NEWSJOB_PICTURES) {  // To fetch (once is enough to know).
+        bool listed = false;
+        for (int i = 0; i < p->missing && !listed; i++)
+            listed = !strcmp(p->files[i], path);
+        if (!listed) {
+            snprintf(p->urls[p->missing], FEED_URL_MAX, "%s", url);
+            snprintf(p->files[p->missing], NEWSJOB_PICTURE_PATH, "%s", path);
+            p->missing++;
+        }
+    }
+    return ARTICLE_PICTURE_NONE;
+}
+
+// The column's width in pixels: the pictures are kept no wider.
+static int pictureWidth(const App *app)
+{
+    int x, y, w, h;
+    appColumn(app, 0, &x, &y, &w, &h);
+    int px = (int)(w * GFX_SCALE * gfxDetail());
+    return px > 1600 ? 1600 : px < 200 ? 200 : px;
+}
+
+// An article's page written to local: its HTML (the feed's, or its whole page's), with the pictures
+// on the card shown; the ones not yet are asked for (and the page is made again when they come).
+static bool writePage(App *app, const ShelfBook *b, const char *html, const char *base, bool full, bool has_link,
+                      bool any_certificate, bool fetch, const char *local, uint64_t now_ns)
 {
     char byline[SHELF_TEXT_MAX * 2 + 8];
-    snprintf(byline, sizeof(byline), "%s%s%s", b->author, b->genre[0] ? " \xC2\xB7 " : "", b->genre);
+    snprintf(byline, sizeof(byline), "%s%s%.10s", b->author, b->genre[0] ? " \xC2\xB7 " : "", b->genre);
     const char *note = full ? T("From the article's page on its site: the part of it that reads as the article.")
                        : has_link ? T("This is what the feed gives: \"Read the full article\" in the + menu brings the whole of it from its site.")
                                   : NULL;
-    ArticleParts parts = {b->title, byline, html, T("[picture]"), note};
+    Pictures *pics = calloc(1, sizeof(*pics));  // Big: not on the stack.
+    char feed_hash[FEED_HASH_LEN + 1];
+    if (pics) {
+        pics->app = app;
+        pics->base = base ? base : "";
+        if (!newsPathParts(b->path, feed_hash, pics->item))
+            pics->item[0] = '\0';
+    }
+    ArticleParts parts = {b->title, byline, html, T("[picture]"), note, pics && pics->item[0] ? pictureFile : NULL, pics};
     size_t size;
     char *page = articlePage(&parts, &size);
     bool ok = page && writeFile(local, page, size);
     free(page);
     if (!ok)
         appNotify(app, NOTICE_ERROR, T("It couldn't be written to the card."), now_ns);
+    if (fetch && ok && pics && pics->missing > 0 && !newsJobPicturesBusy()) {
+        appNetworkWantNews();
+        if (newsJobPictures((const char(*)[FEED_URL_MAX])pics->urls, (const char(*)[NEWSJOB_PICTURE_PATH])pics->files,
+                            pics->missing, any_certificate, pictureWidth(app))) {
+            snprintf(app->news_pictures, sizeof(app->news_pictures), "%s", b->path);
+            appNotify(app, NOTICE_INFO, T("Loading the pictures..."), now_ns);
+        }
+    }
+    free(pics);
+    return ok;
+}
+
+// An article's page made (again) on the card: from its whole page if it was brought, else the feed's.
+static bool makePage(App *app, const ShelfBook *b, bool fetch, char *local, size_t size, uint64_t now_ns)
+{
+    char sidecar[PATH_MAX_LEN];
+    size_t length;
+    char *kept = sidecarPath(app, b->path, sidecar, sizeof(sidecar)) ? readFile(sidecar, ARTICLE_MAX, &length) : NULL;
+    char feed_hash[FEED_HASH_LEN + 1], item_hash[FEED_HASH_LEN + 1];
+    int feed = newsPathParts(b->path, feed_hash, item_hash) ? feedListFind(&app->feeds, feed_hash) : -1;
+    bool any = feed >= 0 && app->feeds.items[feed].any_certificate;
+    if (kept) {  // "address\nhtml".
+        char *html = strchr(kept, '\n');
+        bool ok = html && pagePath(app, b->path, true, local, size);
+        if (ok) {
+            *html++ = '\0';
+            ok = writePage(app, b, html, kept, true, true, any, fetch, local, now_ns);
+        }
+        free(kept);
+        if (ok)
+            return true;
+    }
+    if (!pagePath(app, b->path, false, local, size))
+        return false;
+    FeedItem item;
+    char *html;
+    if (!findArticle(app, b, &feed, &item, &html, now_ns))
+        return false;
+    bool ok = writePage(app, b, html, item.link[0] ? item.link : app->feeds.items[feed].url, false, item.link[0] != '\0',
+                        app->feeds.items[feed].any_certificate, fetch, local, now_ns);
+    free(html);
     return ok;
 }
 
 bool appNewsReady(App *app, int book, char *local, size_t size, uint64_t now_ns)
 {
-    const ShelfBook *b = &app->shelf.items[book];
-    struct stat st;
-    if (pagePath(app, b->path, true, local, size) && stat(local, &st) == 0 && st.st_size > 0)
-        return true;  // Its whole page, brought before.
-    if (!pagePath(app, b->path, false, local, size))
-        return false;
-    FeedItem item;
-    char *html;
-    int feed;
-    if (!findArticle(app, b, &feed, &item, &html, now_ns))
-        return false;
-    bool ok = writePage(app, b, html, false, item.link[0] != '\0', local, now_ns);
-    free(html);
-    return ok;
+    return makePage(app, &app->shelf.items[book], true, local, size, now_ns);
 }
 
 bool appNewsReading(const App *app)
@@ -536,10 +677,21 @@ void appNewsFull(App *app, uint64_t now_ns)
         return;
     }
     snprintf(app->news_full, sizeof(app->news_full), "%s", b->path);
+    snprintf(app->news_full_link, sizeof(app->news_full_link), "%s", item.link);
     appNotify(app, NOTICE_INFO, T("Bringing the whole article from its site..."), now_ns);
 }
 
-// The whole article come: its page written, and opened again at its start if it's being read.
+// The article being read made again (its pictures came, or its whole page), where it's read.
+static void reopenArticle(App *app, const char *path, bool at_start, bool fetch, uint64_t now_ns)
+{
+    ShelfBook *b = shelfFind(&app->shelf, path);
+    char local[PATH_MAX_LEN];
+    if (!b || !makePage(app, b, fetch, local, sizeof(local), now_ns))
+        return;
+    appReopenBook(app, local, at_start);
+}
+
+// The whole article come: kept, its page written, and opened again at its start if it's being read.
 static void takeFull(App *app, uint64_t now_ns)
 {
     char *html, why[NETJOB_WHY_MAX];
@@ -554,28 +706,36 @@ static void takeFull(App *app, uint64_t now_ns)
         free(html);
         return;
     }
-    ShelfBook *b = shelfFind(newsShelf(app), path);
-    char local[PATH_MAX_LEN];
-    bool written = b && pagePath(app, path, true, local, sizeof(local)) && writePage(app, b, html, true, true, local, now_ns);
+    char sidecar[PATH_MAX_LEN];
+    FILE *f = sidecarPath(app, path, sidecar, sizeof(sidecar)) ? fopen(sidecar, "wb") : NULL;
+    bool written = f && fprintf(f, "%s\n%s", app->news_full_link, html) > 0;
+    if (f)
+        written = fclose(f) == 0 && written;
     free(html);
-    if (!written)
+    if (!written) {
+        remove(sidecar);
+        appNotify(app, NOTICE_ERROR, T("It couldn't be written to the card."), now_ns);
         return;
-    bool reading = appNewsReading(app) && !strcmp(app->shelf.items[app->book].path, path);
-    if (!reading) {
+    }
+    if (!(appNewsReading(app) && !strcmp(app->shelf.items[app->book].path, path))) {
         appNotify(app, NOTICE_DONE, T("The whole article is here: it opens with it from now on."), now_ns);
         return;
     }
-    appCloseBook(app);
-    b = shelfFind(&app->shelf, path);
-    if (b)
-        b->place = (DocPlace){0, 0};
-    for (int i = 0; i < app->order_count; i++)
-        if (!strcmp(app->shelf.items[app->order[i]].path, path)) {
-            app->cursor = i;
-            appOpenBook(app, i, now_ns);
-            break;
-        }
+    reopenArticle(app, path, true, true, now_ns);
     appNotify(app, NOTICE_DONE, T("The whole article, from its site."), now_ns);
+}
+
+// An article's pictures come: shown at once if it's being read (where it's read).
+static void takePictures(App *app, uint64_t now_ns)
+{
+    int kept;
+    if ((appNewsReading(app) && !app->ready) || !newsJobTakePictures(&kept))
+        return;  // The article still opening: they wait for it.
+    char path[SHELF_PATH_MAX];
+    snprintf(path, sizeof(path), "%s", app->news_pictures);
+    app->news_pictures[0] = '\0';
+    if (kept > 0 && appNewsReading(app) && !strcmp(app->shelf.items[app->book].path, path) && app->ready)
+        reopenArticle(app, path, false, false, now_ns);
 }
 
 // --- Settings > News ---
@@ -846,4 +1006,5 @@ void appNewsUpdate(App *app, uint64_t now_ns)
     takeCheck(app, now_ns);
     takeFind(app, now_ns);
     takeFull(app, now_ns);
+    takePictures(app, now_ns);
 }

@@ -408,8 +408,9 @@ static void newsShots(App *app, const char *dir)
     feedListSave(&l, path);
     snprintf(path, sizeof(path), "%s/news", app->folder);
     mkdir(path, 0755);
-    keepFeed(app, "https://harbor.example/rss", "The Harbor Gazette", HARBOR, 6, 1795219200);
-    keepFeed(app, "https://notes.example/atom.xml", "Lighthouse Notes", NOTES, 4, 1795219200 - 43200);
+    int64_t now = (int64_t)time(NULL);  // The newest a couple of hours old: "2 h ago".
+    keepFeed(app, "https://harbor.example/rss", "The Harbor Gazette", HARBOR, 6, now - 7200);
+    keepFeed(app, "https://notes.example/atom.xml", "Lighthouse Notes", NOTES, 4, now - 7200 - 43200);
     appNewsStart(app);
     appNetworkFeedSettings();
     appLibTab(app, LIB_NEWS, 70);
@@ -421,6 +422,17 @@ static void newsShots(App *app, const char *dir)
     for (int i = 1; i < 4 && i < app->order_count; i++)  // Some read: no dot.
         shelfMarkRead(&app->shelf.items[app->order[i * 2]], (DocPlace){0, 0}, i == 1 ? 35 : 100, 1000);
     render(app, dir, "news");
+    appHandleButtons(app, HidNpadButton_Down, 70);  // Past the lead story: its cards.
+    appHandleButtons(app, HidNpadButton_Down, 70);
+    appHandleButtons(app, HidNpadButton_Right, 70);
+    settle(app);
+    render(app, dir, "news-showcase-down");
+    if (app->cursor != 1 + appNewsColumns() + 1 || app->scroll <= 0) {
+        printf("PREVIEW: down twice and right in the showcase is at %d (scrolled %d)\n", app->cursor, app->scroll);
+        g_problems++;
+    }
+    app->cursor = 0;
+    app->scroll = 0;
     app->panel = PANEL_MENU;
     app->menu_cursor = 0;
     render(app, dir, "news-menu");
@@ -458,13 +470,24 @@ static void newsShots(App *app, const char *dir)
     }
     render(app, dir, "news-down");
     g_preview_news_down = false;
-    keepFeed(app, "https://harbor.example/rss", "The Harbor Gazette", HARBOR, 6, 1795219200);
-    keepFeed(app, "https://notes.example/atom.xml", "Lighthouse Notes", NOTES, 4, 1795219200 - 43200);
+    keepFeed(app, "https://harbor.example/rss", "The Harbor Gazette", HARBOR, 6, now - 7200);
+    keepFeed(app, "https://notes.example/atom.xml", "Lighthouse Notes", NOTES, 4, now - 7200 - 43200);
     appNewsRefresh(app, 75);
     settle(app);
-    // An article open (its picture a placeholder), its bars and the reader's menu.
+    // An article open, its pictures fetched (made up) and shown in it; its bars and the reader's menu.
     appOpenBook(app, 0, 76);
     settle(app);
+    for (int i = 0; i < 4; i++)
+        appUpdate(app, 76);  // The pictures come: the article made again with them.
+    settle(app);
+    {
+        char cmd[800];
+        snprintf(cmd, sizeof(cmd), "grep -l kr-pic %s/news/articles/*.xhtml >/dev/null 2>&1", app->folder);
+        if (system(cmd) != 0) {
+            printf("PREVIEW: the article's pictures aren't in its page\n");
+            g_problems++;
+        }
+    }
     if (app->view != VIEW_READER || !app->ready) {
         printf("PREVIEW: an article didn't open\n");
         g_problems++;
@@ -492,6 +515,9 @@ static void newsShots(App *app, const char *dir)
         g_problems++;
     }
     render(app, dir, "news-article-dragged");
+    appScrollTo(app, 300);  // Its picture, under its first paragraph.
+    settle(app);
+    render(app, dir, "news-article-picture");
     app->bars = true;
     render(app, dir, "news-article-scrolled-bars");
     app->bars = false;
@@ -587,8 +613,8 @@ static void newsShots(App *app, const char *dir)
         snprintf(name, sizeof(name), "%s-news-down", LANGS[i]);
         render(app, dir, name);
         g_preview_news_down = false;
-        keepFeed(app, "https://harbor.example/rss", "The Harbor Gazette", HARBOR, 6, 1795219200);
-        keepFeed(app, "https://notes.example/atom.xml", "Lighthouse Notes", NOTES, 4, 1795219200 - 43200);
+        keepFeed(app, "https://harbor.example/rss", "The Harbor Gazette", HARBOR, 6, now - 7200);
+        keepFeed(app, "https://notes.example/atom.xml", "Lighthouse Notes", NOTES, 4, now - 7200 - 43200);
         appNewsRefresh(app, 81);
         settle(app);
         appOpenBook(app, 1, 82);
