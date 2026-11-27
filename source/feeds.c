@@ -586,53 +586,170 @@ static bool looksLikeImage(const char *url)
     return false;
 }
 
-// The first <img src> of an article's HTML, into out (as written).
-static bool firstImage(const char *html, char *out, size_t size)
+// How good a picture looks to be: its width when it says (pixels), else by what it is.
+#define SCORE_THUMBNAIL 100  // A thumbnail that doesn't say its size.
+#define SCORE_INLINE 600     // The first picture of the article's text, without a size.
+#define SCORE_FULL 800       // A media:content, an enclosure, itunes:image: the picture itself.
+#define WIDTH_MAX 20000
+
+// An attribute of a tag's text (from "<img" to its ">"), as written, into out. False if it hasn't it.
+static bool tagAttr(const char *tag, const char *end, const char *name, char *out, size_t size)
 {
-    for (const char *s = html; s && (s = findCase(s, "<img")); s += 4) {
-        const char *end = strchr(s, '>');
-        if (!end)
+    size_t len = strlen(name);
+    for (const char *a = tag + 4; a + len + 1 < end; a++) {
+        if (strncasecmp(a, name, len) || a[len] != '=' || (a[-1] != ' ' && a[-1] != '\t' && a[-1] != '\n'))
+            continue;
+        a += len + 1;
+        char quote = *a == '"' || *a == '\'' ? *a++ : 0;
+        size_t n = quote ? strcspn(a, quote == '"' ? "\">" : "'>") : strcspn(a, " \t\r\n>");
+        if (!n || n >= size || (size_t)(end - a) < n)
             return false;
-        for (const char *a = s + 4; a + 4 < end; a++) {
-            if (strncasecmp(a, "src=", 4) || (a[-1] != ' ' && a[-1] != '\t' && a[-1] != '\n'))
-                continue;
-            a += 4;
-            char quote = *a == '"' || *a == '\'' ? *a++ : 0;
-            size_t n = quote ? strcspn(a, quote == '"' ? "\">" : "'>") : strcspn(a, " \t\r\n>");
-            if (!n || n >= size || (size_t)(end - a) < n)
-                break;
-            memcpy(out, a, n);
-            out[n] = '\0';
-            return strncasecmp(out, "data:", 5) != 0;
-        }
+        memcpy(out, a, n);
+        out[n] = '\0';
+        return true;
     }
     return false;
 }
 
-// A picture element (enclosure, media:content, media:thumbnail, itunes:image, media:group's), if it's one.
+static int widthText(const char *text)
+{
+    int v = text ? atoi(text) : 0;
+    return v > 0 && v < WIDTH_MAX ? v : 0;
+}
+
+// The largest of a srcset ("a.jpg 320w, b.jpg 1024w") into out, its width; 0 if it says none.
+static int largestSrcset(const char *set, char *out, size_t size)
+{
+    int best = 0;
+    for (const char *s = set; *s;) {
+        s += strspn(s, " \t\r\n,");
+        size_t n = strcspn(s, " \t\r\n,");
+        if (!n)
+            break;
+        const char *url = s;
+        s += n;
+        s += strspn(s, " \t\r\n");
+        int w = 0;
+        if (*s >= '0' && *s <= '9') {
+            w = widthText(s);
+            s += strspn(s, "0123456789.");
+            if (*s != 'w')
+                w = 0;  // "2x": no width.
+        }
+        s += strcspn(s, ",");
+        if (w > best && n < size) {
+            memcpy(out, url, n);
+            out[n] = '\0';
+            best = w;
+        }
+    }
+    return best;
+}
+
+// The first picture of an article's HTML (its srcset's largest if it has one), into out (as
+// written), and how good it looks (its width when it says). 0 if it has none.
+static int firstImage(const char *html, char *out, size_t size)
+{
+    for (const char *s = html; s && (s = findCase(s, "<img")); s += 4) {
+        const char *end = strchr(s, '>');
+        if (!end)
+            return 0;
+        char src[FEED_URL_MAX], attr[2048], large[FEED_URL_MAX];
+        if (!tagAttr(s, end, "src", src, sizeof(src)) || !strncasecmp(src, "data:", 5))
+            continue;
+        int width = tagAttr(s, end, "width", attr, sizeof(attr)) ? widthText(attr) : 0;
+        int set = tagAttr(s, end, "srcset", attr, sizeof(attr)) ? largestSrcset(attr, large, sizeof(large)) : 0;
+        if (set > width && strncasecmp(large, "data:", 5)) {
+            snprintf(out, size, "%s", large);
+            return set;
+        }
+        snprintf(out, size, "%s", src);
+        return width ? width : SCORE_INLINE;
+    }
+    return 0;
+}
+
+// A picture for the list, kept if it looks better than the one found before.
+static void offerImage(FeedItem *it, const char *base, const char *url, int score)
+{
+    char resolved[FEED_URL_MAX];
+    if (!url || !url[0] || score <= it->image_score || !opdsResolve(base, url, resolved, sizeof(resolved)))
+        return;
+    snprintf(it->image, sizeof(it->image), "%s", resolved);
+    it->image_score = score;
+}
+
+// A picture element (enclosure, media:content, media:thumbnail, itunes:image, media:group's), if
+// it's one, offered with how good it looks (the largest wins).
 static void takeImage(FeedItem *it, fz_xml *n, const char *base)
 {
-    if (it->image[0])
-        return;
-    const char *url = NULL;
-    if (tagIs(n, "enclosure") && isImageType(fz_xml_att(n, "type")))
-        url = fz_xml_att(n, "url");
-    else if (tagIs(n, "thumbnail"))
-        url = fz_xml_att(n, "url");
-    else if (tagIs(n, "content") && fz_xml_att(n, "url")) {  // media:content (an Atom content has no url).
+    int width = widthText(fz_xml_att(n, "width"));
+    if (tagIs(n, "enclosure") && isImageType(fz_xml_att(n, "type"))) {
+        offerImage(it, base, fz_xml_att(n, "url"), SCORE_FULL);
+    } else if (tagIs(n, "thumbnail")) {
+        offerImage(it, base, fz_xml_att(n, "url"), width ? width : SCORE_THUMBNAIL);
+    } else if (tagIs(n, "content") && fz_xml_att(n, "url")) {  // media:content (an Atom content has no url).
         const char *medium = fz_xml_att(n, "medium"), *u = fz_xml_att(n, "url");
         if ((medium && !strcasecmp(medium, "image")) || isImageType(fz_xml_att(n, "type")) ||
             (!medium && !fz_xml_att(n, "type") && looksLikeImage(u)))
-            url = u;
-    } else if (tagIs(n, "image") && fz_xml_att(n, "href"))  // itunes:image.
-        url = fz_xml_att(n, "href");
-    else if (tagIs(n, "group")) {
+            offerImage(it, base, u, width ? width : SCORE_FULL);
+        for (fz_xml *c = fz_xml_down(n); c; c = fz_xml_next(c))  // Its own media:thumbnail.
+            if (tagIs(c, "thumbnail"))
+                takeImage(it, c, base);
+    } else if (tagIs(n, "image") && fz_xml_att(n, "href")) {  // itunes:image.
+        offerImage(it, base, fz_xml_att(n, "href"), SCORE_FULL);
+    } else if (tagIs(n, "group")) {
         for (fz_xml *c = fz_xml_down(n); c; c = fz_xml_next(c))
             takeImage(it, c, base);
+    }
+}
+
+// A picture's address asking for a larger one, where the site's addresses are known to say a size:
+// the BBC's ichef (".../ws/240/..." -> 800), and WordPress's resized copies ("photo-150x150.jpg" ->
+// the original "photo.jpg"). Others are left as they are.
+static void largerImage(char *url, size_t size)
+{
+    static const char *const BBC[] = {"://ichef.bbci.co.uk/ace/ws/", "://ichef.bbci.co.uk/news/"};
+    for (size_t i = 0; i < sizeof(BBC) / sizeof(BBC[0]); i++) {
+        char *at = strstr(url, BBC[i]);
+        if (!at)
+            continue;
+        char *digits = at + strlen(BBC[i]);
+        size_t n = strspn(digits, "0123456789");
+        if (n < 2 || n > 4 || digits[n] != '/' || atoi(digits) >= 800)
+            return;
+        char rest[FEED_URL_MAX];
+        snprintf(rest, sizeof(rest), "%s", digits + n);
+        if ((size_t)(digits - url) + 3 + strlen(rest) < size)
+            snprintf(digits, size - (size_t)(digits - url), "800%s", rest);
         return;
     }
-    if (url && !opdsResolve(base, url, it->image, sizeof(it->image)))
-        it->image[0] = '\0';
+    size_t end = strcspn(url, "?#");  // "-150x150.jpg" at the path's end.
+    char *dot = NULL;
+    for (size_t i = end; i > 0; i--)
+        if (url[i - 1] == '.') {
+            dot = url + i - 1;
+            break;
+        } else if (url[i - 1] == '/') {
+            break;
+        }
+    if (!dot)
+        return;
+    static const char *const EXTS[] = {".jpg", ".jpeg", ".png", ".gif", ".webp"};
+    bool picture = false;
+    for (size_t i = 0; i < sizeof(EXTS) / sizeof(EXTS[0]); i++)
+        picture |= (size_t)(url + end - dot) == strlen(EXTS[i]) && !strncasecmp(dot, EXTS[i], strlen(EXTS[i]));
+    char *x = dot;
+    while (x > url && x[-1] >= '0' && x[-1] <= '9')
+        x--;
+    if (!picture || x == dot || x - url < 2 || x[-1] != 'x')
+        return;
+    char *w = x - 1;
+    while (w > url && w[-1] >= '0' && w[-1] <= '9')
+        w--;
+    if (w == x - 1 || w - url < 1 || w[-1] != '-' || atoi(w) >= 600)
+        return;  // Not "-WxH", or already large.
+    memmove(w - 1, dot, strlen(dot) + 1);  // "-150x150" cut out.
 }
 
 // "jane@example.com (Jane Doe)" -> "Jane Doe".
@@ -648,11 +765,13 @@ static void authorName(char *author)
 
 static void finishItem(Feed *f, FeedItem *it, const char *base)
 {
-    if (!it->image[0] && it->html) {
+    if (it->html) {  // Its text's first picture, if it looks better than the feed's own.
         char found[FEED_URL_MAX];
-        if (firstImage(it->html, found, sizeof(found)) && !opdsResolve(base, found, it->image, sizeof(it->image)))
-            it->image[0] = '\0';
+        int score = firstImage(it->html, found, sizeof(found));
+        if (score)
+            offerImage(it, base, found, score);
     }
+    largerImage(it->image, sizeof(it->image));
     if (!it->id[0])
         snprintf(it->id, sizeof(it->id), "%s", it->link);
     if (!it->id[0]) {  // Nothing to know it by: its title and date.
@@ -754,8 +873,8 @@ static void readAtomEntry(Feed *f, fz_xml *entry, const char *base)
         it.html = htmlOf(child(entry, "summary"), true);
     for (fz_xml *c = fz_xml_down(entry); c; c = fz_xml_next(c)) {
         const char *rel = tagIs(c, "link") ? fz_xml_att(c, "rel") : NULL;
-        if (rel && !strcasecmp(rel, "enclosure") && isImageType(fz_xml_att(c, "type")) && !it.image[0])
-            resolveInto(base, fz_xml_att(c, "href"), it.image, sizeof(it.image));
+        if (rel && !strcasecmp(rel, "enclosure") && isImageType(fz_xml_att(c, "type")))
+            offerImage(&it, base, fz_xml_att(c, "href"), SCORE_FULL);
         else
             takeImage(&it, c, base);
     }

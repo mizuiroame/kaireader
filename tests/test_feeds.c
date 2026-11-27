@@ -319,6 +319,38 @@ static void testMergeWrite(void)
     free(xml);
 }
 
+// The list's picture: the largest offered (a thumbnail's size, a srcset's largest), and the sizes some
+// sites write in their addresses asked larger (BBC's ichef, WordPress's resized copies).
+static const char PICTURES[] =
+    "<rss version=\"2.0\" xmlns:media=\"http://search.yahoo.com/mrss/\"><channel><title>P</title>\n"
+    "<item><title>Thumbs</title><guid>1</guid>"
+    "<media:thumbnail width=\"240\" url=\"https://ichef.bbci.co.uk/ace/ws/240/cpsprodpb/x/live/a.jpg\"/>"
+    "<media:thumbnail width=\"120\" url=\"https://ichef.bbci.co.uk/ace/ws/120/cpsprodpb/x/live/b.jpg\"/></item>\n"
+    "<item><title>Srcset</title><guid>2</guid><description><![CDATA[<p><img src=\"/s.jpg\" "
+    "srcset=\"/s.jpg 300w, /m.jpg 768w, /l.jpg 1600w\" sizes=\"100vw\"></p>]]></description>"
+    "<media:thumbnail url=\"/t.jpg\"/></item>\n"
+    "<item><title>Content</title><guid>3</guid><media:content url=\"/big.jpg\" medium=\"image\"/>"
+    "<media:thumbnail url=\"/thumb.jpg\" width=\"150\"/><description><![CDATA[<img src=\"/in.jpg\">]]></description></item>\n"
+    "<item><title>WordPress</title><guid>4</guid><description><![CDATA[<img src=\"https://wp.example/wp-content/"
+    "uploads/2026/11/photo-150x150.jpg\">]]></description></item>\n"
+    "<item><title>Large WP</title><guid>5</guid><description><![CDATA[<img src=\"https://wp.example/a-1024x576.jpg\" "
+    "width=\"1024\">]]></description></item>\n"
+    "</channel></rss>";
+
+static void testPicturesChosen(void)
+{
+    Feed f;
+    CHECK(feedsParse(PICTURES, sizeof(PICTURES) - 1, "https://site.example/rss", &f) && f.count == 5);
+    if (f.count == 5) {
+        CHECK_STR(f.items[0].image, "https://ichef.bbci.co.uk/ace/ws/800/cpsprodpb/x/live/a.jpg");
+        CHECK_STR(f.items[1].image, "https://site.example/l.jpg");
+        CHECK_STR(f.items[2].image, "https://site.example/big.jpg");
+        CHECK_STR(f.items[3].image, "https://wp.example/wp-content/uploads/2026/11/photo.jpg");
+        CHECK_STR(f.items[4].image, "https://wp.example/a-1024x576.jpg");
+    }
+    feedsFree(&f);
+}
+
 static void testHash(void)
 {
     char a[FEED_HASH_LEN + 1], b[FEED_HASH_LEN + 1];
@@ -339,4 +371,5 @@ void testNewsFeeds(void)
     testDiscoverOpml();
     testMergeWrite();
     testHash();
+    testPicturesChosen();
 }

@@ -25,6 +25,7 @@ typedef struct {
     char link[FEED_URL_MAX];       // The article on the site, absolute; "" if none.
     char author[FEED_TEXT_MAX];
     char image[FEED_URL_MAX];      // A picture for the list (an enclosure, media:, or its first <img>); "" none.
+    int image_score;               // How good it looked to the parser (the largest offered wins).
     int64_t date;                  // Seconds since 1970 (UTC); 0 if it has none (or it can't be read).
     char *html;                    // The article (content:encoded, content, else description/summary); malloc'd, may be NULL.
 } FeedItem;
