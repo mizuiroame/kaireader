@@ -12,7 +12,8 @@ Kavita, Komga), and free books from Project Gutenberg, Standard Ebooks,
 textos.info (Spanish), Ebooks libres et gratuits (French) and unglue.it
 (Creative Commons), as on an e-reader: **EPUB**, **PDF**,
 comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
-**XPS**, drawn with [MuPDF](https://mupdf.com/).
+**XPS**, drawn with [MuPDF](https://mupdf.com/). Also **news** from the
+websites you follow (RSS and Atom feeds), on a front page of their own.
 
 ![Library](docs/screenshots/library.png)
 
@@ -30,7 +31,7 @@ comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
 
 The screenshots show made-up books. [More screenshots](docs/screenshots.md)
 
-> **Version 1.1.** In English, Spanish, French, Italian, Portuguese, German,
+> **Version 1.3.** In English, Spanish, French, Italian, Portuguese, German,
 > Japanese, Chinese and Korean; the translations haven't been reviewed by
 > native speakers yet, and corrections are welcome.
 
@@ -51,6 +52,10 @@ The screenshots show made-up books. [More screenshots](docs/screenshots.md)
 - **Free books**: Project Gutenberg and Standard Ebooks, textos.info in
   Spanish, Ebooks libres et gratuits in French and unglue.it's Creative
   Commons books, each with its search, downloaded to your library. [More](docs/features.md#where-the-books-come-from)
+- **News** from any site's RSS or Atom feed (or an OPML file), with suggested
+  feeds in each language: a front page with the latest stories, articles that
+  scroll like a web page with their pictures, and **A** brings the full article
+  from its site. [More](docs/features.md#news)
 - **Nine languages**, your accent color and a background picture, and updates
   from GitHub. [More](docs/features.md#looks-languages-and-updates)
 - **Touch and buttons** for everything. [Controls](docs/controls.md)
