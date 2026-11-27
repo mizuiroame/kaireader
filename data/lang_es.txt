@@ -1271,3 +1271,6 @@ Ayer
 
 Loading the pictures...
 Cargando las imágenes...
+
+[A] Full article  [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[A] Artículo completo  [^v] Desplazar  [L][R] Una pantalla  [Y] Colores  [RS] Girar  [-] Ocultar  [B] Biblioteca

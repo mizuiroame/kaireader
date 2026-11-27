@@ -1271,3 +1271,6 @@ Ieri
 
 Loading the pictures...
 Caricamento delle immagini...
+
+[A] Full article  [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[A] Articolo completo  [^v] Scorri  [L][R] Una schermata  [Y] Colori  [RS] Ruota  [-] Nascondi  [B] Libreria

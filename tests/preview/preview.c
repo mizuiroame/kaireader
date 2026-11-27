@@ -518,6 +518,26 @@ static void newsShots(App *app, const char *dir)
     appScrollTo(app, 300);  // Its picture, under its first paragraph.
     settle(app);
     render(app, dir, "news-article-picture");
+    // Its end: "[A] Read the full article" under the text; A brings it, and the button goes.
+    appScrollTo(app, 1e9f);
+    settle(app);
+    render(app, dir, "news-article-end");
+    app->bars = true;
+    render(app, dir, "news-article-end-bars");
+    app->bars = false;
+    if (!appNewsCanReadFull(app)) {
+        printf("PREVIEW: an article with the feed's text doesn't offer its whole page\n");
+        g_problems++;
+    }
+    appHandleButtons(app, HidNpadButton_A, 76);
+    for (int i = 0; i < 4; i++)
+        appUpdate(app, 76);
+    settle(app);
+    if (appNewsCanReadFull(app) || !app->news_open_full) {
+        printf("PREVIEW: A didn't bring the whole article\n");
+        g_problems++;
+    }
+    render(app, dir, "news-article-full");
     app->bars = true;
     render(app, dir, "news-article-scrolled-bars");
     app->bars = false;

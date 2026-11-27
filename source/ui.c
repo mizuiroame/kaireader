@@ -506,6 +506,18 @@ static void drawArticle(const App *app, uint64_t now_ns, Color spin)
         else
             uiDrawSpinner(w / 2.0f, (top > 0 ? top : 0) + 60.0f, 16, now_ns, spin);
     }
+    if (appNewsCanReadFull(app)) {  // Under its text: "[A] Read the full article", as a button.
+        int by = appScrollTextEnd(app) + 40, bh = 56;
+        if (by < h && by + bh > 0) {
+            const char *label = T("Read the full article");
+            int kw = uiButtonWidth("A"), bw = kw + 16 + fontTextWidth(FONT_BOLD, 19, label) + 56;
+            int bx = x + (cw - bw) / 2;
+            gfxFillRoundRect(bx, by, bw, bh, bh / 2, COLOR_SURFACE_HI);
+            uiDrawButton(bx + 28, by + bh / 2.0f, "A", COLOR_SURFACE, COLOR_TEXT);
+            fontDrawMiddle(FONT_BOLD, 19, bx + 28 + kw + 16, by + bh / 2.0f, label, COLOR_TEXT);
+            uiHitAdd(bx, by, bw, bh, HIT_NEWS_FULL, 0);
+        }
+    }
     float t = appScrollFraction(app);
     int track = h - 40, knob = 60;
     gfxFillRoundRect(w - 10, 20 + (int)(t * (track - knob)), 4, knob, 2, spin);
@@ -533,7 +545,9 @@ static void drawBars(const App *app)
         int top = h - BARS_HELP_H - 12;
         gfxBlendRect(0, top, w, h - top, COLOR_BG, 240);
         uiDrawHelp(MARGIN, top + BARS_HELP_H / 2.0f + 6.0f, w - 2 * MARGIN,
-                   T("[^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library"));
+                   appNewsCanReadFull(app)
+                       ? T("[A] Full article  [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library")
+                       : T("[^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library"));
         return;
     }
     uiDrawMarkButton(app, w - MARGIN - TURN_BUTTON_FROM_RIGHT - MARK_BUTTON_W - 12, 8);

@@ -1270,3 +1270,6 @@ Yesterday
 
 Loading the pictures...
 正在载入图片...
+
+[A] Full article  [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[A] 完整文章  [^v] 滚动  [L][R] 一屏  [Y] 配色  [RS] 旋转  [-] 隐藏  [B] 书库

@@ -1271,3 +1271,6 @@ Ontem
 
 Loading the pictures...
 Carregando as imagens...
+
+[A] Full article  [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[A] Artigo completo  [^v] Rolar  [L][R] Uma tela  [Y] Cores  [RS] Girar  [-] Ocultar  [B] Biblioteca

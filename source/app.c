@@ -1572,6 +1572,9 @@ static void articleButtons(App *app, uint64_t pressed, uint64_t now_ns)
             app->bars = false;
         else
             appCloseBook(app);
+    } else if (pressed & HidNpadButton_A) {  // Only the feed's text: the whole article, from its site.
+        if (appNewsCanReadFull(app))
+            appNewsFull(app, now_ns);
     } else if (app->ready && appScrollButtons(app, pressed, now_ns)) {
         return;
     } else if (pressed & HidNpadButton_Y) {
@@ -1740,6 +1743,10 @@ static void tap(App *app, const HitRegion *hit, int x, uint64_t now_ns)
         break;
     case HIT_NET_CANCEL:
         appNetCancelCopy();
+        break;
+    case HIT_NEWS_FULL:  // The button at an article's end: its whole page.
+        if (appNewsCanReadFull(app))
+            appNewsFull(app, now_ns);
         break;
     case HIT_SORT:  // The sort; in Free books, the search.
         if (app->lib_tab == LIB_FREE)

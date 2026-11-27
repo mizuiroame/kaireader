@@ -1270,3 +1270,6 @@ Yesterday
 
 Loading the pictures...
 이미지를 불러오고 있어요...
+
+[A] Full article  [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[A] 기사 전체  [^v] 스크롤  [L][R] 한 화면  [Y] 색상  [RS] 회전  [-] 숨기기  [B] 서재

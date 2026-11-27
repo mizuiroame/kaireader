@@ -1271,3 +1271,6 @@ Gestern
 
 Loading the pictures...
 Bilder werden geladen...
+
+[A] Full article  [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[A] Ganzer Artikel  [^v] Scrollen  [L][R] Ein Bildschirm  [Y] Farben  [RS] Drehen  [-] Ausblenden  [B] Bibliothek

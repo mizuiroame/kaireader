@@ -1271,3 +1271,6 @@ Hier
 
 Loading the pictures...
 Chargement des images...
+
+[A] Full article  [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[A] Article complet  [^v] Défiler  [L][R] Un écran  [Y] Couleurs  [RS] Pivoter  [-] Masquer  [B] Bibliothèque

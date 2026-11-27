@@ -4,7 +4,7 @@
 // reading thread keeps rendering only the strips near the one at the top
 // (PAGE_SLOTS of them at most), so a long article costs no more than a book.
 // A finger drags it (gliding on, as the library does), up and down scroll it
-// (held: on and on), and L, R, ZL, ZR, left, right and A move a screen.
+// (held: on and on), and L, R, ZL, ZR, left and right move a screen.
 #include "app.h"
 
 #include <stdlib.h>
@@ -15,7 +15,8 @@
 #include "kinetic.h"
 
 #define SCROLL_TOP 40      // Room above the article's first line.
-#define SCROLL_BOTTOM 80   // And under its last.
+#define SCROLL_BOTTOM 80   // And under its last,
+#define BUTTON_ROOM 110    // and more for "[A] Read the full article" under it.
 #define SCROLL_STEP 72     // Up or down, once (or each repeat while held).
 #define SCREEN_OVERLAP 96  // A screen down keeps this much of the one before in view.
 #define CONTENT_DIFF 40    // A pixel this far from the paper's color is ink (antialiasing included).
@@ -36,7 +37,14 @@ static int contentHeight(const App *app)
     if (app->pages <= 0)
         return 0;
     int last = app->scroll_end >= 0 ? app->scroll_end : appScrollStrip();
-    return SCROLL_TOP + (app->pages - 1) * appScrollStrip() + last + SCROLL_BOTTOM;
+    return SCROLL_TOP + (app->pages - 1) * appScrollStrip() + last + SCROLL_BOTTOM +
+           (appNewsCanReadFull(app) ? BUTTON_ROOM : 0);
+}
+
+int appScrollTextEnd(const App *app)
+{
+    int last = app->scroll_end >= 0 ? app->scroll_end : appScrollStrip();
+    return appScrollStripY(app, app->pages - 1) + last;
 }
 
 static int maxScroll(const App *app)
@@ -124,7 +132,7 @@ bool appScrollButtons(App *app, uint64_t pressed, uint64_t now_ns)
 {
     (void)now_ns;
     int screen = gfxLayoutHeight() - SCREEN_OVERLAP;
-    uint64_t down = HidNpadButton_R | HidNpadButton_ZR | HidNpadButton_A | BUTTONS_RIGHT;
+    uint64_t down = HidNpadButton_R | HidNpadButton_ZR | BUTTONS_RIGHT;  // A: the whole article (app.c).
     uint64_t up = HidNpadButton_L | HidNpadButton_ZL | BUTTONS_LEFT;
     kineticStop(&app->kinetic);
     if (pressed & BUTTONS_UP)

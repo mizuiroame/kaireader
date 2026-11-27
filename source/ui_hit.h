@@ -33,6 +33,7 @@ typedef enum {
     HIT_EXIT_ITEM,    // arg: 0 Exit, 1 Cancel, in "Exit KaiReader?".
     HIT_NET_SETUP,    // The Network tab without a folder: opens its Settings page.
     HIT_NET_CANCEL,   // Stops a book's copy.
+    HIT_NEWS_FULL,    // An article's "[A] Read the full article": brings its whole page.
     HIT_RESCAN_NET,   // Reads the network folder again.
 } HitKind;
 

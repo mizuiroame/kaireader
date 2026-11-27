@@ -1270,3 +1270,6 @@ Yesterday
 
 Loading the pictures...
 画像を読み込んでいます...
+
+[A] Full article  [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
+[A] 記事全体  [^v] スクロール  [L][R] 1画面  [Y] 配色  [RS] 回転  [-] 隠す  [B] ライブラリー
