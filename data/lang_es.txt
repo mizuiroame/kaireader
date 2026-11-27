@@ -1256,3 +1256,18 @@ Sitios de noticias conocidos en cada idioma, que se siguen con A: sin escribir n
 
 [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
 [^v] Desplazar  [L][R] Una pantalla  [Y] Colores  [RS] Girar  [-] Ocultar  [B] Biblioteca
+
+%d h ago
+hace %d h
+
+%d min ago
+hace %d min
+
+Just now
+Ahora mismo
+
+Yesterday
+Ayer
+
+Loading the pictures...
+Cargando las imágenes...

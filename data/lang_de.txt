@@ -1256,3 +1256,18 @@ Bekannte Nachrichtenseiten in jeder Sprache, mit A verfolgt: nichts zu tippen.
 
 [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
 [^v] Scrollen  [L][R] Ein Bildschirm  [Y] Farben  [RS] Drehen  [-] Ausblenden  [B] Bibliothek
+
+%d h ago
+vor %d Std.
+
+%d min ago
+vor %d Min.
+
+Just now
+Gerade eben
+
+Yesterday
+Gestern
+
+Loading the pictures...
+Bilder werden geladen...

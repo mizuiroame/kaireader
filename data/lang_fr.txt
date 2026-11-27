@@ -1256,3 +1256,18 @@ Des sites d'actualités connus dans chaque langue, suivis avec A : rien à taper
 
 [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
 [^v] Défiler  [L][R] Un écran  [Y] Couleurs  [RS] Pivoter  [-] Masquer  [B] Bibliothèque
+
+%d h ago
+il y a %d h
+
+%d min ago
+il y a %d min
+
+Just now
+À l'instant
+
+Yesterday
+Hier
+
+Loading the pictures...
+Chargement des images...

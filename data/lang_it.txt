@@ -1256,3 +1256,18 @@ Siti di notizie noti in ogni lingua, da seguire con A: niente da digitare.
 
 [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
 [^v] Scorri  [L][R] Una schermata  [Y] Colori  [RS] Ruota  [-] Nascondi  [B] Libreria
+
+%d h ago
+%d ore fa
+
+%d min ago
+%d min fa
+
+Just now
+Proprio ora
+
+Yesterday
+Ieri
+
+Loading the pictures...
+Caricamento delle immagini...

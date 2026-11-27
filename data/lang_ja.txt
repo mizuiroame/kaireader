@@ -1255,3 +1255,18 @@ Well-known news sites in each language, followed with A: nothing to type.
 
 [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
 [^v] スクロール  [L][R] 1画面  [Y] 配色  [RS] 回転  [-] 隠す  [B] ライブラリー
+
+%d h ago
+%d時間前
+
+%d min ago
+%d分前
+
+Just now
+たった今
+
+Yesterday
+昨日
+
+Loading the pictures...
+画像を読み込んでいます...

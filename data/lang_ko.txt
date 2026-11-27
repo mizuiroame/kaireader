@@ -1255,3 +1255,18 @@ Well-known news sites in each language, followed with A: nothing to type.
 
 [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
 [^v] 스크롤  [L][R] 한 화면  [Y] 색상  [RS] 회전  [-] 숨기기  [B] 서재
+
+%d h ago
+%d시간 전
+
+%d min ago
+%d분 전
+
+Just now
+방금
+
+Yesterday
+어제
+
+Loading the pictures...
+이미지를 불러오고 있어요...

@@ -1255,3 +1255,18 @@ Well-known news sites in each language, followed with A: nothing to type.
 
 [^v] Scroll  [L][R] A screen  [Y] Colors  [RS] Turn  [-] Hide  [B] Library
 [^v] 滚动  [L][R] 一屏  [Y] 配色  [RS] 旋转  [-] 隐藏  [B] 书库
+
+%d h ago
+%d小时前
+
+%d min ago
+%d分钟前
+
+Just now
+刚刚
+
+Yesterday
+昨天
+
+Loading the pictures...
+正在载入图片...
