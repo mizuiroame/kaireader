@@ -46,6 +46,8 @@ void feedsFree(Feed *f);
 int64_t feedsParseDate(const char *text);
 // A date as the list shows it: "2026-11-27". "" for 0.
 void feedsDateText(int64_t date, char *out, size_t size);
+// And with its time (UTC), as feedsParseDate reads it back: "2026-11-27 14:05". "" for 0.
+void feedsDateTimeText(int64_t date, char *out, size_t size);
 
 // Text as it's shown: tags taken out, HTML entities (&amp;, &eacute;, &#233;) made
 // characters, whitespace runs made one space, cut to fit (whole characters).

@@ -24,6 +24,7 @@ typedef struct {
     char path[SHELF_PATH_MAX];      // "news:<feed hash>/<article hash>".
     char title[FEED_TEXT_MAX];
     char image[FEED_URL_MAX];
+    char summary[SHELF_TEXT_MAX];   // Its first words (plain text).
     int64_t date;
     int feed;                       // Its feed, as given.
     int seq;                        // Its place in its feed's round (the same dates keep it).
@@ -54,6 +55,18 @@ bool newsJobTakeFind(char *url, size_t url_size, char *title, size_t title_size,
 // An article's page on its site: its main part, as HTML. False if one runs already.
 bool newsJobFull(const char *link, bool any_certificate);
 bool newsJobTakeFull(char **html, bool *ok, char *why, size_t why_size);
+
+// An article's pictures (at most NEWSJOB_PICTURES): each fetched (urls[i]), fitted into max_w pixels
+// across, and kept as a JPEG file (files[i]); one too small to show (a tracking pixel) as an empty
+// file, one that can't be fetched or read as files[i] ".none". Those already there aren't asked
+// again. False if an article's pictures are being fetched already.
+#define NEWSJOB_PICTURES 20
+#define NEWSJOB_PICTURE_PATH 1100
+bool newsJobPictures(const char (*urls)[FEED_URL_MAX], const char (*files)[NEWSJOB_PICTURE_PATH], int count,
+                     bool any_certificate, int max_w);
+bool newsJobPicturesBusy(void);
+// They're done, once: how many were kept.
+bool newsJobTakePictures(int *kept);
 
 // Waits for them to end. At exit (before the network stops).
 void newsJobStop(void);

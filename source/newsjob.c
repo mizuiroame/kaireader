@@ -5,7 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sys/stat.h>
+
 #include "article.h"
+#include "doc.h"
 #include "feedlist.h"
 #include "lang.h"
 #include "net.h"
@@ -15,6 +18,11 @@
 #define FEED_MAX_BYTES (8u << 20)    // A feed's answer, at most.
 #define KEPT_MAX_BYTES (12u << 20)   // A feed kept on the card, read back.
 #define PAGE_MAX_BYTES (6u << 20)    // An article's page.
+#define PICTURE_MAX_BYTES (6u << 20)  // A picture's answer, at most.
+#define PICTURE_TIMEOUT_S 20
+#define PICTURE_STALL_S 10
+#define PICTURE_MIN 40               // Smaller (either side): not a picture to show.
+#define PICTURE_QUALITY 82
 #define STALL_S 20
 #define TIMEOUT_S 90
 
@@ -152,6 +160,7 @@ static void addArticles(const Feed *f, int feed, const char *hash, NewsArticle *
             continue;
         snprintf(a->title, sizeof(a->title), "%s", f->items[i].title);
         snprintf(a->image, sizeof(a->image), "%s", f->items[i].image);
+        feedsPlainText(f->items[i].html, a->summary, sizeof(a->summary));
         a->date = f->items[i].date;
         a->feed = feed;
         a->seq = *count;
@@ -501,6 +510,140 @@ bool newsJobTakeFull(char **html, bool *ok, char *why, size_t why_size)
     return got;
 }
 
+// --- An article's pictures ---
+
+static pthread_t g_pic_thread;
+static bool g_pic_joinable, g_pic_running, g_pic_ready, g_pic_any;
+static char (*g_pic_urls)[FEED_URL_MAX];
+static char (*g_pic_files)[NEWSJOB_PICTURE_PATH];
+static int g_pic_count, g_pic_kept, g_pic_max_w;
+
+static bool exists(const char *path)
+{
+    struct stat st;
+    return stat(path, &st) == 0;
+}
+
+static void touch(const char *path)
+{
+    FILE *f = fopen(path, "wb");
+    if (f)
+        fclose(f);
+}
+
+// One picture: kept as a JPEG (true), or marked as one not to show, or as one that can't be.
+static bool fetchPicture(const char *url, const char *file, bool any, int max_w)
+{
+    char none[NEWSJOB_PICTURE_PATH + 8], part[NEWSJOB_PICTURE_PATH + 8];
+    snprintf(none, sizeof(none), "%s.none", file);
+    snprintf(part, sizeof(part), "%s.part", file);
+    if (exists(file) || exists(none))
+        return false;
+    NetClient *c = netClientOpen();
+    if (!c)
+        return false;
+    NetRequest q = {.url = url, .stall_s = PICTURE_STALL_S, .timeout_s = PICTURE_TIMEOUT_S, .any_certificate = any,
+                    .cancel = &g_cancel};
+    NetResponse r;
+    bool fetched = netFetchText(c, &q, PICTURE_MAX_BYTES, &r);
+    netClientClose(c);
+    if (!fetched) {
+        bool lasting = r.problem == NET_STATUS && !opdsBusyStatus(r.status);  // 404 and the like: not again.
+        netResponseFree(&r);
+        if (lasting)
+            touch(none);
+        return false;
+    }
+    DocImage image;
+    bool read = docImageFromData(r.data, r.size, max_w, max_w * 3, &image);
+    netResponseFree(&r);
+    if (!read) {  // A kind MuPDF can't read (WebP...), or not a picture.
+        touch(none);
+        return false;
+    }
+    bool kept = false;
+    if (image.width < PICTURE_MIN || image.height < PICTURE_MIN) {
+        touch(file);  // Empty: left out of the page.
+    } else if (docImageSaveJpeg(&image, part, PICTURE_QUALITY)) {
+        remove(file);
+        kept = rename(part, file) == 0;
+    } else {
+        remove(part);
+    }
+    docImageFree(&image);
+    return kept;
+}
+
+static void *picturesThread(void *arg)
+{
+    (void)arg;
+    int kept = 0;
+    for (int i = 0; i < g_pic_count && !g_cancel; i++)
+        kept += fetchPicture(g_pic_urls[i], g_pic_files[i], g_pic_any, g_pic_max_w);
+    pthread_mutex_lock(&g_lock);
+    g_pic_kept = kept;
+    g_pic_ready = true;
+    g_pic_running = false;
+    pthread_mutex_unlock(&g_lock);
+    return NULL;
+}
+
+bool newsJobPictures(const char (*urls)[FEED_URL_MAX], const char (*files)[NEWSJOB_PICTURE_PATH], int count,
+                     bool any_certificate, int max_w)
+{
+    pthread_mutex_lock(&g_lock);
+    bool busy = g_pic_running;
+    pthread_mutex_unlock(&g_lock);
+    if (busy || count <= 0)
+        return false;
+    if (g_pic_joinable)
+        pthread_join(g_pic_thread, NULL);
+    g_pic_joinable = false;
+    count = count > NEWSJOB_PICTURES ? NEWSJOB_PICTURES : count;
+    free(g_pic_urls);
+    free(g_pic_files);
+    g_pic_urls = malloc((size_t)count * sizeof(*g_pic_urls));
+    g_pic_files = malloc((size_t)count * sizeof(*g_pic_files));
+    if (!g_pic_urls || !g_pic_files)
+        return false;
+    memcpy(g_pic_urls, urls, (size_t)count * sizeof(*g_pic_urls));
+    memcpy(g_pic_files, files, (size_t)count * sizeof(*g_pic_files));
+    g_pic_count = count;
+    g_pic_any = any_certificate;
+    g_pic_max_w = max_w;
+    pthread_mutex_lock(&g_lock);
+    g_pic_running = true;
+    g_pic_ready = false;
+    pthread_mutex_unlock(&g_lock);
+    g_pic_joinable = startThread(&g_pic_thread, picturesThread);
+    if (!g_pic_joinable) {
+        pthread_mutex_lock(&g_lock);
+        g_pic_running = false;
+        pthread_mutex_unlock(&g_lock);
+    }
+    return g_pic_joinable;
+}
+
+bool newsJobPicturesBusy(void)
+{
+    pthread_mutex_lock(&g_lock);
+    bool busy = g_pic_running;
+    pthread_mutex_unlock(&g_lock);
+    return busy;
+}
+
+bool newsJobTakePictures(int *kept)
+{
+    pthread_mutex_lock(&g_lock);
+    bool got = g_pic_ready;
+    if (got) {
+        *kept = g_pic_kept;
+        g_pic_ready = false;
+    }
+    pthread_mutex_unlock(&g_lock);
+    return got;
+}
+
 void newsJobStop(void)
 {
     g_cancel = true;
@@ -513,7 +656,13 @@ void newsJobStop(void)
         pthread_join(g_find_thread, NULL);
     if (g_full_joinable)
         pthread_join(g_full_thread, NULL);
-    g_check_joinable = g_find_joinable = g_full_joinable = false;
+    if (g_pic_joinable)
+        pthread_join(g_pic_thread, NULL);
+    g_check_joinable = g_find_joinable = g_full_joinable = g_pic_joinable = false;
+    free(g_pic_urls);
+    g_pic_urls = NULL;
+    free(g_pic_files);
+    g_pic_files = NULL;
     free(g_check_feeds);
     g_check_feeds = NULL;
     free(g_articles);

@@ -544,6 +544,19 @@ void feedsDateText(int64_t date, char *out, size_t size)
     snprintf(out, size, "%04d-%02d-%02d", y, m, d);
 }
 
+void feedsDateTimeText(int64_t date, char *out, size_t size)
+{
+    char day[16];
+    feedsDateText(date, day, sizeof(day));
+    if (!day[0]) {
+        if (size)
+            out[0] = '\0';
+        return;
+    }
+    int64_t s = date % 86400;
+    snprintf(out, size, "%s %02d:%02d", day, (int)(s / 3600), (int)(s / 60 % 60));
+}
+
 // --- Articles ---
 
 // needle in hay, ignoring ASCII case; NULL if it isn't there.

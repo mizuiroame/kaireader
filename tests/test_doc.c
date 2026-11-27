@@ -404,8 +404,37 @@ static void testTallStrips(void)
     docClose(d);
 }
 
+// A picture kept as a JPEG: read back the same size, its colors near.
+static void testSaveJpeg(void)
+{
+    DocImage image = {calloc(64 * 48, 4), 64, 48};
+    if (!image.pixels)
+        return;
+    for (int i = 0; i < 64 * 48; i++)
+        image.pixels[i] = 0xFF2060C0u;  // Blue-ish (0xAABBGGRR).
+    const char *path = TMP_ROOT "/picture.jpg";
+    CHECK(docImageSaveJpeg(&image, path, 82));
+    FILE *f = fopen(path, "rb");
+    unsigned char data[65536];
+    size_t n = f ? fread(data, 1, sizeof(data), f) : 0;
+    if (f)
+        fclose(f);
+    DocImage back;
+    CHECK(n > 100 && docImageFromData(data, n, 1000, 1000, &back) && back.width == 64 && back.height == 48);
+    if (back.pixels) {
+        uint32_t p = back.pixels[64 * 24 + 32];
+        CHECK(abs((int)(p & 0xFF) - 0xC0) < 12 && abs((int)((p >> 8) & 0xFF) - 0x60) < 12 &&
+              abs((int)((p >> 16) & 0xFF) - 0x20) < 12);
+    }
+    docImageFree(&back);
+    DocImage none = {0};
+    CHECK(!docImageSaveJpeg(&none, path, 82) && !docImageSaveJpeg(&image, path, 0));
+    docImageFree(&image);
+}
+
 void testDoc(void)
 {
+    testSaveJpeg();
     testTallStrips();
     testCovers();
     testNames();

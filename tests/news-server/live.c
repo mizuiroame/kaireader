@@ -96,6 +96,26 @@ int main(int argc, char **argv)
     printf("full: %s\n%s\n", ok ? "ok" : why, html ? html : "");
     EXPECT(ok && html && strstr(html, "twice a day") && !strstr(html, "Sport") && !strstr(html, "tracking"));
     free(html);
+    // An article's pictures: one kept as a JPEG, one that isn't there marked so.
+    char urls[2][FEED_URL_MAX], files[2][NEWSJOB_PICTURE_PATH];
+    snprintf(urls[0], sizeof(urls[0]), "%s/pictures/ferry.png", site);
+    snprintf(urls[1], sizeof(urls[1]), "%s/pictures/missing.png", site);
+    snprintf(files[0], sizeof(files[0]), "%s", "kept/ferry.jpg");
+    snprintf(files[1], sizeof(files[1]), "%s", "kept/missing.jpg");
+    remove(files[0]);
+    remove("kept/missing.jpg.none");
+    EXPECT(newsJobPictures((const char(*)[FEED_URL_MAX])urls, (const char(*)[NEWSJOB_PICTURE_PATH])files, 2, false, 640));
+    int kept = -1;
+    while (!newsJobTakePictures(&kept))
+        nap();
+    FILE *jpg = fopen(files[0], "rb");
+    FILE *none = fopen("kept/missing.jpg.none", "rb");
+    printf("pictures: %d kept, ferry %s, missing marked %s\n", kept, jpg ? "saved" : "NOT saved", none ? "yes" : "no");
+    EXPECT(kept == 1 && jpg && none);
+    if (jpg)
+        fclose(jpg);
+    if (none)
+        fclose(none);
     newsJobStop();
     netExit();
     printf("%d failures\n", g_failures);

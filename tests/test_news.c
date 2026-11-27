@@ -128,7 +128,7 @@ static void testArticle(void)
         "<p>A picture: <img src=\"a.jpg\" alt=\"Two gulls\"> and <img src=\"b.jpg\"></p>"
         "<ul><li>one<li>two</ul><form><input name=q></form><font color=red>red</font>"
         "<div onclick=\"x()\" style=\"color:red\">block</div><br><hr>";
-    ArticleParts parts = {"Gulls & <Terns>", "Bay Log \xC2\xB7 2025-01-02", html, "[imagen]", "The end."};
+    ArticleParts parts = {"Gulls & <Terns>", "Bay Log \xC2\xB7 2025-01-02", html, "[imagen]", "The end.", NULL, NULL};
     size_t size;
     char *page = articlePage(&parts, &size);
     CHECK(page && size == strlen(page));
@@ -145,7 +145,7 @@ static void testArticle(void)
         CHECK(wellFormed(page));
     }
     free(page);
-    ArticleParts bare = {"Only a title", "", NULL, "[picture]", NULL};
+    ArticleParts bare = {"Only a title", "", NULL, "[picture]", NULL, NULL, NULL};
     page = articlePage(&bare, &size);
     CHECK(page && strstr(page, "<h1>Only a title</h1>") && !strstr(page, "class=\"kr-by\""));
     free(page);
@@ -158,7 +158,7 @@ static void testArticle(void)
         for (int i = 0; i < 20000; i++)
             o += (size_t)snprintf(deep + o, deep_size - o, "<div>");
         snprintf(deep + o, deep_size - o, "%s", "deep words");
-        ArticleParts d = {"Deep", "", deep, "[picture]", NULL};
+        ArticleParts d = {"Deep", "", deep, "[picture]", NULL, NULL, NULL};
         page = articlePage(&d, &size);
         CHECK(page && strstr(page, "deep words") && wellFormed(page));
         free(page);
@@ -182,9 +182,9 @@ static void testExtract(void)
     CHECK(html && strstr(html, "forty passengers") && strstr(html, "twice a day"));
     CHECK(html && !strstr(html, "Home | News") && !strstr(html, "Copyright") && !strstr(html, "var a"));
     CHECK(html && !strstr(html, "Facebook") && !strstr(html, "2 comments"));  // Beside the article.
-    CHECK(html && strstr(html, "<img alt=\"The ferry\"/>"));  // Said by articlePage, in the reader's language.
+    CHECK(html && strstr(html, "<img alt=\"The ferry\" src=\"ferry.jpg\"/>"));  // Shown, or said, by articlePage.
     if (html) {
-        ArticleParts parts = {"The ferry", "", html, "[picture]", NULL};
+        ArticleParts parts = {"The ferry", "", html, "[picture]", NULL, NULL, NULL};
         char *out = articlePage(&parts, NULL);
         CHECK(out && strstr(out, "<i>[The ferry]</i>"));
         free(out);
@@ -248,8 +248,53 @@ static void testSuggestions(void)
     settingsSetNewsSuggestions("", 0, NULL, NULL, NULL);
 }
 
+// The app's answer for each picture: on the card (a file), one to leave out, or not there.
+static ArticlePicture fakePictures(void *user, const char *src, char *file, size_t size)
+{
+    int *asked = user;
+    (*asked)++;
+    if (strstr(src, "pixel"))
+        return ARTICLE_PICTURE_OMIT;
+    if (strstr(src, "here")) {
+        snprintf(file, size, "%s", "abc-1.jpg");
+        return ARTICLE_PICTURE_FILE;
+    }
+    return ARTICLE_PICTURE_NONE;
+}
+
+static void testPictures(void)
+{
+    const char *html = "<p>One <img src=\"https://x.example/here.jpg\" alt=\"Gulls\"> two "
+                       "<img src=\"/pixel.gif\"> three <img src=\"far.png\" alt=\"Far\"> four "
+                       "<img src=\"data:image/png;base64,AAAA\" data-src=\"lazy.jpg\"><img src=\"data:x\"></p>";
+    int asked = 0;
+    ArticleParts parts = {"Pictures", "", html, "[picture]", NULL, fakePictures, &asked};
+    char *page = articlePage(&parts, NULL);
+    CHECK(page && strstr(page, "<img class=\"kr-pic\" src=\"abc-1.jpg\" alt=\"Gulls\"/>"));
+    CHECK(page && !strstr(page, "pixel") && strstr(page, "<i>[Far]</i>") && strstr(page, "<i>[picture]</i>"));
+    CHECK(asked == 4);  // The one written in the page (data:) isn't asked for.
+    CHECK(page && wellFormed(page));
+    free(page);
+
+    // At most ARTICLE_PICTURES_MAX asked; the rest keep their placeholder.
+    char many[64 * 40] = "";
+    for (int i = 0; i < 30; i++)
+        snprintf(many + strlen(many), sizeof(many) - strlen(many), "<img src=\"p%d.jpg\">", i);
+    asked = 0;
+    ArticleParts lots = {"Many", "", many, "[picture]", NULL, fakePictures, &asked};
+    page = articlePage(&lots, NULL);
+    CHECK(page && asked == ARTICLE_PICTURES_MAX);
+    free(page);
+
+    char srcs[ARTICLE_PICTURES_MAX][ARTICLE_SRC_MAX];
+    int n = articleSources(html, srcs, ARTICLE_PICTURES_MAX);
+    CHECK(n == 4 && !strcmp(srcs[0], "https://x.example/here.jpg") && !strcmp(srcs[3], "lazy.jpg"));
+    CHECK(articleSources(many, srcs, 5) == 5 && articleSources("", srcs, 5) == 0 && articleSources(NULL, srcs, 5) == 0);
+}
+
 void testNews(void)
 {
+    testPictures();
     testSuggestions();
     testFeedList();
     testPaths();

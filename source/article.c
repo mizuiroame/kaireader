@@ -93,16 +93,54 @@ static void wordsOf(fz_xml *top, TextBuf *b, size_t *length)
     }
 }
 
-static void picture(fz_xml *img, TextBuf *b, const char *word)
+// How a part is cleaned: a picture's placeholder (NULL in a whole page, where pictures are kept as
+// they are for articlePage), the app's pictures, and how many are shown so far.
+typedef struct {
+    const char *word;
+    const ArticleParts *parts;
+    int pictures;
+} Cleaning;
+
+// A picture's address: its src, or (lazy pages) data-src; NULL for none, or one written in the page.
+static const char *sourceOf(fz_xml *img)
+{
+    const char *src = fz_xml_att(img, "src");
+    if (!src || !src[0] || !strncasecmp(src, "data:", 5))
+        src = fz_xml_att(img, "data-src");
+    return src && src[0] && strncasecmp(src, "data:", 5) && strlen(src) < ARTICLE_SRC_MAX ? src : NULL;
+}
+
+static void picture(fz_xml *img, TextBuf *b, Cleaning *cx)
 {
     const char *alt = fz_xml_att(img, "alt");
     size_t lead = alt ? strspn(alt, " \t\r\n") : 0;
-    if (!word) {  // Kept for articlePage, which says it in the reader's language.
+    const char *src = sourceOf(img);
+    if (!cx->word) {  // Kept for articlePage, which shows it or says it in the reader's language.
         textBufStr(b, "<img alt=\"");
         text(b, alt ? alt : "");
+        if (src) {
+            textBufStr(b, "\" src=\"");
+            text(b, src);
+        }
         textBufStr(b, "\"/>");
         return;
     }
+    if (src && cx->parts && cx->parts->picture_file && cx->pictures < ARTICLE_PICTURES_MAX) {
+        char file[ARTICLE_SRC_MAX];
+        ArticlePicture is = cx->parts->picture_file(cx->parts->picture_user, src, file, sizeof(file));
+        cx->pictures++;
+        if (is == ARTICLE_PICTURE_OMIT)
+            return;
+        if (is == ARTICLE_PICTURE_FILE) {  // On a line of its own, as wide as it is (or the column).
+            textBufStr(b, "<img class=\"kr-pic\" src=\"");
+            text(b, file);
+            textBufStr(b, "\" alt=\"");
+            text(b, alt ? alt : "");
+            textBufStr(b, "\"/>");
+            return;
+        }
+    }
+    const char *word = cx->word;
     textBufStr(b, "<i>");
     if (alt && alt[lead]) {
         textBufStr(b, "[");
@@ -134,9 +172,8 @@ static bool aside(fz_xml *n)
     return false;
 }
 
-// n's children, cleaned, into b (word: a picture's placeholder; NULL in a whole page, where
-// pictures are kept for articlePage and the parts beside the article are left out).
-static void clean(fz_xml *n, TextBuf *b, const char *word, int depth)
+// n's children, cleaned, into b (in a whole page, cx->word NULL: the parts beside the article left out).
+static void clean(fz_xml *n, TextBuf *b, Cleaning *cx, int depth)
 {
     for (fz_xml *c = fz_xml_down(n); c; c = fz_xml_next(c)) {
         const char *t = fz_xml_text(c);
@@ -145,10 +182,10 @@ static void clean(fz_xml *n, TextBuf *b, const char *word, int depth)
             continue;
         }
         const char *name = nameOf(c);
-        if (!name || AMONG(name, DROP) || (!word && aside(c)))
+        if (!name || AMONG(name, DROP) || (!cx->word && aside(c)))
             continue;
         if (!strcasecmp(name, "img")) {
-            picture(c, b, word);
+            picture(c, b, cx);
             continue;
         }
         if (!strcasecmp(name, "br")) {
@@ -165,7 +202,7 @@ static void clean(fz_xml *n, TextBuf *b, const char *word, int depth)
             continue;
         }
         if (!as) {  // Anything else (a link, a font...): what it holds.
-            clean(c, b, word, depth + 1);
+            clean(c, b, cx, depth + 1);
             continue;
         }
         char tag[16];
@@ -176,7 +213,7 @@ static void clean(fz_xml *n, TextBuf *b, const char *word, int depth)
         textBufStr(b, "<");
         textBufStr(b, tag);
         textBufStr(b, ">");
-        clean(c, b, word, depth + 1);
+        clean(c, b, cx, depth + 1);
         textBufStr(b, "</");
         textBufStr(b, tag);
         textBufStr(b, ">");
@@ -263,7 +300,7 @@ char *articlePage(const ArticleParts *parts, size_t *size)
     textBufStr(&b, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<html xmlns=\"http://www.w3.org/1999/xhtml\">"
                    "<head><meta charset=\"utf-8\"/><title>");
     text(&b, parts->title ? parts->title : "");
-    textBufStr(&b, "</title><style>p.kr-by{font-style:italic}</style></head>\n<body><h1>");
+    textBufStr(&b, "</title><style>p.kr-by{font-style:italic}img.kr-pic{display:block;margin:0.5em 0}</style></head>\n<body><h1>");
     text(&b, parts->title ? parts->title : "");
     textBufStr(&b, "</h1>");
     if (parts->byline && parts->byline[0]) {
@@ -279,8 +316,9 @@ char *articlePage(const ArticleParts *parts, size_t *size)
         // Room is kept for the page's end, so a long article is cut, never the page.
         TextBuf content;
         textBufInit(&content, ARTICLE_MAX - 4096);
+        Cleaning cx = {parts->picture ? parts->picture : "", parts, 0};
         if (body)
-            clean(body, &content, parts->picture ? parts->picture : "", 0);
+            clean(body, &content, &cx, 0);
         else  // HTML even its parser gives up on (nested too deep): its words.
             plainWords(parts->html, &content);
         if (content.data && !content.failed)
@@ -390,11 +428,35 @@ char *articleExtract(const char *page, size_t size)
         TextBuf b;
         textBufInit(&b, ARTICLE_MAX - 4096);
         textBufStr(&b, "<div>");
-        clean(part, &b, NULL, 0);
+        Cleaning cx = {NULL, NULL, 0};
+        clean(part, &b, &cx, 0);
         textBufStr(&b, "</div>");  // Cut short, it's still read (articlePage parses it again).
         out = textBufTake(&b, NULL);
     }
     fz_drop_xml(ctx, doc);
     fz_drop_context(ctx);
     return out;
+}
+
+int articleSources(const char *html, char (*out)[ARTICLE_SRC_MAX], int max)
+{
+    if (!html || !html[0] || max <= 0)
+        return 0;
+    fz_context *ctx = newContext();
+    if (!ctx)
+        return 0;
+    fz_xml *doc = parseHtml(ctx, html, strlen(html));
+    int count = 0;
+    for (fz_xml *n = doc ? findNamed(fz_xml_root(doc), "img") : NULL; n && count < max;
+         n = findNamed(nextNode(n, NULL), "img")) {
+        const char *src = sourceOf(n);
+        bool seen = !src;
+        for (int i = 0; !seen && i < count; i++)
+            seen = !strcmp(out[i], src);
+        if (!seen)
+            snprintf(out[count++], ARTICLE_SRC_MAX, "%s", src);
+    }
+    fz_drop_xml(ctx, doc);
+    fz_drop_context(ctx);
+    return count;
 }

@@ -211,6 +211,12 @@ static void testDates(void)
     CHECK_STR(text, "2003-06-10");
     feedsDateText(0, text, sizeof(text));
     CHECK_STR(text, "");
+    char when[24];
+    feedsDateTimeText(1055217600 + 5 * 60, when, sizeof(when));
+    CHECK_STR(when, "2003-06-10 04:05");
+    CHECK(feedsParseDate(when) == 1055217600 + 5 * 60);
+    feedsDateTimeText(0, when, sizeof(when));
+    CHECK_STR(when, "");
 }
 
 static void testPlain(void)

@@ -124,6 +124,8 @@ typedef struct {
 bool docEpubInfo(const char *path, int max_w, int max_h, DocEpubInfo *out);
 // A picture (JPEG, PNG...) in data, fitted into max_w x max_h (never enlarged). False if it isn't one.
 bool docImageFromData(const void *data, size_t size, int max_w, int max_h, DocImage *out);
+// An image written as a JPEG file (quality 1-100). False if it can't be.
+bool docImageSaveJpeg(const DocImage *image, const char *path, int quality);
 // Only the cover: false if there's none.
 bool docEpubCover(const char *path, int max_w, int max_h, DocImage *out);
 

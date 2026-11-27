@@ -1115,3 +1115,44 @@ bool docSubject(Doc *d, char *out, size_t size)
 {
     return meta(d, FZ_META_INFO_SUBJECT, out, size);
 }
+
+bool docImageSaveJpeg(const DocImage *image, const char *path, int quality)
+{
+    if (!image->pixels || image->width <= 0 || image->height <= 0 || quality < 1 || quality > 100)
+        return false;
+    fz_context *ctx = fz_new_context(NULL, NULL, 16u << 20);
+    if (!ctx)
+        return false;
+    fz_set_warning_callback(ctx, quiet, NULL);
+    fz_set_error_callback(ctx, quiet, NULL);
+    fz_pixmap *pix = NULL;
+    bool ok = true;
+    fz_var(pix);
+    fz_var(ok);
+    fz_try(ctx)
+    {
+        pix = fz_new_pixmap(ctx, fz_device_rgb(ctx), image->width, image->height, NULL, 0);
+        unsigned char *dst = fz_pixmap_samples(ctx, pix);
+        int stride = fz_pixmap_stride(ctx, pix);
+        for (int y = 0; y < image->height; y++) {  // 0xAABBGGRR to RGB, the alpha dropped (it's opaque).
+            const uint32_t *row = image->pixels + (size_t)y * (size_t)image->width;
+            unsigned char *out = dst + (size_t)y * (size_t)stride;
+            for (int x = 0; x < image->width; x++) {
+                out[3 * x] = (unsigned char)(row[x] & 0xFF);
+                out[3 * x + 1] = (unsigned char)((row[x] >> 8) & 0xFF);
+                out[3 * x + 2] = (unsigned char)((row[x] >> 16) & 0xFF);
+            }
+        }
+        fz_save_pixmap_as_jpeg(ctx, pix, path, quality);
+    }
+    fz_always(ctx)
+    {
+        fz_drop_pixmap(ctx, pix);
+    }
+    fz_catch(ctx)
+    {
+        ok = false;
+    }
+    fz_drop_context(ctx);
+    return ok;
+}
