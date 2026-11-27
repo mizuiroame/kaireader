@@ -309,6 +309,7 @@ static void takeCheck(App *app, uint64_t now_ns)
         const ShelfBook *was = shelfFind(old, a->path);
         if (was)
             copyMarks(b, was);
+        b->size = NEWS_COVER_CARD;  // Its card's picture (kept at the card's size).
         char name[FEED_TEXT_MAX], date[24];
         feedName(&app->feeds.items[at], name, sizeof(name));
         if (!app->feeds.items[at].name[0] && states && a->feed >= 0 && a->feed < state_count &&
@@ -320,6 +321,9 @@ static void takeCheck(App *app, uint64_t now_ns)
         snprintf(b->genre, sizeof(b->genre), "%s", date);
         snprintf(b->author_sort, sizeof(b->author_sort), "%s", a->summary);
         opdsRememberCover(a->path, a->image);
+        char lead[SHELF_PATH_MAX + 8];  // Its picture at the lead story's size, kept apart.
+        snprintf(lead, sizeof(lead), "%s%s", a->path, NEWS_LEAD_COVER);
+        opdsRememberCover(lead, a->image);
     }
     for (int i = 0; i < old->count; i++) {  // The marks of articles not kept any more, for a while.
         const ShelfBook *was = &old->items[i];
@@ -630,8 +634,11 @@ static bool makePage(App *app, const ShelfBook *b, bool fetch, char *local, size
             ok = writePage(app, b, html, kept, true, true, any, fetch, local, now_ns);
         }
         free(kept);
-        if (ok)
+        if (ok) {
+            app->news_open_full = true;
+            app->news_open_link = true;
             return true;
+        }
     }
     if (!pagePath(app, b->path, false, local, size))
         return false;
@@ -642,7 +649,14 @@ static bool makePage(App *app, const ShelfBook *b, bool fetch, char *local, size
     bool ok = writePage(app, b, html, item.link[0] ? item.link : app->feeds.items[feed].url, false, item.link[0] != '\0',
                         app->feeds.items[feed].any_certificate, fetch, local, now_ns);
     free(html);
+    app->news_open_full = false;
+    app->news_open_link = item.link[0] != '\0';
     return ok;
+}
+
+bool appNewsCanReadFull(const App *app)
+{
+    return appNewsReading(app) && !app->news_open_full && app->news_open_link && !app->news_full[0];
 }
 
 bool appNewsReady(App *app, int book, char *local, size_t size, uint64_t now_ns)

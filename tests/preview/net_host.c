@@ -584,6 +584,7 @@ bool newsJobTakePictures(int *kept)
 // A news article's cover: the dusk picture for some (the ones whose hash ends in 0-7), none for the rest.
 bool previewNewsCover(const char *path, int w, int h, DocImage *out)
 {
-    char last = path[strlen(path) - 1];
+    size_t n = strcspn(path, "#");  // "#lead": the lead story's, the same picture.
+    char last = n ? path[n - 1] : 0;
     return last >= '0' && last <= '7' && duskPicture(w, h, out);
 }

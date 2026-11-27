@@ -36,6 +36,11 @@
 #define FOOTER_H 56          // The help line at the bottom.
 // The news' showcase (app_news.c, ui_news.c): a lead story across the width, then rows of wide cards.
 #define NEWS_GAP 24          // Between cards.
+// An article's "size" in the shelf: the key its card's picture is kept under (covers.h), so the
+// ones kept before at a book cover's size are made again. The lead story's larger one is kept as
+// its path and NEWS_LEAD_COVER (each is made at the size it's drawn at).
+#define NEWS_COVER_CARD 2
+#define NEWS_LEAD_COVER "#lead"
 #define NEWS_CARD_TEXT 108   // Under a card's picture: its headline (two lines) and feed and time.
 #define NEWS_LEAD_SHARE 46   // Percent of the width the lead story's picture takes (the console lying down).
 #define NET_LOCAL_MAX (APP_FOLDER_MAX + 512)
@@ -181,6 +186,8 @@ typedef struct {
     char news_full[SHELF_PATH_MAX];      // the article whose whole page is being fetched ("" none),
     char news_full_link[FEED_URL_MAX];   // from there,
     char news_pictures[SHELF_PATH_MAX];  // and the one whose pictures are ("" none).
+    bool news_open_full;                 // The article open is its whole page,
+    bool news_open_link;                 // or the feed's text of one with a page on its site.
     char net_problem[256];               // Why the folder couldn't be read; "" if it could.
     int net_open;                        // A network book copied to be opened: its shelf index; -1 none.
     char net_copying[DAV_NAME_MAX];      // The book being copied to the card; "" none.
@@ -342,6 +349,8 @@ void appNewsStepFeed(App *app, int dir);          // L and R: all the feeds, or 
 void appNewsMarkAllRead(App *app, uint64_t now_ns);
 void appNewsFull(App *app, uint64_t now_ns);      // The open article's whole page, from its site.
 bool appNewsReading(const App *app);              // An article is open (and has a link).
+// An article is open with only the feed's text, its whole page there to bring (A, the button at its end).
+bool appNewsCanReadFull(const App *app);
 // An article (shelf index) to open: true with its page on the card in local.
 bool appNewsReady(App *app, int book, char *local, size_t size, uint64_t now_ns);
 const char *appNewsFeedName(const App *app);      // The feed shown ("All the feeds"), translated.
@@ -383,6 +392,7 @@ void appScrollOpened(App *app, int start_page);  // Laid out (again): at the str
 void appScrollTick(App *app, uint64_t now_ns);   // Each frame: a drag let go glides on.
 void appScrollKept(App *app, int page, const DocImage *image);  // A strip come (the last: where it ends).
 bool appScrollButtons(App *app, uint64_t pressed, uint64_t now_ns);  // True if a button scrolled it.
+int appScrollTextEnd(const App *app);  // Where the article's text ends on screen (layout units).
 float appScrollFraction(const App *app);  // How far down, 0..1.
 
 // The page shown first for page (the left one of two, with two pages side by side).

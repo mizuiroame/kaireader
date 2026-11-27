@@ -30,10 +30,22 @@ static float fb(float v)
     return v * GFX_SCALE;
 }
 
+#define CARD_PICTURE_MAX 960   // Pixels across a card's picture is kept at, at most,
+#define LEAD_PICTURE_MAX 1280  // and the lead story's.
+
+// The pixels a picture drawn w layout units wide needs (asked in a square: one taller than 16:9
+// still covers its card when cut).
+static int pictureSize(int w, int max)
+{
+    int px = (int)(fb(w) * gfxDetail() + 0.5f);
+    return px > max ? max : px;
+}
+
 void uiNewsCoverSize(int *w, int *h)
 {
-    *w = (int)(fb(400) * gfxDetail());
-    *h = *w * 9 / 16;
+    int card, ph;
+    appNewsCardSize(&card, &ph);
+    *w = *h = pictureSize(card, CARD_PICTURE_MAX);
 }
 
 // A feed's color: the same for every article of it (its hash, in the article's path).
@@ -72,12 +84,18 @@ static void clipTo(int x, int y, int w, int h, int view_top, int view_bottom)
 }
 
 // The article's picture filling w x h (cut at the sides or top and bottom), or false if it has none (yet).
-static bool drawPicture(App *app, const ShelfBook *b, int x, int y, int w, int h, int view_top, int view_bottom)
+static bool drawPicture(App *app, const ShelfBook *b, int x, int y, int w, int h, int view_top, int view_bottom,
+                        bool lead)
 {
     int cw, ch;
-    uiNewsCoverSize(&cw, &ch);
+    if (lead)
+        cw = ch = pictureSize(w, LEAD_PICTURE_MAX);
+    else
+        uiNewsCoverSize(&cw, &ch);
     bool failed;
-    const Cover *cv = coversGet(&app->covers, b->path, b->size, cw, ch, &failed);
+    char path[SHELF_PATH_MAX + 8];
+    snprintf(path, sizeof(path), "%s%s", b->path, lead ? NEWS_LEAD_COVER : "");
+    const Cover *cv = coversGet(&app->covers, path, lead ? 0 : b->size, cw, ch, &failed);
     if (!cv || cv->width <= 0 || cv->height <= 0)
         return false;
     float scale = (float)w / cv->width > (float)h / cv->height ? (float)w / cv->width : (float)h / cv->height;
@@ -141,7 +159,7 @@ static void drawLead(App *app, int index, int y, bool selected, int view_top, in
     int px = side ? x + w - pw : x;
     if (selected)
         gfxFillRoundRect(px - 5, y - 5, pw + 10, ph + 10, 12, COLOR_ACCENT);
-    if (!drawPicture(app, b, px, y, pw, ph, view_top, view_bottom))
+    if (!drawPicture(app, b, px, y, pw, ph, view_top, view_bottom, true))
         drawTextCard(b, px, y, pw, ph, true);
     if (b->percent < 0)
         drawUnreadDot(px + pw, y);
@@ -170,7 +188,7 @@ static void drawCard(App *app, int index, int x, int y, bool selected, int view_
     appNewsCardSize(&w, &ph);
     if (selected)
         gfxFillRoundRect(x - 6, y - 6, w + 12, ph + 12, 12, COLOR_ACCENT);
-    if (!drawPicture(app, b, x, y, w, ph, view_top, view_bottom))
+    if (!drawPicture(app, b, x, y, w, ph, view_top, view_bottom, false))
         drawTextCard(b, x, y, w, ph, false);
     if (b->percent < 0)
         drawUnreadDot(x + w, y);
