@@ -91,10 +91,14 @@ How the accounts are kept on the card: [Security](security.md).
   another language's), so nothing long has to be typed: **A** follows one,
   and it says "Followed" from then on. None is followed until you pick it.
   The list is `source/feedsuggest.c`.
-- **The library**: every feed's articles, newest first, with the feed's name
-  and the date; **L**/**R** show one feed alone, or all of them again. An
-  article you haven't opened wears a dot (a "New" in the list view). Its
-  picture, when the feed gives one, is its cover.
+- **A front page**, as KaiVideo's Showcase: the newest story large across the
+  top (its picture, feed, when it came, headline and first lines), then rows
+  of wide cards (picture, headline, feed, "2 h ago"). An article without a
+  picture gets a card in its feed's color with its first words. A dot marks
+  the ones not read yet. The D-pad and sticks move between stories, a finger
+  drags the page (it glides on), A or a tap opens one; **L**/**R** show one
+  feed alone, or all of them again. "Show as a list" in the + menu gives a
+  compact list instead (more headlines on screen, "New" on the unread).
 - **Checked** once a session, when you first go to the news, and with **Y**
   (or "Check the feeds again" in the + menu). The last 100 articles of each
   feed are kept on the card, so they're there offline too; a site that
@@ -108,8 +112,14 @@ How the accounts are kept on the card: [Security](security.md).
   books). What the feed gives is often only the
   start: **Read the full article** in the + menu brings the article's page
   from its site and keeps the part of it that reads as the article (it opens
-  that way from then on). Pictures inside articles show as their description,
-  or "[picture]".
+  that way from then on).
+- **Pictures in articles**: an article opens at once with its text, and its
+  pictures (up to 20) are fetched meanwhile ("Loading the pictures..."), made
+  no wider than the column and kept next to it on the card; they show in the
+  page as they come, where you're reading. A kind MuPDF can't read (WebP),
+  one too big (over 6 MB) or slow (20 s), or one that isn't there keeps its
+  description or "[picture]"; tiny ones (tracking pixels) are left out. They
+  go with the article's page after 30 days.
 - **+ menu**: Mark all as read (the articles shown), the next feed.
 - **Settings > News**: Add a feed, Suggested feeds, Import feeds (OPML), Feed (the one the rows
   under it are about), Rename this feed, Certificate check (off only for a
@@ -117,7 +127,7 @@ How the accounts are kept on the card: [Security](security.md).
 
 What the news can't do yet:
 
-- Pictures inside articles aren't downloaded (only the list's covers).
+- WebP and other kinds MuPDF can't read show as their description.
 - A feed that needs a sign-in can't be followed; adding a feed always checks
   its https certificate (turn the check off after, for a site of your own).
 - "Read the full article" is a best guess: on some sites it finds only part

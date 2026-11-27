@@ -80,6 +80,19 @@ Branch `feat/feeds`, worktree `D:\ns2homebrew\kaireader-feeds`, from main at 2b0
   rows of that page (`docRenderStrip`) into the usual page cache. tests/test_doc.c checks a strip join
   is pixel-identical to the same rows rendered across it.
 
+## Front page and pictures (owner's requests)
+
+- The news library is a showcase (`ui_news.c`, layout in app.c `layoutShowcase`): the newest story
+  large (picture at the right, feed + "2 h ago", headline, first words), then rows of 16:9 cards (4
+  lying down, 2 upright); no picture: a card in the feed's color with its first words. Unread: a dot at
+  the picture's top right. List view kept ("Show as a list"). An article's genre now holds its date
+  and time (UTC) and its author_sort its first words (the showcase's).
+- Pictures in articles: article.c asks the app for each picture (up to 20): on the card (shown, as
+  `<itemhash>-<urlhash>.jpg` next to the page), left out (tiny), or its placeholder; the missing ones
+  are fetched by newsjob (6 MB, 20 s each, fitted to the column, saved as JPEG; failures marked
+  `.none`), then the page is made again and reopened where it's read. Whole pages are kept as
+  `<hash>-full.html` (address on line 1) so their pictures can be added too. 30-day cleanup includes them.
+
 ## Left
 
 - Console test by the owner, with `KaiReader-news-test.nro` ("KaiReader News test", built from this
