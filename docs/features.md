@@ -106,11 +106,11 @@ How the accounts are kept on the card: [Security](security.md).
 - **Reading**: an article reads like a web page, not a book: one long page
   in your text size and colors, its title, feed and date at the top, that
   you scroll. Drag it with a finger (it glides on when let go), or up and
-  down (held: on and on); L, R, ZL, ZR, left, right and A move a whole
+  down (held: on and on); L, R, ZL, ZR, left and right move a whole
   screen. It opens again where you left it. No pages, bookmarks or contents
   for articles, and always one column (Settings > Reading > Pages is for
   books). What the feed gives is often only the
-  start: **Read the full article** in the + menu brings the article's page
+  start: **A** (or the "[A] Read the full article" button under the text, or the + menu) brings the article's page
   from its site and keeps the part of it that reads as the article (it opens
   that way from then on).
 - **Pictures in articles**: an article opens at once with its text, and its

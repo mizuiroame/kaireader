@@ -17,8 +17,10 @@
 | **+** | Menu: favorite, SD card or network folder, grid or list, look again, Settings, Exit (news: mark all as read, the next feed) | Menu: Contents, Bookmark, Library, Settings, Exit (an article: read the full article) |
 
 A news article scrolls like a web page: **Up**/**Down** (D-pad or sticks,
-held for more) scroll it, **L**/**R**, **ZL**/**ZR**, **Left**/**Right** and
-**A** move a screen up or down, **Y** colors, **−** the bars, **B** back to
+held for more) scroll it, **L**/**R**, **ZL**/**ZR** and **Left**/**Right**
+move a screen up or down, **A** brings the whole article from its site when
+only the feed's text is shown (as the "[A] Read the full article" button
+under the text, or the + menu), **Y** colors, **−** the bars, **B** back to
 the news; a finger drags it (it glides on), a tap shows or hides the bars.
 
 The right stick moves like the D-pad. Upright, every direction turns with the

@@ -93,6 +93,16 @@ Branch `feat/feeds`, worktree `D:\ns2homebrew\kaireader-feeds`, from main at 2b0
   `.none`), then the page is made again and reopened where it's read. Whole pages are kept as
   `<hash>-full.html` (address on line 1) so their pictures can be added too. 30-day cleanup includes them.
 
+## Sharper front page pictures, A for the full article (owner's requests)
+
+- Low-resolution pictures: BBC gave only 240 px media:thumbnails (now the largest offered wins and
+  ichef `/ws/240/` is asked as `/800/`; WordPress `-150x150` copies as their original); Xataka (1024 px)
+  and El País (1200 px) were fine at the source but kept at a book cover's size (600 px box): cards are
+  now made at their drawn size (up to 960 px) and the lead story apart (`#lead`, up to 1280 px), under a
+  new cache key. Drawing filter: bilinear on the console (GL), not a cause.
+- In an article with only the feed's text: "[A] Read the full article" button under the text, A in the
+  help line; A no longer moves a screen in articles.
+
 ## Left
 
 - Console test by the owner, with `KaiReader-news-test.nro` ("KaiReader News test", built from this
