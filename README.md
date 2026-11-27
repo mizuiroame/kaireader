@@ -24,6 +24,10 @@ comics (**CBZ**, **CBR**, **CB7**, **CBT**), **FB2**, **MOBI**, **TXT** and
 |------------------------------|-------------------------|----------------------------|
 | ![Two pages](docs/screenshots/epub-two-pages.png) | ![Book server](docs/screenshots/server.png) | ![Settings and sources](docs/screenshots/settings-sources.png) |
 
+| News from websites | An article, with its pictures | Settings > News |
+|--------------------|-------------------------------|-----------------|
+| ![News](docs/screenshots/news.png) | ![An article](docs/screenshots/news-article.png) | ![Settings > News](docs/screenshots/settings-news.png) |
+
 The screenshots show made-up books. [More screenshots](docs/screenshots.md)
 
 > **Version 1.1.** In English, Spanish, French, Italian, Portuguese, German,
