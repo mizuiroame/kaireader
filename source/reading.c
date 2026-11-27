@@ -282,6 +282,8 @@ static void makeCover(const CoverAsk *ask)
     if (!c)
         return;
     snprintf(c->path, sizeof(c->path), "%s", ask->path);
+    c->w = ask->w;
+    c->h = ask->h;
     pthread_mutex_lock(&g_lock);
     ReadingCoverFetcher fetch = g_fetch_cover;
     pthread_mutex_unlock(&g_lock);

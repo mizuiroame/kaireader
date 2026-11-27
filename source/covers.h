@@ -16,6 +16,7 @@ typedef struct {
     int64_t size;      // Of the book's file: another file under the name gets another cover.
     uint32_t *pixels;  // RGBA; NULL while it's being made, or if the book has none.
     int width, height;
+    int made_w, made_h; // The size it was asked for (made to fit in): asked larger, it's made again.
     bool asked;        // The reading thread is making it.
     bool failed;       // The book has no cover we can show.
     uint64_t used;     // When last drawn (for which one to drop).
@@ -33,7 +34,9 @@ void coversFree(Covers *c);
 // The cover of a book of size bytes, made to w x h pixels at most: from
 // memory, or the SD; if neither has it, the reading thread is asked for it
 // and NULL comes back until it's there. NULL also for books without one
-// (failed is then set, when given).
+// (failed is then set, when given). One made for a smaller size than asked
+// (a news picture first asked for small) is made again, the old one shown
+// meanwhile.
 const Cover *coversGet(Covers *c, const char *path, int64_t size, int w, int h, bool *failed);
 // A cover the reading thread made: kept, and written to the SD. Takes the image.
 void coversPut(Covers *c, ReadingCover *made, int64_t size);

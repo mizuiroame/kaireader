@@ -84,6 +84,7 @@ typedef struct {
     char author[DOC_TEXT_MAX];
     char genre[DOC_TEXT_MAX];        // An EPUB's first subject, a PDF's Subject.
     char author_sort[DOC_TEXT_MAX];  // "Example, Ana", when the book gives it.
+    int w, h;                        // The size it was asked for.
 } ReadingCover;
 
 bool readingStart(void);

@@ -39,6 +39,7 @@ int main(void)
     testOpds();
     testNewsFeeds();
     testNews();
+    testCoverCache();
     testCatalogs();
     testUpdate();
     testUpdateRelease();
