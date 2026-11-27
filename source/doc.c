@@ -249,6 +249,93 @@ bool docLayout(Doc *d, float w, float h, float em)
     return ok;
 }
 
+static bool toImage(const fz_pixmap *pix, DocImage *out);
+
+bool docLayoutTall(Doc *d, float w, float h, float em)
+{
+    if (!d->reflowable || !(w >= 50 && w <= 5000 && h >= 50 && h <= DOC_TALL_MAX && em >= 4 && em <= 200))
+        return false;
+    bool ok = true;
+    fz_var(ok);
+    fz_try(d->ctx)
+    {
+        fz_layout_document(d->ctx, d->doc, w, h, em);
+    }
+    fz_catch(d->ctx)
+    {
+        ok = false;
+    }
+    d->pages = -1;
+    return ok;
+}
+
+float docTextBottom(Doc *d, int page)
+{
+    float bottom = 0;
+    fz_stext_page *text = NULL;
+    fz_var(text);
+    fz_var(bottom);
+    fz_try(d->ctx)
+    {
+        text = fz_new_stext_page_from_page_number(d->ctx, d->doc, page, NULL);
+        for (fz_stext_block *b = text->first_block; b; b = b->next)
+            if (b->bbox.y1 > bottom && !fz_is_empty_rect(b->bbox))
+                bottom = b->bbox.y1;
+    }
+    fz_always(d->ctx)
+    {
+        fz_drop_stext_page(d->ctx, text);
+    }
+    fz_catch(d->ctx)
+    {
+        bottom = 0;
+    }
+    return bottom;
+}
+
+bool docRenderStrip(Doc *d, int page, float scale, int y, int h, DocImage *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!(scale > 0) || !d->reflowable || y < 0 || h <= 0 || h > DOC_RENDER_MAX)
+        return false;
+    bool ok = true;
+    fz_pixmap *pix = NULL;
+    fz_page *p = NULL;
+    fz_device *dev = NULL;
+    fz_var(pix);
+    fz_var(p);
+    fz_var(dev);
+    fz_var(ok);
+    fz_try(d->ctx)
+    {
+        p = fz_load_page(d->ctx, d->doc, page);
+        fz_matrix ctm = fz_scale(scale, scale);
+        fz_irect whole = fz_round_rect(fz_transform_rect(fz_bound_page(d->ctx, p), ctm));  // As docRender's.
+        fz_irect box = fz_intersect_irect(fz_make_irect(whole.x0, whole.y0 + y, whole.x1, whole.y0 + y + h), whole);
+        if (fz_is_empty_irect(box) || box.x1 - box.x0 > DOC_RENDER_MAX)
+            fz_throw(d->ctx, FZ_ERROR_ARGUMENT, "the strip is off the page");
+        pix = fz_new_pixmap_with_bbox(d->ctx, fz_device_rgb(d->ctx), box, NULL, 0);
+        float paper[3] = {((d->paper >> 16) & 0xFF) / 255.0f, ((d->paper >> 8) & 0xFF) / 255.0f,
+                          (d->paper & 0xFF) / 255.0f};
+        fz_fill_pixmap_with_color(d->ctx, pix, fz_device_rgb(d->ctx), paper, fz_default_color_params);
+        dev = fz_new_draw_device(d->ctx, fz_identity, pix);  // Only the strip's rows are drawn.
+        fz_run_page(d->ctx, p, dev, ctm, NULL);
+        fz_close_device(d->ctx, dev);
+        ok = toImage(pix, out);
+    }
+    fz_always(d->ctx)
+    {
+        fz_drop_device(d->ctx, dev);
+        fz_drop_page(d->ctx, p);
+        fz_drop_pixmap(d->ctx, pix);
+    }
+    fz_catch(d->ctx)
+    {
+        ok = false;
+    }
+    return ok;
+}
+
 bool docLayoutKeeping(Doc *d, float w, float h, float em, int *page)
 {
     if (!d->reflowable)

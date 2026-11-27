@@ -80,6 +80,15 @@ bool docLayout(Doc *d, float w, float h, float em);
 // only near (chapter and fraction of its pages); this is MuPDF's own mark of
 // the spot, good while the book stays open.
 bool docLayoutKeeping(Doc *d, float w, float h, float em, int *page);
+// A reflowable book laid out in pages up to DOC_TALL_MAX points tall (a news article read as one
+// long page, app_scroll.c): no page break for that long. False if it can't be.
+#define DOC_TALL_MAX 2000000.0f
+bool docLayoutTall(Doc *d, float w, float h, float em);
+// Where a reflowable page's text (and pictures) end, in points from its top; 0 if it has none.
+float docTextBottom(Doc *d, int page);
+// Rows y to y + h (pixels at scale, from the page's top) of a reflowable page, over its paper,
+// as wide as the page: a strip of a tall page. False if it fails (or h, or the width, is over DOC_RENDER_MAX).
+bool docRenderStrip(Doc *d, int page, float scale, int y, int h, DocImage *out);
 int docPageCount(Doc *d);
 // A page's text, UTF-8, lines joined by spaces, up to size - 1 bytes (whole
 // characters). Empty for a page without text (a picture, a scanned PDF).

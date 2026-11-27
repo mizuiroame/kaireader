@@ -80,6 +80,16 @@ static float fitScale(Doc *d, int page, const ReadingLayout *l)
     return s * l->pixel_scale * (l->zoom > 1.0f ? l->zoom : 1.0f);
 }
 
+static int percentOf(int page, int pages);
+
+// Where a page is, to keep: the book's place of it; an article's (in strips), how far down.
+static DocPlace placeOf(int page, int pages)
+{
+    if (g_layout.strips && g_doc && docReflowable(g_doc))
+        return (DocPlace){0, pages > 0 ? (double)page / pages : 0};
+    return docPlaceOf(g_doc, page);
+}
+
 static int percentOf(int page, int pages)
 {
     return pages > 0 ? (page + 1) * 100 / pages : 0;
@@ -116,7 +126,9 @@ static void runCommand(Command cmd, const char *path, const ReadingLayout *layou
     if (g_doc) {
         g_layout = *layout;
         bool laid;
-        if (cmd == CMD_RELAYOUT) {
+        if (layout->strips && docReflowable(g_doc)) {  // An article: one tall page, in strips.
+            laid = docLayoutTall(g_doc, layout->box_w, layout->box_h * READING_TALL_STRIPS, layout->em);
+        } else if (cmd == CMD_RELAYOUT) {
             pthread_mutex_lock(&g_lock);
             kept = g_status.current_page;
             pthread_mutex_unlock(&g_lock);
@@ -143,8 +155,16 @@ static void runCommand(Command cmd, const char *path, const ReadingLayout *layou
         st.reflowable = docReflowable(g_doc);
         st.pages = docPageCount(g_doc);
         st.start_page = kept >= 0 ? kept : docPageOfPlace(g_doc, place);
+        if (g_layout.strips && st.reflowable) {  // Strips to the text's end; the place is how far down.
+            int tall = st.pages;
+            float bottom = docTextBottom(g_doc, tall - 1);
+            int last = (int)(bottom / g_layout.box_h) + 1;
+            st.pages = (tall - 1) * READING_TALL_STRIPS + (last > READING_TALL_STRIPS ? READING_TALL_STRIPS : last);
+            st.start_page = (int)(place.fraction * st.pages + 0.5);
+            st.start_page = st.start_page >= st.pages ? st.pages - 1 : st.start_page < 0 ? 0 : st.start_page;
+        }
         st.current_page = st.start_page;
-        st.current_place = docPlaceOf(g_doc, st.start_page);
+        st.current_place = placeOf(st.start_page, st.pages);
         st.current_percent = percentOf(st.start_page, st.pages);
         docTitle(g_doc, st.title, sizeof(st.title));
         docAuthor(g_doc, st.author, sizeof(st.author));
@@ -201,6 +221,15 @@ static void givePage(ReadingPage out)
 static void renderPage(unsigned generation, int page)
 {
     ReadingPage out = {generation, page, {0}, 1.0f, false, 0, 0, 0, 0};
+    if (g_layout.strips && docReflowable(g_doc)) {  // A strip of a tall page: its rows, up to the next's.
+        float scale = g_layout.pixel_scale;
+        int k = page % READING_TALL_STRIPS;
+        int y = (int)(k * g_layout.box_h * scale + 0.5f), next = (int)((k + 1) * g_layout.box_h * scale + 0.5f);
+        if (!docRenderStrip(g_doc, page / READING_TALL_STRIPS, scale, y, next - y, &out.image))
+            out.image = (DocImage){0};
+        givePage(out);
+        return;
+    }
     float scale = fitScale(g_doc, page, &g_layout);
     if (!docReflowable(g_doc))
         out.zoom = (g_layout.zoom > 1.0f ? g_layout.zoom : 1.0f) * docRenderScale(g_doc, page, scale) / scale;
@@ -357,7 +386,7 @@ static void *worker(void *arg)
             g_current_new = false;
             int page = g_current_page;
             pthread_mutex_unlock(&g_lock);
-            DocPlace place = docPlaceOf(g_doc, page);
+            DocPlace place = placeOf(page, g_status.pages);
             pthread_mutex_lock(&g_lock);
             if (generation == g_status.generation) {
                 g_status.current_page = page;

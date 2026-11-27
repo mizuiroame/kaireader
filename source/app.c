@@ -482,6 +482,7 @@ ReadingLayout appLayout(const App *app)
     l.pixel_scale = GFX_SCALE * gfxDetail();
     l.colors = prefsColors(app->prefs.theme);
     l.zoom = app->render_zoom > 1.0f ? app->render_zoom : 1.0f;
+    l.strips = app->scroll_view;
     return l;
 }
 

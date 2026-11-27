@@ -350,8 +350,63 @@ static void testRemote(void)
     docSetRemoteOpener(NULL);
 }
 
+// A news article laid out as one tall page and cut in strips: the strips are rows of the same page,
+// so where two meet the text goes on as it would with no cut (no line moved down a page).
+static void testTallStrips(void)
+{
+    const char *path = TMP_ROOT "/tall.xhtml";
+    FILE *f = fopen(path, "w");
+    if (!f) {
+        CHECK(f != NULL);
+        return;
+    }
+    fputs("<?xml version=\"1.0\" encoding=\"UTF-8\"?><html xmlns=\"http://www.w3.org/1999/xhtml\"><body><h1>Tall</h1>", f);
+    for (int i = 0; i < 60; i++)
+        fprintf(f, "<p>Paragraph %d: the tide came in over the rocks and the gulls rose from the pier, again.</p>", i);
+    fputs("</body></html>", f);
+    fclose(f);
+    char error[DOC_ERROR_MAX];
+    DocColors colors = {0x000000, 0xFFFFFF};
+    Doc *d = docOpen(path, &colors, error, sizeof(error));
+    CHECK(d != NULL);
+    if (!d)
+        return;
+    const float strip = 300;
+    CHECK(!docLayoutTall(d, 400, DOC_TALL_MAX * 2, 14));
+    CHECK(docLayoutTall(d, 400, strip * 400, 14) && docPageCount(d) == 1);
+    float bottom = docTextBottom(d, 0);
+    CHECK(bottom > strip * 3 && bottom < strip * 400);  // Several strips of text, and its end found.
+    DocImage a, b, across;
+    CHECK(docRenderStrip(d, 0, 1.0f, 0, (int)strip, &a) && docRenderStrip(d, 0, 1.0f, (int)strip, (int)strip, &b));
+    CHECK(docRenderStrip(d, 0, 1.0f, (int)strip - 50, 100, &across));
+    bool same = a.pixels && b.pixels && across.pixels && a.width == across.width && b.width == across.width &&
+                a.height == (int)strip && across.height == 100;
+    for (int y = 0; same && y < 100; y++) {
+        const uint32_t *row = across.pixels + (size_t)y * across.width;
+        const uint32_t *from = y < 50 ? a.pixels + (size_t)((int)strip - 50 + y) * a.width : b.pixels + (size_t)(y - 50) * b.width;
+        same = memcmp(row, from, (size_t)across.width * sizeof(*row)) == 0;
+    }
+    CHECK(same);
+    bool inked = false;  // And the join isn't between paragraphs only by luck: text runs over it somewhere.
+    for (int s = 1; s < 6 && !inked; s++) {
+        DocImage j;
+        if (!docRenderStrip(d, 0, 1.0f, (int)(s * strip) - 2, 4, &j))
+            break;
+        for (int i = 0; i < j.width * j.height && !inked; i++)
+            inked = (j.pixels[i] & 0xFF) < 0x80;
+        docImageFree(&j);
+    }
+    CHECK(inked);
+    docImageFree(&a);
+    docImageFree(&b);
+    docImageFree(&across);
+    CHECK(!docRenderStrip(d, 0, 1.0f, 0, DOC_RENDER_MAX + 1, &across) && across.pixels == NULL);
+    docClose(d);
+}
+
 void testDoc(void)
 {
+    testTallStrips();
     testCovers();
     testNames();
     testEpub();

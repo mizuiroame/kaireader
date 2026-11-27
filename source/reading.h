@@ -24,7 +24,11 @@ typedef struct {
     float pixel_scale;   // Pixels per point.
     DocColors colors;
     float zoom;          // Fixed pages rendered this much bigger than fitted (1, or 0, for fitted).
+    bool strips;         // A news article (app_scroll.c): laid out as one tall page, cut in strips box_h
+                         // tall that come as its "pages" (no page break between them).
 } ReadingLayout;
+
+#define READING_TALL_STRIPS 400  // Strips in one tall page (a longer article goes on in a second).
 
 typedef enum {
     READING_CLOSED,

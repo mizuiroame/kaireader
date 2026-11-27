@@ -49,7 +49,7 @@ static bool takeCover(ReadingCover *c)
 void testReading(void)
 {
     CHECK(readingStart());
-    ReadingLayout layout = {400, 600, 400, 600, 14, 1.0f, {0x000000, 0xFFFFFF}, 1.0f};
+    ReadingLayout layout = {400, 600, 400, 600, 14, 1.0f, {0x000000, 0xFFFFFF}, 1.0f, false};
     ReadingStatus st;
     unsigned g = readingOpen(FIX "quiet.epub", &layout, (DocPlace){2, 0.0});
     CHECK(waitFor(g, &st) && st.state == READING_OPEN);

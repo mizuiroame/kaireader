@@ -75,8 +75,10 @@ Branch `feat/feeds`, worktree `D:\ns2homebrew\kaireader-feeds`, from main at 2b0
   image so the scroll stops under the text. Drag (with the library's kinetic glide), up/down (repeat
   while held), L/R/ZL/ZR/left/right/A a screen. Tap: bars. No two pages, page numbers, contents or
   bookmarks for articles; read mark = the strip reached; it reopens at that strip. Books unchanged.
-- Known: where two strips meet, a line can sit a little lower than the others (MuPDF moves a line that
-  doesn't fit to the next page).
+- No page breaks: the article is laid out as ONE tall MuPDF page (`docLayoutTall`, 400 strips tall; a
+  longer one goes on in a second), its text end measured (`docTextBottom`), and each strip rendered as
+  rows of that page (`docRenderStrip`) into the usual page cache. tests/test_doc.c checks a strip join
+  is pixel-identical to the same rows rendered across it.
 
 ## Left
 
